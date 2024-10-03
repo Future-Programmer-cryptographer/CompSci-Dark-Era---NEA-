@@ -1,0 +1,30 @@
+FUNCTION makeProgramCards()
+    programCards = []
+    FOR direction IN ['UP', 'DOWN', 'LEFT', 'RIGHT']
+        FOR steps in 1 TO 3: 
+            programCards.append(f'{direction} {steps}')
+    ENDFOR
+    RETURN programCards
+ENDFUNCTION 
+
+
+FUNCTION displayProgramCards(makeProgramCards)
+    toDisplay = [] 
+    WHILE length(toDisplay) < 5: 
+        card = random.choice(makeProgramCards)
+        toDisplay.append(card)
+    ENDWHILE 
+    RETURN toDisplay
+ENDFUNCTION
+
+FUNCTION selectProgramCards(displayProgramCards, registerSlot)
+    OUTPUT 'Select 3 program cards from set of 5: ' + displayProgramCards
+    FOR i = 1 TO 3: 
+        choice = dragCardIntoRegister(displayProgramCards)
+        place choice IN registerSlot[i]
+    ENDFOR 
+    RETURN registerSlot
+ENDFUNCTION 
+
+
+        

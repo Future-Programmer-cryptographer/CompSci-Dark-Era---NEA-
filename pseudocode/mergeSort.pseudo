@@ -1,0 +1,50 @@
+FUNCTION mergeSort(leaderboard)
+    IF LEN(leaderboard) > 1 THEN 
+        middle = LEN(leaderboard) // 2 
+        leftHalf = leaderboard[:middle]
+        rightHalf =  leaderboard[middle:]
+
+        mergeSort(leftHalf)
+        mergeSort(rightHalf)
+        
+        i=0
+        j=0
+        k=0
+        
+        WHILE i < LEN(leftHalf) AND j < LEN(rightHalf)
+            IF leftHalf[i] < rightHalf[j] THEN 
+                leaderboard[k] = leftHalf[i]
+                i += 1 
+            ELSE 
+                leaderboard[k] = rightHalf[j]
+                j += 1 
+            k += 1 
+            ENDIF 
+        ENDWHILE 
+        
+        WHILE i < LEN(leftHalf)
+            leaderboard[k] = leftHalf[i]
+            i += 1 
+            k += 1 
+        
+        WHILE j < LEN(rightHalf)
+            leaderboard[k] = rightHalf[j]
+            j += 1 
+            k += 1 
+            
+        ENDWHILE  
+    ENDIF 
+    RETURN updateLeaderboard(leaderboard)
+ENDFUNCTION 
+
+FUNCTION updateLeaderboard(leaderboard)
+    FOR i in LEN(leaderboard)
+        RETURN leaderboard[i]
+    ENDFOR 
+ENDFUNCTION 
+
+
+                
+        
+        
+ 
