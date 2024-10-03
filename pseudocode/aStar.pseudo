@@ -1,0 +1,31 @@
+FUNCTION aStar(start, goal)
+    openSet = priorityQueue()
+
+    gScore ={all nodes mapped with default value of inf}
+    gScore[start] = 0 
+
+    fScore = {all nodes mapped with default value of inf}
+    fScore[start] = heuristic(start, goal)
+
+    openSet.add(fScore(start), h(start), start)
+
+    WHILE openSet is NOT empty or checkpoint reached:  
+        currentNode = openSet.getScore 
+        FOR each move(U,D,L,R):
+            neighbour = current + move 
+            tempGScore = gScore(currentNode) + 1 
+            tempFScore = tempGScore + heuristic(neighbour)
+
+            IF tempFScore < fScore(neighbour) THEN 
+                gScore(neighbour) = tempGScore
+                fScore(neighbour) = tempFScore
+                openSet.add(fScore(neighbour), heuristic(neighbour, checkpoint), neighbour)
+ENDFUNCTION
+
+FUNCTION heuristic(node, checkpoint)
+    RETURN abs(node.x - goal.x) + abs(node.y - goal.y)
+ENDFUNCTION
+
+    
+            
+
