@@ -1,0 +1,29 @@
+FUNCTION handleMoveHistory(board, player)
+    moveHistory = [] 
+
+    FUNCTION copyState(board, robots)
+        newBoard = deepcopy(board)
+        newRobots = deepcopy(robots)
+        RETURN (newBoard, newRobots)
+    ENDFUNCTION
+
+    FUNCTION storeMoveHistory(board, robots, currentPlayer)
+        (copiedBoard, copiedRobots) = copyState(board, robots)
+        currentState = {
+            'board' = copiedBoard, 
+            'robot' = copiedRobots, 
+            'player' = currentPlayer
+        }
+        moveHistory.append(currentState)
+    ENDFUNCTION
+
+    FUNCTION displayMoveHistory():
+        FOR each move IN moveHistory: 
+            OUTPUT move.player
+            OUTPUT move.board
+            OUTPUT move.robots
+        ENDFOR
+    ENDFUNCTION
+
+    
+
