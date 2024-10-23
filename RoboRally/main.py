@@ -1,7 +1,7 @@
 
-from mainMenuController import MainMenuController 
-from mainMenuModel import MainMenuModel
-from mainMenuView import MainMenuView
+from controller import MainMenuController 
+from model import MainMenuModel
+from view import MainMenuView
 
 def main():     
     model = MainMenuModel() 
