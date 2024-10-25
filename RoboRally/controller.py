@@ -1,13 +1,15 @@
 from tkinter import * 
 from tkinter import ttk 
-from tkinter.ttk import * 
+from tkinter.ttk import *  
+from GameLogic.leaderboard import displayLeaderboard
+from GameLogic.rules import RulesWindow
 
 class MainMenuController: 
     def __init__(self, model, view):
         self.model = model 
         self.view = view 
 
-    # so wehn user clicks, open a new window for each of these 
+    # so when the clicks, open a new window for each of these 
     def handleClick(self,action):
         if action == 'Tutorial':
             self.tutorialWindow() 
@@ -41,13 +43,15 @@ class MainMenuController:
         multiplayerWindow.title('Multiplayer Mode')
         multiplayerWindow.geometry('400x300')
         label=ttk.Label(multiplayerWindow, text='Welcome to multiplayer game')
-        label.pack(pad=20)
+        label.pack(pady=20)
 
     def leaderboardWindow(self):
         leaderboardWindow = Toplevel(self.view.root)
         leaderboardWindow.title('Leaderboard')
         leaderboardWindow.geometry('400x300')
-        # insert some leaderboard logic including sorting of leaderboard, read from an external file 
+        data = displayLeaderboard() 
+        leaderboardLabel = ttk.Label(leaderboardWindow, text=data)
+        leaderboardLabel.pack(pady=20)
 
     def ldSavedWindow(self):
         # include some logic for saving game and maybe a message like 'sure you wanna save this thing' 
@@ -56,7 +60,4 @@ class MainMenuController:
 
     def rulesWindow(self):
         rulesWindow = Toplevel(self.view.root)
-        rulesWindow.title('Robo Rally Rules')
-        rulesWindow.geometry('400x300')
-        label1 = ttk.Label(rulesWindow, text='Rules here...')
-        label1.pack(pady=20)
+        RulesWindow(rulesWindow)
