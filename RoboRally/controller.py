@@ -3,6 +3,7 @@ from tkinter import ttk
 from tkinter.ttk import *  
 from GameLogic.leaderboard import displayLeaderboard
 from GameLogic.rules import RulesWindow
+from GameLogic.board import GameBoard
 
 class MainMenuController: 
     def __init__(self, model, view):
@@ -32,11 +33,13 @@ class MainMenuController:
         label.pack(pady=20)
 
     def vsBotWindow(self):
-       vsBotWindow = Toplevel(self.view.root)
-       vsBotWindow.title('Single Player vs Bot')
-       vsBotWindow.geometry('400x300')
-       label = ttk.Label(vsBotWindow, text='Single Player vs Bot') 
-       label.pack(pady=20)
+    #    vsBotWindow = Toplevel(self.view.root)
+    #    vsBotWindow.title('Single Player vs Bot')
+    #    vsBotWindow.geometry('400x300')
+    #    label = ttk.Label(vsBotWindow, text='Single Player vs Bot') 
+    #    label.pack(pady=20)
+        gameboard = Toplevel(self.view.root)
+        GameBoard(gameboard)
 
     def multiplayerWindow(self):
         multiplayerWindow = Toplevel(self.view.root)
