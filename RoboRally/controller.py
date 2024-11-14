@@ -3,7 +3,7 @@ from tkinter import ttk
 from tkinter.ttk import *  
 from GameLogic.leaderboard import displayLeaderboard
 from GameLogic.rules import RulesWindow
-from GameLogic.board import GameBoard
+from GameLogic.selectBoard import BoardDifficulty 
 
 class MainMenuController: 
     def __init__(self, model, view):
@@ -14,8 +14,8 @@ class MainMenuController:
     def handleClick(self,action):
         if action == 'Tutorial':
             self.tutorialWindow() 
-        elif action == 'vsBot':
-            self.vsBotWindow() 
+        elif action == 'PlayGame':
+            self.playGame() 
         elif action == 'Multiplayer': 
             self.multiplayerWindow() 
         elif action == 'Leaderboard':
@@ -32,21 +32,14 @@ class MainMenuController:
         label = ttk.Label(tutorialWindow,text='Welcome to the Tutorial')
         label.pack(pady=20)
 
-    def vsBotWindow(self):
+    def playGame(self):
     #    vsBotWindow = Toplevel(self.view.root)
     #    vsBotWindow.title('Single Player vs Bot')
     #    vsBotWindow.geometry('400x300')
     #    label = ttk.Label(vsBotWindow, text='Single Player vs Bot') 
     #    label.pack(pady=20)
-        gameboard = Toplevel(self.view.root)
-        GameBoard(gameboard)
-
-    def multiplayerWindow(self):
-        multiplayerWindow = Toplevel(self.view.root)
-        multiplayerWindow.title('Multiplayer Mode')
-        multiplayerWindow.geometry('400x300')
-        label=ttk.Label(multiplayerWindow, text='Welcome to multiplayer game')
-        label.pack(pady=20)
+        selectBoard = Toplevel(self.view.root)
+        BoardDifficulty(selectBoard)
 
     def leaderboardWindow(self):
         leaderboardWindow = Toplevel(self.view.root)

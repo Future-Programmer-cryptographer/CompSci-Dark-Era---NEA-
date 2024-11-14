@@ -18,12 +18,9 @@ class MainMenuView:
         self.tutorialBtn = ttk.Button(self.root, 
                                       text='Tutorial', 
                                       command=lambda: self.controller.handleClick('Tutorial'))
-        self.vsBotBtn = ttk.Button(self.root, 
-                                text='Single Player vs Bot', 
-                                command=lambda: self.controller.handleClick('vsBot'))
-        self.multiplayerBtn = ttk.Button(self.root, 
-                                      text='Multiplayer', 
-                                      command=lambda: self.controller.handleClick('Multiplayer'))
+        self.playGameBtn = ttk.Button(self.root, 
+                                text='Play Game (Single Player/Multiplayer)', 
+                                command=lambda: self.controller.handleClick('PlayGame'))
         self.LeaderboardBtn = ttk.Button(self.root, 
                                         text='View Leaderboard', 
                                         command=lambda: self.controller.handleClick('Leaderboard'))
@@ -34,7 +31,7 @@ class MainMenuView:
                                 text='View Robo Rally Rules', 
                                 command=lambda: self.controller.handleClick('Rules'))
 
-        self.buttons=[self.tutorialBtn, self.vsBotBtn, self.multiplayerBtn, self.LeaderboardBtn, self.LdSavedBtn, self.rulesBtn]
+        self.buttons=[self.tutorialBtn, self.playGameBtn, self.LeaderboardBtn, self.LdSavedBtn, self.rulesBtn]
 
         for button in self.buttons: 
             button.pack(pady=10)

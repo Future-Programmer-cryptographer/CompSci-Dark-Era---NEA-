@@ -3,19 +3,15 @@ from tkinter import ttk
 from tkinter import messagebox
 from tkinter import * 
 
-class GameBoard: 
+# Creating a drop down options menu 
+class BoardDifficulty: 
     def __init__(self, root):
         self.root = root 
-        self.root.title('Game board')
+        self.root.title('Single Player vs Bot')
         self.root.geometry('500x500')
 
-        titleLabel = ttk.Label(self.root, text='Main board')
+        titleLabel = ttk.Label(self.root, text='vs Bot')
         titleLabel.pack(pady=10)
-
-        # Creating a drop down options menu 
-
-        optionsFrame = ttk.Frame(self.root)
-        optionsFrame.pack(padx=0, pady=0)
 
         def getOption():
             label = ttk.Label(optionsFrame, text=clicked.get())
@@ -29,9 +25,7 @@ class GameBoard:
 
         optionButton = ttk.Button(optionsFrame, text='Go', command=getOption)
         optionButton.grid(row=2, column=0, padx=20, pady=10)
-        
-        root.mainloop() 
-    
-    def grid(self):
-        pass 
 
+        root.mainloop() 
+        optionsFrame = ttk.Frame(self.root)
+        optionsFrame.pack(padx=0, pady=0)
