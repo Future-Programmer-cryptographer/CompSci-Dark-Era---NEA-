@@ -3,7 +3,7 @@ from tkinter import ttk
 from tkinter.ttk import *  
 from GameLogic.leaderboard import displayLeaderboard
 from GameLogic.rules import RulesWindow
-from GameLogic.selectBoard import BoardDifficulty 
+from GameLogic.playGame import PlayGame 
 
 class MainMenuController: 
     def __init__(self, model, view):
@@ -39,7 +39,7 @@ class MainMenuController:
     #    label = ttk.Label(vsBotWindow, text='Single Player vs Bot') 
     #    label.pack(pady=20)
         selectBoard = Toplevel(self.view.root)
-        BoardDifficulty(selectBoard)
+        PlayGame(selectBoard)
 
     def leaderboardWindow(self):
         leaderboardWindow = Toplevel(self.view.root)

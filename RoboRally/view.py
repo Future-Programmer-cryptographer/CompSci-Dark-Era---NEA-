@@ -19,7 +19,7 @@ class MainMenuView:
                                       text='Tutorial', 
                                       command=lambda: self.controller.handleClick('Tutorial'))
         self.playGameBtn = ttk.Button(self.root, 
-                                text='Play Game (Single Player/Multiplayer)', 
+                                text='Play Game', 
                                 command=lambda: self.controller.handleClick('PlayGame'))
         self.LeaderboardBtn = ttk.Button(self.root, 
                                         text='View Leaderboard', 
