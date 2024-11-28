@@ -8,7 +8,7 @@ from tkinter import ttk
 # need to have three different boards - tkinter framing... 
 # after they have selected the boards, we want them to select single player vs bot or multiplayer 
 
-# set up a while loop... the when the user click son any option, we want to ask them if they want single player or multiplayer, just do it with one board..., then we want to have them play the game on that screen. 
+# set up a while loop... the when the user clicks on any option, we want to ask them if they want single player or multiplayer, just do it with one board..., then we want to have them play the game on that screen. 
 
 class PlayGame: 
     def __init__(self, root):
@@ -73,10 +73,14 @@ class PlayGame:
             Register(self.canvas, 
                      50+i*150, 50, 
                      regWidth, regHeight)
-        
+            
+        # all possible cards here 
         self.cards = [
-            DragAndDrop(self.canvas, 100,500, regWidth, regHeight)
+            DragAndDrop(self.canvas, 'Images/image1.png', 100,500, regWidth, regHeight),
+            DragAndDrop(self.canvas, 'Images/image1.png', 350,500, regWidth, regHeight),
+            DragAndDrop(self.canvas, 'Images/image3.png', 600,500, regWidth, regHeight)
         ]
+        print('cards created?!')
         
     def startPoint(self):
         pass 
@@ -99,7 +103,6 @@ class PlayGame:
         pass 
     
 
-
 class Register: 
     def __init__(self, canvas, x, y, width, height):
         self.canvas = canvas 
@@ -110,13 +113,19 @@ class Register:
         self.id = self.canvas.create_rectangle(x, y, x + width, y + height, fill='white')
         self.canvas.registers.append(self)
 
+
+# this is for dragging and dropping cards into register slots 
 class DragAndDrop: 
-    def __init__(self, canvas, x, y, width, height):
+    def __init__(self, canvas, imagePath, x, y, width, height):
         self.canvas = canvas
-        self.id = self.canvas.create_rectangle(x,y, x+width, y+height, fill='red') 
-        self.canvas.tag_bind(self.id, '<ButtonPress-1>', self.startDrag)
-        self.canvas.tag_bind(self.id, '<B1-Motion>', self.continueDrag)
-        self.canvas.tag_bind(self.id, '<ButtonRelease-1>', self.endDrag)
+        self.imagePath = imagePath
+        self.image = Image.open(imagePath)
+        self.imagePath= self.image.resize((width, height))
+        self.photo = ImageTk.PhotoImage(self.image)
+        self.imageId = self.canvas.create_rectangle(x,y, x+width, y+height, fill='red') 
+        self.canvas.tag_bind(self.imageId, '<ButtonPress-1>', self.startDrag)
+        self.canvas.tag_bind(self.imageId, '<B1-Motion>', self.continueDrag)
+        self.canvas.tag_bind(self.imageId, '<ButtonRelease-1>', self.endDrag)
         self.register = None
     
     def startDrag(self, event):
@@ -126,16 +135,18 @@ class DragAndDrop:
     def continueDrag(self, event):
         dx = event.x - self.start_x 
         dy = event.y - self.start_y 
-        self.canvas.move(self.id, dx, dy)
+        self.canvas.move(self.imageId, dx, dy)
         self.start_x = event.x 
         self.start_y = event.y  
 
     def endDrag(self, event):
+        # iterate over all registers and calculate distance between card current pos and the centre of each reg 
         closestRegister = self.findClosestRegister(event.x, event.y)
         if closestRegister: 
             self.snapToRegister(closestRegister)
 
     def findClosestRegister(self, x, y):
+        # pythag it 
         closestRegister = None  
         closestDistance = float('inf')
         snapDistance = 100 
@@ -149,5 +160,5 @@ class DragAndDrop:
         return closestRegister
 
     def snapToRegister(self, register):
-        self.canvas.coords(self.id, register.x, register.y, register.x + register.width, register.y + register.height)
+        self.canvas.coords(self.imageId, register.x, register.y, register.x + register.width, register.y + register.height)
         self.register = register  
