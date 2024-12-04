@@ -5,15 +5,18 @@ class RulesWindow:
     def __init__(self, root): 
         self.root = root 
         self.root.title('Robo Rally Rules')
-        self.root.geometry('1000x400')
 
-        titleLabel = ttk.Label(self.root, text='Robo Rally Rules', font=('verdana', 15, 'bold'))
+        # creating rules frame 
+        self.rulesFrame = tk.Frame(self.root)
+        self.rulesFrame.pack(fill=tk.BOTH)
+
+        titleLabel = ttk.Label(self.rulesFrame, text='Robo Rally Rules', font=('verdana', 15, 'bold'))
         titleLabel.pack(pady=10)
 
-        mainLabel = ttk.Label(self.root, text='Objective: Program robots to reach the checkpoints before your oppponents', font='verdana')
+        mainLabel = ttk.Label(self.rulesFrame, text='Objective: Program robots to reach the checkpoints before your oppponents', font='verdana')
         mainLabel.pack(pady=5)
 
-        rulesFrame = ttk.Frame(self.root)
+        rulesFrame = ttk.Frame(self.rulesFrame)
         rulesFrame.pack(pady=10)
 
         section1 = ttk.Label(rulesFrame, text='Rules about Instruction cards and register', font=('verdana', 10, 'bold'))
@@ -34,5 +37,4 @@ class RulesWindow:
         section3.grid(row=0, column=2, padx=20, pady=10)
         text3.grid(row=1, column=2, padx=20, pady=10)
 
-        root.mainloop() 
         

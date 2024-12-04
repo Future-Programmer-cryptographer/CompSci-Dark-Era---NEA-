@@ -1,17 +1,17 @@
 from tkinter import * 
 from tkinter import ttk 
 from tkinter.ttk import *  
-from GameLogic.leaderboard import displayLeaderboard
-from GameLogic.rules import RulesWindow
-from GameLogic.playGame import PlayGame 
+from Controller.leaderboard import displayLeaderboard
+from View.rules import RulesWindow
+from View.playGameView import PlayGameView
 
 class MainMenuController: 
-    def __init__(self, model, view):
-        self.model = model 
+    def __init__(self, view):
         self.view = view 
 
     # so when the clicks, open a new window for each of these 
     def handleClick(self,action):
+        self.view.mainMenuFrame.pack_forget() 
         if action == 'Tutorial':
             self.tutorialWindow() 
         elif action == 'PlayGame':
@@ -33,13 +33,7 @@ class MainMenuController:
         label.pack(pady=20)
 
     def playGame(self):
-    #    vsBotWindow = Toplevel(self.view.root)
-    #    vsBotWindow.title('Single Player vs Bot')
-    #    vsBotWindow.geometry('400x300')
-    #    label = ttk.Label(vsBotWindow, text='Single Player vs Bot') 
-    #    label.pack(pady=20)
-        selectBoard = Toplevel(self.view.root)
-        PlayGame(selectBoard)
+        PlayGameView(self.view.root)
 
     def leaderboardWindow(self):
         leaderboardWindow = Toplevel(self.view.root)
@@ -55,5 +49,4 @@ class MainMenuController:
         print('saving game button works!')
 
     def rulesWindow(self):
-        rulesWindow = Toplevel(self.view.root)
-        RulesWindow(rulesWindow)
+        RulesWindow(self.view.root)

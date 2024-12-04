@@ -2,7 +2,8 @@ from tkinter import *
 from PIL import Image, ImageTk 
 import tkinter as tk 
 from tkinter import ttk 
-
+from View.registerHandling import Register
+from Controller.dragAndDrop import DragAndDrop
 
 # need a board selection screen with different difficulty 
 # need to have three different boards - tkinter framing... 
@@ -10,47 +11,56 @@ from tkinter import ttk
 
 # set up a while loop... the when the user clicks on any option, we want to ask them if they want single player or multiplayer, just do it with one board..., then we want to have them play the game on that screen. 
 
-class PlayGame: 
+class PlayGameView: 
     def __init__(self, root):
         self.root = root 
         self.root.title('Select game board')
-        self.root.geometry('600x400')
 
-        titleLabel = ttk.Label(self.root, text='Select one of the three boards for single/multiplayer game')
+        # creating another frame 
+        self.selectBoardFrame = tk.Frame(self.root)
+        self.selectBoardFrame.pack(fill=tk.BOTH)
+
+        titleLabel = ttk.Label(self.selectBoardFrame, text='Select one of the three boards for single/multiplayer game')
         titleLabel.pack(pady=10)
 
-        # importing an image 
+        # importing an image - this is a board  
         boardImage = Image.open('Images/board1.png').resize((300,300))
         imageTk = ImageTk.PhotoImage(boardImage)
 
         # button widget 
-        button = ttk.Button(root, 
+        button = ttk.Button(self.selectBoardFrame, 
                             text='Example board', 
                             image=imageTk, 
                             command=self.optionWindow)
         button.pack() 
-
-        root.mainloop() 
     
     def optionWindow(self): 
-        newWindow = Toplevel(self.root) 
-        newWindow.title('Choose Game option')
-        newWindow.geometry('400x400')
+        self.selectBoardFrame.pack_forget() 
 
-        singlePlayerBtn = ttk.Button(newWindow, 
+        # creating an options window frame
+        self.optionWindowFrame = tk.Frame(self.root)
+        self.optionWindowFrame.pack(fill=tk.BOTH)
+
+        self.root.title('Choose Game option')
+
+        singlePlayerBtn = ttk.Button(self.optionWindowFrame, 
                                      text='Single Player', 
                                      command=self.makeSingleplayerBoard)
         singlePlayerBtn.pack(pady=10)
 
-        multiplayerBtn = ttk.Button(newWindow, 
+        multiplayerBtn = ttk.Button(self.optionWindowFrame, 
                                      text='Multiplayer', 
                                      command=self.makeMultiplayerBoard)
         multiplayerBtn.pack(pady=10)
 
-
+    # HOW DO I MAKE SURE I ONLY RUN THIS PART OF THE PROGRAM
     def makeGrid(self, window):
-        size = 5
-        cell = 10 
+        # want to see rank-file style numbering 
+        # size is 10 by 10 to start with
+        # ask user to input a grid later
+
+        size = 10
+        cell = 20 
         # want the grid on the same canvas? 
         gridCanvas = tk.Canvas(window, width=cell*(size+1), height=cell*(size+1))
         gridCanvas.pack() 
@@ -80,9 +90,10 @@ class PlayGame:
             gridCanvas.create_text(x,y,text=rank)
         
         return gridCanvas
-
-    # want to see rank-file style numbering 
-    # size is 10 by 10 
+    
+    def getCoordinates(self):
+        # for the time being, user clicks on a square, I want to get the coordinates of that square 
+        pass 
 
     def placeObstacles(self):
        pass  
@@ -118,11 +129,22 @@ class PlayGame:
         pass 
 
     def makeSingleplayerBoard(self):
-        singlePlayerWindow = Toplevel(self.root)
-        singlePlayerWindow.title('Single Player vs Bot')
-        singlePlayerWindow.geometry('1000x1000')
-        self.makeGrid(singlePlayerWindow) 
-        self.createRegister(singlePlayerWindow) 
+        self.optionWindowFrame.pack_forget() 
+
+        # single player board frame 
+        self.singlePlayerFrame = tk.Frame(self.root)
+        self.singlePlayerFrame.pack(fill=tk.BOTH)
+
+        self.root.title('Single Player vs Bot')
+
+        self.View.makeGrid(self.singlePlayerFrame) 
+        self.createRegister(self.singlePlayerFrame) 
+
+        # creating a back button - NEEDS TO BE IN THE CONTROLLER 
+        backtoOptionsBtn = ttk.Button(self.singlePlayerFrame, 
+                                    text='Back to Options menu',
+                                    command=print('This needs to be in the controller')) 
+        backtoOptionsBtn.pack(pady=10)
 
     def makeMultiplayerBoard(self): 
         pass 
@@ -134,73 +156,6 @@ class PlayGame:
     def moveHistory(self): 
         pass 
     
-
-class Register: 
-    def __init__(self, canvas, x, y, width, height):
-        self.canvas = canvas 
-        self.x = x 
-        self.y = y 
-        self.width = width 
-        self.height = height 
-        self.id = self.canvas.create_rectangle(x, y, x + width, y + height, fill='white')
-        self.canvas.registers.append(self)
-
-
-# this is for dragging and dropping cards into register slots 
-class DragAndDrop: 
-    def __init__(self, canvas, imagePath, x, y, width, height):
-        self.canvas = canvas
-
-        # added these two for later 
-        self.width = width 
-        self.height = height 
-
-        self.imagePath = imagePath
-        self.image = Image.open(imagePath)
-        self.imagePath= self.image.resize((width, height))
-        self.photo = ImageTk.PhotoImage(self.image) # this was self.image before, which was not resized 
-
-        # use create_image to render images (not rectangle)
-        # create image only needs x and y 
-        self.imageId = self.canvas.create_rectangle(x,y, x+width, y+height, fill='red')  
-
-        self.canvas.tag_bind(self.imageId, '<ButtonPress-1>', self.startDrag)
-        self.canvas.tag_bind(self.imageId, '<B1-Motion>', self.continueDrag)
-        self.canvas.tag_bind(self.imageId, '<ButtonRelease-1>', self.endDrag)
-        self.register = None
-    
-    def startDrag(self, event):
-        self.start_x = event.x 
-        self.start_y = event.y  
-
-    def continueDrag(self, event):
-        dx = event.x - self.start_x 
-        dy = event.y - self.start_y 
-        self.canvas.move(self.imageId, dx, dy)
-        self.start_x = event.x 
-        self.start_y = event.y  
-
-    def endDrag(self, event):
-        # iterate over all registers and calculate distance between card current pos and the centre of each reg 
-        closestRegister = self.findClosestRegister(event.x, event.y)
-        if closestRegister: 
-            self.snapToRegister(closestRegister)
-
-    def findClosestRegister(self, x, y):
-        # pythag it 
-        closestRegister = None  
-        closestDistance = float('inf')
-        snapDistance = 100 
-
-        for register in self.canvas.registers: 
-            distance = ((x - (register.x + register.width / 2)) ** 2 + (y-(register.y + register.height/2)) ** 2 ) ** 0.5
-            if distance < closestDistance and distance < snapDistance: 
-                closestDistance = distance
-                closestRegister = register 
-        
-        return closestRegister
-
-    def snapToRegister(self, register):
-        self.canvas.coords(self.imageId, register.x, register.y, register.x + register.width, register.y + register.height)
-        self.register = register  
+    def saveGame(self):
+        pass 
 
