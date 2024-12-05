@@ -11,13 +11,13 @@ class MainMenuController:
 
     # so when the clicks, open a new window for each of these 
     def handleClick(self,action):
+        
         self.view.mainMenuFrame.pack_forget() 
+
         if action == 'Tutorial':
             self.tutorialWindow() 
         elif action == 'PlayGame':
             self.playGame() 
-        elif action == 'Multiplayer': 
-            self.multiplayerWindow() 
         elif action == 'Leaderboard':
             self.leaderboardWindow() 
         elif action == 'LdSaved':

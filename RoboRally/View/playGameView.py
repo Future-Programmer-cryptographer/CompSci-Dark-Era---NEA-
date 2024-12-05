@@ -3,7 +3,7 @@ from PIL import Image, ImageTk
 import tkinter as tk 
 from tkinter import ttk 
 from View.registerHandling import Register
-from Controller.dragAndDrop import DragAndDrop
+from Controller.createCards import CreateCards
 
 # need a board selection screen with different difficulty 
 # need to have three different boards - tkinter framing... 
@@ -12,8 +12,10 @@ from Controller.dragAndDrop import DragAndDrop
 # set up a while loop... the when the user clicks on any option, we want to ask them if they want single player or multiplayer, just do it with one board..., then we want to have them play the game on that screen. 
 
 class PlayGameView: 
-    def __init__(self, root):
+
+    def __init__(self, root, playGameController):
         self.root = root 
+        self.playGameController = playGameController 
         self.root.title('Select game board')
 
         # creating another frame 
@@ -35,6 +37,7 @@ class PlayGameView:
         button.pack() 
     
     def optionWindow(self): 
+
         self.selectBoardFrame.pack_forget() 
 
         # creating an options window frame
@@ -118,12 +121,17 @@ class PlayGameView:
                      50+i*150, 50, 
                      regWidth, regHeight)
             
-        # all possible cards here 
+        # cards here 
         self.cards = [
-            DragAndDrop(self.canvas, 'Images/image1.png', 100,400, regWidth, regHeight),
-            DragAndDrop(self.canvas, 'Images/image1.png', 350,400, regWidth, regHeight),
-            DragAndDrop(self.canvas, 'Images/image3.png', 600,400, regWidth, regHeight)
+            CreateCards(self.canvas, 'Images/image1.png', 100,400, regWidth, regHeight),
+            CreateCards(self.canvas, 'Images/image1.png', 350,400, regWidth, regHeight),
+            CreateCards(self.canvas, 'Images/image3.png', 600,400, regWidth, regHeight)
         ]
+
+        # submit button to confirm choice 
+        submitBtn = ttk.Button(window, 
+                               text='Submit', 
+                               commmand = lambda: self.playGameController.submitCards(self.canvas, self.cards))
         
     def startPoint(self):
         pass 
@@ -137,14 +145,15 @@ class PlayGameView:
 
         self.root.title('Single Player vs Bot')
 
-        self.View.makeGrid(self.singlePlayerFrame) 
-        self.createRegister(self.singlePlayerFrame) 
 
         # creating a back button - NEEDS TO BE IN THE CONTROLLER 
         backtoOptionsBtn = ttk.Button(self.singlePlayerFrame, 
                                     text='Back to Options menu',
-                                    command=print('This needs to be in the controller')) 
+                                    command=lambda: print('This needs to be in the controller')) 
         backtoOptionsBtn.pack(pady=10)
+
+        self.makeGrid(self.singlePlayerFrame) 
+        self.createRegister(self.singlePlayerFrame) 
 
     def makeMultiplayerBoard(self): 
         pass 

@@ -1,7 +1,7 @@
 from PIL import Image, ImageTk 
 
 # this is for dragging and dropping cards into register slots 
-class DragAndDrop: 
+class CreateCards: 
     def __init__(self, canvas, imagePath, x, y, width, height):
         self.canvas = canvas
 
@@ -12,15 +12,18 @@ class DragAndDrop:
         self.imagePath = imagePath
         self.image = Image.open(imagePath)
         self.imagePath= self.image.resize((width, height))
-        self.photo = ImageTk.PhotoImage(self.image) # this was self.image before, which was not resized 
+        self.photo = ImageTk.PhotoImage(self.imagePath) # this was self.image before, which was not resized 
 
         # use create_image to render images (not rectangle)
         # create image only needs x and y 
-        self.imageId = self.canvas.create_rectangle(x,y, x+width, y+height, fill='red')  
+        # self.imageId = self.canvas.create_rectangle(x,y, x+width, y+height, fill='red')  
+        self.imageId = self.canvas.create_image(x,y, image=self.photo)
 
         self.canvas.tag_bind(self.imageId, '<ButtonPress-1>', self.startDrag)
         self.canvas.tag_bind(self.imageId, '<B1-Motion>', self.continueDrag)
         self.canvas.tag_bind(self.imageId, '<ButtonRelease-1>', self.endDrag)
+
+        # no register at the start 
         self.register = None
     
     def startDrag(self, event):
@@ -39,6 +42,8 @@ class DragAndDrop:
         closestRegister = self.findClosestRegister(event.x, event.y)
         if closestRegister: 
             self.snapToRegister(closestRegister)
+        else: 
+            self.register = None 
 
     def findClosestRegister(self, x, y):
         # pythag it 

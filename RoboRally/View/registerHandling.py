@@ -7,3 +7,6 @@ class Register:
         self.height = height 
         self.id = self.canvas.create_rectangle(x, y, x + width, y + height, fill='white')
         self.canvas.registers.append(self)
+    
+    def __repr__(self):
+        return f'Register {self.x}, {self.y}'
