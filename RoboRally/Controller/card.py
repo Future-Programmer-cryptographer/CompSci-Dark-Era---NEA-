@@ -1,7 +1,7 @@
 from PIL import Image, ImageTk 
 
 # this is for dragging and dropping cards into register slots 
-class CreateCards: 
+class Card: 
     def __init__(self, canvas, imagePath, x, y, width, height):
         self.canvas = canvas
 
@@ -16,8 +16,8 @@ class CreateCards:
 
         # use create_image to render images (not rectangle)
         # create image only needs x and y 
-        # self.imageId = self.canvas.create_rectangle(x,y, x+width, y+height, fill='red')  
-        self.imageId = self.canvas.create_image(x,y, image=self.photo)
+        self.imageId = self.canvas.create_rectangle(x,y, x+width, y+height, fill='red')  
+        # self.imageId = self.canvas.create_image(x,y, image=self.photo)
 
         self.canvas.tag_bind(self.imageId, '<ButtonPress-1>', self.startDrag)
         self.canvas.tag_bind(self.imageId, '<B1-Motion>', self.continueDrag)
@@ -25,6 +25,15 @@ class CreateCards:
 
         # no register at the start 
         self.register = None
+    
+    def text(self):
+        pass 
+        # random text on cards 
+
+    def getInformation(self):
+        pass 
+
+# can I have a card class that has the controller and view logic but can it also incorporate some model logic like card data. 
     
     def startDrag(self, event):
         self.start_x = event.x 

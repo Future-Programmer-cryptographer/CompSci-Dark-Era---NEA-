@@ -3,7 +3,7 @@ from PIL import Image, ImageTk
 import tkinter as tk 
 from tkinter import ttk 
 from View.registerHandling import Register
-from Controller.createCards import CreateCards
+from Controller.card import Card
 
 # need a board selection screen with different difficulty 
 # need to have three different boards - tkinter framing... 
@@ -56,7 +56,7 @@ class PlayGameView:
                                      command=self.makeMultiplayerBoard)
         multiplayerBtn.pack(pady=10)
 
-    # HOW DO I MAKE SURE I ONLY RUN THIS PART OF THE PROGRAM
+
     def makeGrid(self, window):
         # want to see rank-file style numbering 
         # size is 10 by 10 to start with
@@ -123,9 +123,9 @@ class PlayGameView:
             
         # cards here 
         self.cards = [
-            CreateCards(self.canvas, 'Images/image1.png', 100,400, regWidth, regHeight),
-            CreateCards(self.canvas, 'Images/image1.png', 350,400, regWidth, regHeight),
-            CreateCards(self.canvas, 'Images/image3.png', 600,400, regWidth, regHeight)
+            Card(self.canvas, 'Images/image1.png', 100,400, regWidth, regHeight),
+            Card(self.canvas, 'Images/image1.png', 350,400, regWidth, regHeight),
+            Card(self.canvas, 'Images/image3.png', 600,400, regWidth, regHeight)
         ]
 
         # submit button to confirm choice 

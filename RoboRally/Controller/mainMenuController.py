@@ -3,16 +3,16 @@ from tkinter import ttk
 from tkinter.ttk import *  
 from Controller.leaderboard import displayLeaderboard
 from View.rules import RulesWindow
-from View.playGameView import PlayGameView
 
 class MainMenuController: 
-    def __init__(self, view):
-        self.view = view 
+    def __init__(self, mainMenuView):
+        self.mainMenuView = mainMenuView 
+        self.playGameController = None
 
     # so when the clicks, open a new window for each of these 
     def handleClick(self,action):
         
-        self.view.mainMenuFrame.pack_forget() 
+        self.mainMenuView.mainMenuFrame.pack_forget() 
 
         if action == 'Tutorial':
             self.tutorialWindow() 
@@ -26,17 +26,17 @@ class MainMenuController:
             self.rulesWindow() 
     
     def tutorialWindow(self):
-        tutorialWindow = Toplevel(self.view.root)
+        tutorialWindow = Toplevel(self.mainMenuView.root)
         tutorialWindow.title('Tutorial')
         tutorialWindow.geometry('400x300')
         label = ttk.Label(tutorialWindow,text='Welcome to the Tutorial')
         label.pack(pady=20)
 
     def playGame(self):
-        PlayGameView(self.view.root)
+        self.playGameController.initialiseView(self.mainMenuView.root) 
 
     def leaderboardWindow(self):
-        leaderboardWindow = Toplevel(self.view.root)
+        leaderboardWindow = Toplevel(self.mainMenuView.root)
         leaderboardWindow.title('Leaderboard')
         leaderboardWindow.geometry('400x300')
         data = displayLeaderboard() 
@@ -49,4 +49,4 @@ class MainMenuController:
         print('saving game button works!')
 
     def rulesWindow(self):
-        RulesWindow(self.view.root)
+        RulesWindow(self.mainMenuView.root)

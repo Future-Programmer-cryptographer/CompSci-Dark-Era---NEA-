@@ -2,9 +2,14 @@ from View.playGameView import PlayGameView
 from Model.playGameModel import PlayGameModel
 
 class PlayGameController: 
-    def __init__(self, playGameModel, playGameView):
-        self.playGameView = playGameView
-        self.playGameModel = playGameModel
+    def __init__(self):
+        self.mainMenuController = None 
+        self.playGameModel = None 
+        self.playGameView = None 
+    
+    # self is the controller 
+    def initialiseView(self, root):
+        PlayGameView(root, self) 
     
     def submitCards(self, cards):
         pass 
