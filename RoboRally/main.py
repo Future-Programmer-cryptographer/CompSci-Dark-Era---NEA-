@@ -1,27 +1,34 @@
-
-from Controller.mainMenuController import MainMenuController 
+import tkinter as tk
+from Controller.mainMenuController import MainMenuController
 from View.mainMenuView import MainMenuView
 from Controller.playGameController import PlayGameController
 from Model.playGameModel import PlayGameModel
+from View.playGameView import PlayGameView
 
-def main():     
-    mainMenuController = MainMenuController(None) 
-    playGameController = PlayGameController()
-    mainMenuView = MainMenuView(mainMenuController) 
-    playGameModel = PlayGameModel() 
+def main():
+    # Initialize root window
+    root = tk.Tk()
 
-    # view is set in the controller 
-    mainMenuController.mainMenuView = mainMenuView 
+    # Create a canvas for drawing
+    canvas = tk.Canvas(root, width=800, height=600)
+    canvas.pack()
 
-    # subscribing to playGameController  
-    mainMenuController.playGameController = playGameController
+    # initialise PlayGameView
+    playGameView = PlayGameView(root, PlayGameController)
 
-    # playGameController subscribing to mainMenuController  
+    # initialise controllers and model
+    mainMenuController = MainMenuController(None)
+    playGameController = PlayGameController(root, playGameView, canvas)
+    mainMenuView = MainMenuView(mainMenuController)
+    playGameModel = PlayGameModel()
+
+    # Subscribe 
+    mainMenuController.mainMenuView = mainMenuView
+    mainMenuController.playGameController = playGameController  
     playGameController.mainMenuController = mainMenuController
+    playGameController.playGameModel = playGameModel
 
-    # playgameController to subscribe to model 
-    playGameController.playGameModel = playGameModel 
+    # Start the main application loop
+    mainMenuView.mainloop()
 
-    mainMenuView.mainloop() 
-
-main() 
+main()

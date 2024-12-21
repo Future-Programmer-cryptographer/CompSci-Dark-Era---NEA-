@@ -31,7 +31,7 @@ class MainMenuController:
         tutorialWindow.geometry('400x300')
         label = ttk.Label(tutorialWindow,text='Welcome to the Tutorial')
         label.pack(pady=20)
-
+    
     def playGame(self):
         self.playGameController.initialiseView(self.mainMenuView.root) 
 
