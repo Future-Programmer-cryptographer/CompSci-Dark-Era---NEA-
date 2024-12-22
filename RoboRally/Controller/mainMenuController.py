@@ -34,7 +34,7 @@ class MainMenuController:
         label.pack(pady=20)
     
     def playGame(self):
-        self.playGameView.showSelectBoardWindow() 
+        self.playGameController.initialiseView(self.mainMenuView.root)
 
     def leaderboardWindow(self):
         leaderboardWindow = Toplevel(self.mainMenuView.root)

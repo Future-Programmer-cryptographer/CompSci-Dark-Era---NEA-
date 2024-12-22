@@ -3,9 +3,9 @@ from tkinter import ttk
 
 
 class MainMenuView: 
-    def __init__(self, controller):
+    def __init__(self, root, controller):
         self.controller = controller  
-        self.root = tk.Tk() 
+        self.root = root 
         self.root.title('Main Menu')
         
         # setting width and height paramaters here 

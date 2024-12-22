@@ -11,26 +11,25 @@ from tkinter import ttk
 
 class PlayGameView: 
 
-    def __init__(self, root, playGameController):
+    def __init__(self, root, canvas, playGameController):
         self.root = root 
+        self.canvas = canvas 
         self.playGameController = playGameController 
         self.root.title('Select game board')
 
         # creating another frame 
         self.selectBoardFrame = tk.Frame(self.root)
-        # self.selectBoardFrame.pack(fill=tk.BOTH)
 
         titleLabel = ttk.Label(self.selectBoardFrame, text='Select one of the three boards for single/multiplayer')
         titleLabel.pack(pady=10)
 
         # importing an image - this is a board  
-        boardImage = Image.open('Images/board1.png').resize((300,300))
-        imageTk = ImageTk.PhotoImage(boardImage)
+        # boardImage = Image.open('Images/board1.png').resize((300,300))
+        # imageTk = ImageTk.PhotoImage(boardImage)
 
         # button widget 
         button = ttk.Button(self.selectBoardFrame, 
                             text='Example board', 
-                            image=imageTk, 
                             command=self.playGameController.onBoardSelect)
         button.pack() 
 
@@ -46,7 +45,6 @@ class PlayGameView:
         # creating an options window frame
         self.optionWindowFrame = tk.Frame(self.root)
         self.optionWindowFrame.pack(fill=tk.BOTH)
-        print('opetionw indow created')
 
         self.root.title('Choose Game option')
 
@@ -77,6 +75,9 @@ class PlayGameView:
             command = self.playGameController.backToOptions
         )
         backBtn.pack(pady=10)
+
+        # pack the canvas 
+        self.canvas.pack() 
     
         # make the game grid and registers/cards 
         self.playGameController.makeGrid(self.gameBoardFrame)
@@ -94,7 +95,6 @@ class PlayGameView:
     def createCheckpoints(self):
         pass 
     # randomsise it 
-
         
     def startPoint(self):
         pass 

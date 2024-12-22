@@ -41,7 +41,7 @@ class CardController:
         # go through register and calculate distance between card current pos and centre of each reg
         # pythag 
 
-        for register in self.canvas.registers: 
+        for register in self.registers: 
             centre_x, centre_y = register.getCentre()
             distance = ((x - centre_x) ** 2) + ((y-centre_y) **2) ** 0.5 
             if distance < minDistance: 

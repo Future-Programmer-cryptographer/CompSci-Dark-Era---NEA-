@@ -10,20 +10,19 @@ from View.registerView import RegisterView
 
 
 class PlayGameController: 
-    def __init__(self, root, playGameview, canvas):
+    def __init__(self, root, canvas):
         self.mainMenuController = None 
         self.root = root 
-        self.playGameView =  playGameview
 
         self.canvas = canvas 
         self.cards = [] 
         self.registers = [] 
 
-        # initialise the view 
-        # self.playGameView = PlayGameView(root, self)
+        # view initilised here - self is the playGameController
+        self.playGameView = PlayGameView(root, canvas, self)
     
     def initialiseView(self, root):
-        PlayGameView(root, self)
+        self.playGameView.showSelectBoardWindow() 
     
     def onBoardSelect(self):
         self.playGameView.showOptionWindow() 
@@ -85,15 +84,14 @@ class PlayGameController:
                 x=100 + i * 150, 
                 y=400, 
                 width = 100, 
-                height=50, 
-                action=action, 
-                number=number
+                height=50
             )
             cardController = CardController(self.canvas, cardModel, cardView)
             self.cards.append(cardController)
 
         
     def makeRegisters(self):
+        # why is this not rendering registers 
         for i in range(3):
             registerView = RegisterView(
                 self.canvas, 
@@ -104,7 +102,8 @@ class PlayGameController:
             )
             self.registers.append(registerView)
 
-    
+    # this should passed to the model
+    # self.registers is currently a list of view registers - want model registers 
     def submitCards(self):
         for register in self.registers:
             if register.card:
