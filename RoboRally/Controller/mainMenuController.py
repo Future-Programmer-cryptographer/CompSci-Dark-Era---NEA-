@@ -3,6 +3,7 @@ from tkinter import ttk
 from tkinter.ttk import *  
 from Controller.leaderboard import displayLeaderboard
 from View.rules import RulesWindow
+from View.playGameView import PlayGameView
 
 class MainMenuController: 
     def __init__(self, mainMenuView):
@@ -33,7 +34,7 @@ class MainMenuController:
         label.pack(pady=20)
     
     def playGame(self):
-        self.playGameController.initialiseView(self.mainMenuView.root) 
+        self.playGameView.showSelectBoardWindow() 
 
     def leaderboardWindow(self):
         leaderboardWindow = Toplevel(self.mainMenuView.root)

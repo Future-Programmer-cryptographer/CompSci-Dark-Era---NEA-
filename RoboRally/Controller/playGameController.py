@@ -20,7 +20,7 @@ class PlayGameController:
         self.registers = [] 
 
         # initialise the view 
-        self.playGameView = PlayGameView(root, self)
+        # self.playGameView = PlayGameView(root, self)
     
     def initialiseView(self, root):
         PlayGameView(root, self)

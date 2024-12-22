@@ -18,7 +18,7 @@ class PlayGameView:
 
         # creating another frame 
         self.selectBoardFrame = tk.Frame(self.root)
-        self.selectBoardFrame.pack(fill=tk.BOTH)
+        # self.selectBoardFrame.pack(fill=tk.BOTH)
 
         titleLabel = ttk.Label(self.selectBoardFrame, text='Select one of the three boards for single/multiplayer')
         titleLabel.pack(pady=10)
@@ -35,6 +35,9 @@ class PlayGameView:
         button.pack() 
 
         # self.optionWindowFrame.pack_forget() 
+    
+    def showSelectBoardWindow(self):
+        self.selectBoardFrame.pack(fill=tk.BOTH)
     
     def showOptionWindow(self): 
 
