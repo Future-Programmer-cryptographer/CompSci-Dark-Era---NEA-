@@ -27,7 +27,7 @@ def main():
     playGameController.mainMenuController = mainMenuController
     playGameController.playGameModel = playGameModel
 
-    # Start the main application loop
+    # treating main.py as the 'master view' 
     root.mainloop()
 
 main()

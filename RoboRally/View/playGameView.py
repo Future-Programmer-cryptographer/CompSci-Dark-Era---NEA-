@@ -80,8 +80,8 @@ class PlayGameView:
         self.canvas.pack() 
     
         # make the game grid and registers/cards 
-        self.playGameController.makeGrid(self.gameBoardFrame)
-        self.playGameController.makeRegistersAndCards(self.gameBoardFrame)
+        self.playGameController.makeGrid()
+        self.playGameController.makeRegistersAndCards()
     
 
     def getCoordinates(self):

@@ -3,10 +3,8 @@ from tkinter import ttk
 import random 
 
 from View.playGameView import PlayGameView
-from Controller.cardController import CardController
-from Model.cardModel import CardModel
-from View.cardView import CardView 
-from View.registerView import RegisterView
+from cardsAndRegisters import model
+from cardsAndRegisters import view
 
 
 class PlayGameController: 
@@ -17,10 +15,21 @@ class PlayGameController:
         self.canvas = canvas 
         self.cards = [] 
         self.registers = [] 
+        
+        # coords display label 
+        self.coordsLabel = ttk.Label(root, text='Coords: (0,0)')
+        self.coordsLabel.pack() 
+
+        # bind motion to show coords 
+        self.canvas.bind('<Motion>', self.updateCoords)
 
         # view initilised here - self is the playGameController
         self.playGameView = PlayGameView(root, canvas, self)
     
+    def updateCoords(self, event):
+        x,y = event.x, event.y
+        self.coordsLabel.config(text=f'Moues at :({x}, {y})')
+
     def initialiseView(self, root):
         self.playGameView.showSelectBoardWindow() 
     
@@ -29,6 +38,7 @@ class PlayGameController:
     
     def onSinglePlayerSelect(self):
         self.playGameView.showGameBoard(isSinglePlayer=True)
+        self.createRobot() # initialse robot on grid 
     
     def onMultiplayerSelect(self):
         self.playGameView.showGameBoard(isSinglePlayer=False)
@@ -36,14 +46,9 @@ class PlayGameController:
     def backToOptions(self):
         self.playGameView.showOptionWindow() 
     
-    def makeGrid(self, parentFrame):
+    def makeGrid(self):
         size = 10 
-        cell = 20 
-
-        gridCanvas = tk.Canvas(parentFrame, 
-                               width=cell*(size+1), 
-                               height=cell*(size+1))
-        gridCanvas.pack() 
+        cell = 20
 
         # draw the actual grid 
         for i in range(size):
@@ -53,23 +58,22 @@ class PlayGameController:
                 x2 = x1 + cell 
                 y2 = y1 + cell 
 
-                gridCanvas.create_rectangle(x1, y1, x2, y2, fill='pink', outline='black')
+                self.canvas.create_rectangle(x1, y1, x2, y2, fill='pink', outline='black')
 
         # letters 
         for col in range(size):
             x = (col+1) * cell + cell / 2 
             y = cell /2  
             file = chr(65+col) # convert 0-9 to letters 
-            gridCanvas.create_text(x,y,text=file) 
+            self.canvas.create_text(x,y,text=file) 
         
         # number labels 
         for row in range(size):
             x = cell / 2 
             y = (row+1) * cell + cell / 2 
             rank = str(row+1)
-            gridCanvas.create_text(x,y,text=rank)
+            self.canvas.create_text(x,y,text=rank)
         
-        return gridCanvas
         
     def createActionCards(self):
         actions = ['Forward', 'Backward', 'Left', 'Right']
@@ -77,50 +81,183 @@ class PlayGameController:
             action = random.choice(actions)
             number = random.randint(1,3) 
 
-            # create card model, view, controller 
-            cardModel = CardModel(action, number)
-            cardView = CardView(
+            # creating the model 
+            cardModel = model.CardModel(action, number)
+
+            # creating the card view 
+            cardView = view.CardView(
                 self.canvas, 
                 x=100 + i * 150, 
                 y=400, 
                 width = 100, 
-                height=50
-            )
-            cardController = CardController(self.canvas, cardModel, cardView)
-            self.cards.append(cardController)
+                height=50,
+                text =f'{action} {number}'
+            ) 
 
+            # storing model and view in controller (as a dictionary)
+            self.cards.append({'model':cardModel, 'view':cardView})
+
+            # binding drag n drop stuff 
+            self.canvas.tag_bind(cardView.cardId, '<ButtonPress-1>', lambda e, card=cardView: self.startDrag(e, card))
+            self.canvas.tag_bind(cardView.cardId, '<B1-Motion>', lambda e, card=cardView: self.continueDrag(e, card))
+            self.canvas.tag_bind(cardView.cardId, '<ButtonRelease-1>', lambda e, card=cardView: self.endDrag(e, card))
+
+            # storing starting coords in case of a reset 
+            cardView.start_x = 100+i*150
+            cardView.start_y= 400 
+    
+    def resetCards(self):
+        for cardPair in self.cards: 
+            cardView = cardPair['view']
+            current_x, current_y = cardView.getPosition() 
+            dx = cardView.start_x - current_x
+            dy = cardView.start_y - current_y
+            cardView.move(dx,dy)
         
     def makeRegisters(self):
-        # why is this not rendering registers 
         for i in range(3):
-            registerView = RegisterView(
+            registerModel = model.RegisterModel() 
+            registerView = view.RegisterView(
                 self.canvas, 
                 x= 50 + i * 150, 
                 y=300, 
                 width=100, 
                 height=50
             )
-            self.registers.append(registerView)
+            self.registers.append({'model':registerModel, 'view':registerView})
 
-    # this should passed to the model
-    # self.registers is currently a list of view registers - want model registers 
+
+    # Logic for drag and drop here 
+
+    def startDrag(self, event, cardView):
+        self.start_x = event.x
+        self.start_y = event.y 
+    
+    def continueDrag(self, event, cardView):
+        dx = event.x - self.start_x 
+        dy = event.y - self.start_y 
+        cardView.move(dx, dy)
+        self.start_x = event.x 
+        self.start_y = event.y 
+    
+    def endDrag(self, event, cardView):
+        # snap to closest register 
+        closestRegister = self.findClosestRegister(event.x, event.y)
+        if closestRegister: 
+            register = closestRegister['view']
+            # Move card to register 
+            cardView.move(
+                register.x - cardView.getPosition()[0], 
+                register.y - cardView.getPosition()[1]
+            )
+            # Find card model in self.cards 
+            cardModel = None
+            for card in self.cards: 
+                if card['view'] == cardView: 
+                    cardModel = card['model']
+                    break 
+
+            # assingn card model to register model 
+            if cardModel: 
+                closestRegister['model'].card = cardModel
+    
+    def findClosestRegister(self, x, y):
+        closestRegister = None 
+        minDistance = float('inf')
+
+        # go through register and calculate distance between card current pos and centre of each reg
+        # pythag 
+
+        for register in self.registers: 
+            centre_x, centre_y = register['view'].getCentre()
+            distance = ((x - centre_x) ** 2 + (y - centre_y) ** 2) ** 0.5
+            if distance < minDistance: 
+                minDistance = distance
+                closestRegister = register
+            
+        return closestRegister
+
     def submitCards(self):
-        for register in self.registers:
-            if register.card:
-                card = register.card
-                print(f"Register contains: Action = {card.action}, Number = {card.number}")
-            else:
-                print("Register is empty.")
+        for i, register, in enumerate(self.registers): 
+            card = register['model'].card
+            if card: 
+                direction = card.action 
+                steps = card.number 
+                print(f'Regisster {i+1}: {card.action} {card.number}')
+                self.moveRobot(direction, steps)
+            else: 
+                print('Whoops! No cards')
 
-    def makeRegistersAndCards(self, frame):
+
+    def makeRegistersAndCards(self):
         # create empty registers 
         self.makeRegisters() 
         self.createActionCards() 
 
         # submit button 
         submitBtn = ttk.Button(
-            frame, 
+            self.root, 
             text='submit', 
             command=self.submitCards
         )
         submitBtn.pack(pady=10)
+    
+        # Reset button 
+        resetBtn = ttk.Button(
+            self.root, 
+            text='Reset Cards', 
+            command=self.resetCards
+        )
+        resetBtn.pack(pady=10)
+
+    # Robot logic stuff begins here 
+    def createRobot(self):
+        # creating robot on grid, start with initial position
+        self.robotPos = (1,1) # start at row=1, col=1
+        cell = 20 
+
+        # calculating corners of the cell 
+        x1 = (self.robotPos[1] * cell + cell/4)
+        y1 = (self.robotPos[0] * cell + cell/4)
+        x2 = x1 + cell /2
+        y2 = y1 + cell /2
+
+        # draw the robot 
+        self.robotId = self.canvas.create_oval(x1, y1, x2, y2, fill='blue')
+        self.robotLabel = self.canvas.create_text(
+            (x1+x2)/2, 
+            (y1+y2)/2, 
+            text='SD'
+        )
+    
+    def moveRobot(self, direction, steps):
+        cell = 20 
+        row, col = self.robotPos 
+
+        # update robot's grid position based on the direction 
+        if direction == 'Forward':
+            row -= steps
+        elif direction == 'Backward':
+            row += steps 
+        elif direction == 'Left':
+            col -= steps 
+        elif direction == 'Right':
+            col += steps 
+        
+        # make sure robot stays inside the grid - THESE ARE FIXED FOR THE TIME BEING, CAN BE CHANGED
+        row = max(1, min(10,row))
+        col = max(1, min(10, col))
+        self.robotPos(row, col)
+
+        # calculate new coords 
+        x1 = (col) * cell + cell/4
+        y1 = (row) * cell + cell/4
+        x2 = x1+cell /2
+        y2 = y1+cell /2
+
+        # update robot position on canvas 
+        self.canvas.coords(self.robotId, x1, y1, x2, y2)
+        self.canvas.coords(self.robotLabel, (x1+x2)/2, (y1+y2)/2)
+
+
+
