@@ -7,8 +7,6 @@ from tkinter import ttk
 # need to have three different boards - tkinter framing... 
 # after they have selected the boards, we want them to select single player vs bot or multiplayer 
 
-# set up a while loop... the when the user clicks on any option, we want to ask them if they want single player or multiplayer, just do it with one board..., then we want to have them play the game on that screen. 
-
 class PlayGameView: 
 
     def __init__(self, root, canvas, playGameController):
@@ -32,11 +30,23 @@ class PlayGameView:
                             text='Example board', 
                             command=self.playGameController.onBoardSelect)
         button.pack() 
-
-        # self.optionWindowFrame.pack_forget() 
     
     def showSelectBoardWindow(self):
         self.selectBoardFrame.pack(fill=tk.BOTH)
+    
+    def updateMoveHistory(self, history):
+        self.moveHistoryTxt.configure(state='normal')
+        self.moveHistoryTxt.delete(1.0, tk.END)
+
+        # populate the text box 
+        for move in history: 
+            direction = move['direction']
+            steps = move['steps']
+            start = move['start']
+            end = move['end']
+            self.moveHistoryTxt.insert(tk.END, f'{steps} steps {direction} from {start} to {end} \n')
+        
+        self.moveHistoryTxt.configure(state='disabled')
     
     def showOptionWindow(self): 
 
@@ -68,15 +78,36 @@ class PlayGameView:
 
         self.root.title('Single player' if isSinglePlayer else 'Multiplayer')
 
+        # Move history text box
+        self.moveHistoryTxt = tk.Text(self.gameBoardFrame, width=60, height=10, state='disabled')
+        self.moveHistoryTxt.pack()
+
+        # # creating another frame - left for grid and right for move history 
+        # gridFrame = tk.Frame(self.gameBoardFrame)
+        # gridFrame.grid(row=0, column=0, padx=10, pady=10)
+
+        # historyFrame = tk.Frame(self.gameBoardFrame)
+        # historyFrame.grid(row=0, column=1, padx=10, pady=10, sticky="n")
+
+        # # Move history label
+        # historyLabel = ttk.Label(historyFrame, text='Move history')
+        # historyLabel.pack(pady=5)
+
+        # # Move history text box
+        # self.moveHistoryTxt = tk.Text(historyFrame, width=30, height=20, state='disabled')
+        # self.moveHistoryTxt.pack()
+
         # creating a back button 
         backBtn = ttk.Button(
-            self.gameBoardFrame, 
+            self.root, 
             text='Back to Options Menu', 
             command = self.playGameController.backToOptions
         )
         backBtn.pack(pady=10)
 
-        # pack the canvas 
+        # # pack the canvas 
+        # self.canvas.pack(in_=gridFrame, fill=tk.BOTH, expand=True) 
+
         self.canvas.pack() 
     
         # make the game grid and registers/cards 

@@ -23,8 +23,20 @@ class PlayGameController:
         # bind motion to show coords 
         self.canvas.bind('<Motion>', self.updateCoords)
 
+        # animation speed 
+        self.animationSpeed = 100000
+
+        # move history list - this needs to be displayed by THE VIEW 
+        self.moveHistory = []
+
         # view initilised here - self is the playGameController
         self.playGameView = PlayGameView(root, canvas, self)
+    
+    # converting to rank and file to help with move histoyr 
+    def convertToRankAndFile(self, row, col):
+        rank = chr(64+col)
+        file = row 
+        return f'{rank}{file}'
     
     def updateCoords(self, event):
         x,y = event.x, event.y
@@ -76,8 +88,8 @@ class PlayGameController:
         
         
     def createActionCards(self):
-        actions = ['Forward', 'Backward', 'Left', 'Right']
-        for i in range(3):
+        actions = ['Forward', 'Backward', 'Left', 'Right', 'Forward', 'Backward']
+        for i in range(5):
             action = random.choice(actions)
             number = random.randint(1,3) 
 
@@ -187,6 +199,9 @@ class PlayGameController:
                 self.moveRobot(direction, steps)
             else: 
                 print('Whoops! No cards')
+            
+        # update move history in the view 
+        self.playGameView.updateMoveHistory(self.moveHistory)
 
 
     def makeRegistersAndCards(self):
@@ -213,25 +228,27 @@ class PlayGameController:
     # Robot logic stuff begins here 
     def createRobot(self):
         # creating robot on grid, start with initial position
-        self.robotPos = (1,1) # start at row=1, col=1
+        self.robotPos = (5,5) 
         cell = 20 
 
-        # calculating corners of the cell 
+        # calculat corners of the cell 
         x1 = (self.robotPos[1] * cell + cell/4)
         y1 = (self.robotPos[0] * cell + cell/4)
         x2 = x1 + cell /2
         y2 = y1 + cell /2
 
         # draw the robot 
-        self.robotId = self.canvas.create_oval(x1, y1, x2, y2, fill='blue')
+        self.robotId = self.canvas.create_oval(x1, y1, x2, y2, fill='light blue')
         self.robotLabel = self.canvas.create_text(
             (x1+x2)/2, 
             (y1+y2)/2, 
-            text='SD'
+            text='S'
         )
     
-    def moveRobot(self, direction, steps):
+    # this is more like 'animateRobotMoving' but I can't be bothered to refactor... 
+    def moveRobot(self, direction, steps, stepCount=0):
         cell = 20 
+        # get current position 
         row, col = self.robotPos 
 
         # update robot's grid position based on the direction 
@@ -247,7 +264,7 @@ class PlayGameController:
         # make sure robot stays inside the grid - THESE ARE FIXED FOR THE TIME BEING, CAN BE CHANGED
         row = max(1, min(10,row))
         col = max(1, min(10, col))
-        self.robotPos(row, col)
+        self.robotPos = (row, col)
 
         # calculate new coords 
         x1 = (col) * cell + cell/4
@@ -255,9 +272,27 @@ class PlayGameController:
         x2 = x1+cell /2
         y2 = y1+cell /2
 
-        # update robot position on canvas 
+        # update robot coords on canvas 
         self.canvas.coords(self.robotId, x1, y1, x2, y2)
         self.canvas.coords(self.robotLabel, (x1+x2)/2, (y1+y2)/2)
+
+        # adding to move history - make sure to get it after each card played
+        if stepCount == 0:
+            startPos = self.convertToRankAndFile(*self.robotPos)
+            endPos = self.convertToRankAndFile(row, col)
+            self.moveHistory.append({
+                'direction': direction, 
+                'steps': steps, 
+                'start' : startPos, 
+                'end' : endPos
+            })
+
+        # update pos after  
+        self.roboPos = (row, col)
+    
+        # animate any further steps 
+        if stepCount +1 < steps: 
+            self.canvas.after(self.animationSpeed, self.moveRobot, direction, steps, stepCount+1)
 
 
 
