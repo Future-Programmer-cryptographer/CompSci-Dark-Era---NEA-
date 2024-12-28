@@ -40,11 +40,13 @@ class PlayGameView:
 
         # populate the text box 
         for move in history: 
+            turn = move['turn']
             direction = move['direction']
             steps = move['steps']
             start = move['start']
             end = move['end']
-            self.moveHistoryTxt.insert(tk.END, f'{steps} steps {direction} from {start} to {end} \n')
+            self.moveHistoryTxt.insert(tk.END, 
+                                       f'{turn}: {steps} steps {direction} from {start} to {end} \n')
         
         self.moveHistoryTxt.configure(state='disabled')
     
@@ -82,20 +84,12 @@ class PlayGameView:
         self.moveHistoryTxt = tk.Text(self.gameBoardFrame, width=60, height=10, state='disabled')
         self.moveHistoryTxt.pack()
 
-        # # creating another frame - left for grid and right for move history 
-        # gridFrame = tk.Frame(self.gameBoardFrame)
-        # gridFrame.grid(row=0, column=0, padx=10, pady=10)
-
-        # historyFrame = tk.Frame(self.gameBoardFrame)
-        # historyFrame.grid(row=0, column=1, padx=10, pady=10, sticky="n")
-
-        # # Move history label
-        # historyLabel = ttk.Label(historyFrame, text='Move history')
-        # historyLabel.pack(pady=5)
-
-        # # Move history text box
-        # self.moveHistoryTxt = tk.Text(historyFrame, width=30, height=20, state='disabled')
-        # self.moveHistoryTxt.pack()
+        # creating a turn label 
+        self.turnLabel = ttk.Label(
+            self.gameBoardFrame, 
+            text=f'Turn: {self.playGameController.currentTurn}'
+        )
+        self.turnLabel.pack(pady=10)
 
         # creating a back button 
         backBtn = ttk.Button(
@@ -114,28 +108,8 @@ class PlayGameView:
         self.playGameController.makeGrid()
         self.playGameController.makeRegistersAndCards()
     
-
-    def getCoordinates(self):
-        # for the time being, user clicks on a square, I want to get the coordinates of that square 
-        pass 
-
-    def placeObstacles(self):
-       pass  
-    # takes in parameters to place obstacles 
-
-    def createCheckpoints(self):
-        pass 
-    # randomsise it 
-        
-    def startPoint(self):
-        pass 
-
-    def checkWin(self): 
-        pass 
-
-    def moveHistory(self): 
-        pass 
+    def updateTurnLabel(self, turn):
+        self.turnLabel.config(text=f'Turn: {turn}')
     
-    def saveGame(self):
-        pass 
+
 

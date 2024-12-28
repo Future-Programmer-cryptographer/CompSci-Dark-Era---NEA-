@@ -24,10 +24,16 @@ class PlayGameController:
         self.canvas.bind('<Motion>', self.updateCoords)
 
         # animation speed 
-        self.animationSpeed = 100000
+        self.animationSpeed = 500
 
         # move history list - this needs to be displayed by THE VIEW 
         self.moveHistory = []
+
+        # turn counter 
+        self.currentTurn = 1 
+
+        # obstaclessss (pronouced obs-ta-cles - yes, like the greek heros)
+        self.obstacles = set() 
 
         # view initilised here - self is the playGameController
         self.playGameView = PlayGameView(root, canvas, self)
@@ -57,6 +63,9 @@ class PlayGameController:
     
     def backToOptions(self):
         self.playGameView.showOptionWindow() 
+    
+    def placeObstacles(self, obstaclePos):
+        pass 
     
     def makeGrid(self):
         size = 10 
@@ -190,18 +199,66 @@ class PlayGameController:
         return closestRegister
 
     def submitCards(self):
+        commands = [] 
         for i, register, in enumerate(self.registers): 
             card = register['model'].card
             if card: 
-                direction = card.action 
-                steps = card.number 
-                print(f'Regisster {i+1}: {card.action} {card.number}')
-                self.moveRobot(direction, steps)
+                commands.append({
+                    'direction' : card.action, 
+                    'steps': card.number
+                })
             else: 
                 print('Whoops! No cards')
-            
-        # update move history in the view 
-        self.playGameView.updateMoveHistory(self.moveHistory)
+        
+        self.processCommands(commands)
+        
+    
+    # new method to process commands in an order because submitCards and Robot methods were not doing well... 
+    def processCommands(self, commands, index=0):
+        if index < len(commands):
+            command = commands[index]
+            direction = command['direction']
+            steps = command['steps']
+
+            # Start from the robot's current position
+            row, col = self.robotPos
+            startPos = self.convertToRankAndFile(row, col)
+
+            # Calculate the end position
+            if direction == 'Forward':
+                row -= steps
+            elif direction == 'Backward':
+                row += steps
+            elif direction == 'Left':
+                col -= steps
+            elif direction == 'Right':
+                col += steps
+
+            # Ensure position stays within grid bounds
+            row = max(1, min(10, row))
+            col = max(1, min(10, col))
+            endPos = self.convertToRankAndFile(row, col)
+
+            # Add to move history
+            self.moveHistory.append({
+                'turn' : self.currentTurn,
+                'direction': direction,
+                'steps': steps,
+                'start': startPos,
+                'end': endPos
+            })
+
+            # update move history 
+            self.playGameView.updateMoveHistory(self.moveHistory)
+
+            # Move the robot and schedule the next command
+            self.moveRobot(direction, steps)
+            self.canvas.after(steps * self.animationSpeed, self.processCommands, commands, index + 1)
+
+        else: 
+            # okay, so update the turn and new method in playGameView 
+            self.currentTurn += 1 
+            self.playGameView.updateTurnLabel(self.currentTurn)
 
 
     def makeRegistersAndCards(self):
@@ -247,52 +304,41 @@ class PlayGameController:
     
     # this is more like 'animateRobotMoving' but I can't be bothered to refactor... 
     def moveRobot(self, direction, steps, stepCount=0):
-        cell = 20 
-        # get current position 
-        row, col = self.robotPos 
+        cell = 20
+        # Current position
+        row, col = self.robotPos
 
-        # update robot's grid position based on the direction 
+        # Calculate the next step position
         if direction == 'Forward':
-            row -= steps
+            row -= 1
         elif direction == 'Backward':
-            row += steps 
+            row += 1
         elif direction == 'Left':
-            col -= steps 
+            col -= 1
         elif direction == 'Right':
-            col += steps 
-        
-        # make sure robot stays inside the grid - THESE ARE FIXED FOR THE TIME BEING, CAN BE CHANGED
-        row = max(1, min(10,row))
+            col += 1
+
+        # Constrain position within grid
+        row = max(1, min(10, row))
         col = max(1, min(10, col))
+
+        # Update robot position
         self.robotPos = (row, col)
 
-        # calculate new coords 
-        x1 = (col) * cell + cell/4
-        y1 = (row) * cell + cell/4
-        x2 = x1+cell /2
-        y2 = y1+cell /2
+        # Calculate new coordinates
+        x1 = (col) * cell + cell / 4
+        y1 = (row) * cell + cell / 4
+        x2 = x1 + cell / 2
+        y2 = y1 + cell / 2
 
-        # update robot coords on canvas 
+        # Update robot's position on the canvas
         self.canvas.coords(self.robotId, x1, y1, x2, y2)
-        self.canvas.coords(self.robotLabel, (x1+x2)/2, (y1+y2)/2)
+        self.canvas.coords(self.robotLabel, (x1 + x2) / 2, (y1 + y2) / 2)
 
-        # adding to move history - make sure to get it after each card played
-        if stepCount == 0:
-            startPos = self.convertToRankAndFile(*self.robotPos)
-            endPos = self.convertToRankAndFile(row, col)
-            self.moveHistory.append({
-                'direction': direction, 
-                'steps': steps, 
-                'start' : startPos, 
-                'end' : endPos
-            })
+        # Continue animating steps if more remain
+        if stepCount + 1 < steps:
+            self.canvas.after(self.animationSpeed, self.moveRobot, direction, steps, stepCount + 1)
 
-        # update pos after  
-        self.roboPos = (row, col)
-    
-        # animate any further steps 
-        if stepCount +1 < steps: 
-            self.canvas.after(self.animationSpeed, self.moveRobot, direction, steps, stepCount+1)
 
 
 
