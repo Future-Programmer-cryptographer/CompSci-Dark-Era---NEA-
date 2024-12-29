@@ -45,7 +45,14 @@ class PlayGameView:
             steps = move['steps']
             start = move['start']
             end = move['end']
-            self.moveHistoryTxt.insert(tk.END, 
+            collision = move.get('collision', False)
+
+            if collision: 
+                self.moveHistoryTxt.insert(tk.END, 
+                                       f'Obstacle hittt at {end}!! \n')
+
+            else: 
+                self.moveHistoryTxt.insert(tk.END, 
                                        f'{turn}: {steps} steps {direction} from {start} to {end} \n')
         
         self.moveHistoryTxt.configure(state='disabled')
@@ -99,8 +106,12 @@ class PlayGameView:
         )
         backBtn.pack(pady=10)
 
-        # # pack the canvas 
-        # self.canvas.pack(in_=gridFrame, fill=tk.BOTH, expand=True) 
+        # creating a health coutner label 
+        self.healthLabel = ttk.Label(
+            self.gameBoardFrame, 
+            text=f'Health: {self.playGameController.playerHealth}'
+        )
+        self.healthLabel.pack(pady=10)
 
         self.canvas.pack() 
     
@@ -110,6 +121,9 @@ class PlayGameView:
     
     def updateTurnLabel(self, turn):
         self.turnLabel.config(text=f'Turn: {turn}')
+    
+    def updateHealthLabel(self, health):
+        self.healthLabel.config(text=f'Health: {health}')
     
 
 
