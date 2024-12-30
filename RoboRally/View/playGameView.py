@@ -34,28 +34,6 @@ class PlayGameView:
     def showSelectBoardWindow(self):
         self.selectBoardFrame.pack(fill=tk.BOTH)
     
-    def updateMoveHistory(self, history):
-        self.moveHistoryTxt.configure(state='normal')
-        self.moveHistoryTxt.delete(1.0, tk.END)
-
-        # populate the text box 
-        for move in history: 
-            turn = move['turn']
-            direction = move['direction']
-            steps = move['steps']
-            start = move['start']
-            end = move['end']
-            collision = move.get('collision', False)
-
-            if collision: 
-                self.moveHistoryTxt.insert(tk.END, 
-                                       f'Obstacle hittt at {end}!! \n')
-
-            else: 
-                self.moveHistoryTxt.insert(tk.END, 
-                                       f'{turn}: {steps} steps {direction} from {start} to {end} \n')
-        
-        self.moveHistoryTxt.configure(state='disabled')
     
     def showOptionWindow(self): 
 
@@ -81,49 +59,157 @@ class PlayGameView:
 
         self.optionWindowFrame.pack_forget() 
 
-        # creating game board frame
-        self.gameBoardFrame = tk.Frame(self.root)
-        self.gameBoardFrame.pack(fill=tk.BOTH)
-
+        # creating game board frame with GRID layout 
+        self.gameBoardFrame = tk.Frame(self.root, highlightbackground="black",highlightthickness=1)
+        self.gameBoardFrame.pack(fill=tk.BOTH, expand=True)
         self.root.title('Single player' if isSinglePlayer else 'Multiplayer')
 
-        # Move history text box
-        self.moveHistoryTxt = tk.Text(self.gameBoardFrame, width=60, height=10, state='disabled')
-        self.moveHistoryTxt.pack()
+        # config grid layout 
+        # left - move history 
+        # center - game board 
+        # right turn, health, progress, etc 
+        self.gameBoardFrame.columnconfigure(0, weight=1)
+        self.gameBoardFrame.columnconfigure(1, weight=3)
+        self.gameBoardFrame.columnconfigure(2, weight=1)
 
-        # creating a turn label 
+        # move history 
+        moveHistoryFrame = tk.Frame(self.gameBoardFrame, highlightbackground="black",highlightthickness=1)
+        moveHistoryFrame.grid(
+            row=0,
+            column=0, 
+            sticky='ns',
+            padx=5, 
+            pady=5
+        )
+        moveHistoryLabel = ttk.Label(
+            moveHistoryFrame, 
+            text='Move History'
+        )
+        moveHistoryLabel.grid(row=0, column=0, pady=5)
+        self.moveHistoryTxt = tk.Text(moveHistoryFrame, width=60, height=10, state='disabled')
+        self.moveHistoryTxt.grid(row=1, column=0, padx=5, pady=5)
+
+        # Game board 
+        canvasFrame = tk.Frame(self.gameBoardFrame, highlightbackground="blue",highlightthickness=3)
+        canvasFrame.grid(
+            row=0, 
+            column=1, 
+            sticky='news',
+            padx=5, 
+            pady=5
+        )
+        
+        # adding a new canvas to frame cuz previous one was causing issues 
+        self.canvas = tk.Canvas(canvasFrame, width=800, height=600, highlightthickness=1, highlightbackground="black")
+        self.canvas.pack(fill=tk.BOTH, expand=True)
+
+        # Pass the new canvas to the controller
+        self.playGameController.canvas = self.canvas
+
+        # right controls 
+        controlsFrame = tk.Frame(self.gameBoardFrame, highlightbackground="black",highlightthickness=1)
+        controlsFrame.grid(
+            row=0, 
+            column=2, 
+            sticky='ns',
+            padx=5, 
+            pady=5
+        )
+        controlsFrame.columnconfigure(0, weight=1)
+
+        # turn counter - top right 
         self.turnLabel = ttk.Label(
-            self.gameBoardFrame, 
+            controlsFrame, 
             text=f'Turn: {self.playGameController.currentTurn}'
         )
-        self.turnLabel.pack(pady=10)
+        self.turnLabel.grid(row=0, column=2, pady=5)
 
-        # creating a back button 
-        backBtn = ttk.Button(
-            self.root, 
-            text='Back to Options Menu', 
-            command = self.playGameController.backToOptions
-        )
-        backBtn.pack(pady=10)
-
-        # creating a health coutner label 
+        # health counter - middle right
         self.healthLabel = ttk.Label(
-            self.gameBoardFrame, 
+            controlsFrame, 
             text=f'Health: {self.playGameController.playerHealth}'
         )
-        self.healthLabel.pack(pady=10)
+        self.healthLabel.grid(row=1, column=0, pady=5)
 
-        self.canvas.pack() 
-    
-        # make the game grid and registers/cards 
+        # progress bar - middle right 
+        progressLabel = ttk.Label(
+            controlsFrame, 
+            text='Checkpoint Progress',
+        )
+        progressLabel.grid(row=2, column=0, pady=5)
+
+        self.progressBar = ttk.Progressbar(
+            controlsFrame, 
+            orient='horizontal', 
+            length=200, 
+            mode='determinate'
+        )
+        self.progressBar.grid(row=3, column=0, pady=5) 
+        self.progressBar['maximum'] = 3 # currently default for 3 checkpoints 
+        self.progressBar['value'] = 0 
+
+        # registers and cards - bottom right 
+        registerLabel = ttk.Label(
+            controlsFrame, 
+            text='Registers and Cards', 
+        )
+        registerLabel.grid(row=4, column=0, pady=5)
+
+        cardsFrame = tk.Frame(controlsFrame, highlightbackground="black",highlightthickness=1)
+        cardsFrame.grid(row=5, column=0, pady=5)
+        self.playGameController.makeRegistersAndCards() 
+
+        # make the game grid + stuff 
         self.playGameController.makeGrid()
-        self.playGameController.makeRegistersAndCards()
+        self.playGameController.createRobot() # initialse robot on grid 
+        self.playGameController.placeObstacles([(3,3), (4,5), (6,7)]) # gonan randomise placemnet, but this is just for a test 
+        self.playGameController.placeCheckpoints([(1,1), (5,6), (3,8)])
+
+
+        # submit button 
+        submitBtn = ttk.Button(
+            canvasFrame, 
+            text='submit', 
+            command=self.playGameController.submitCards
+        )
+        submitBtn.pack(pady=10)
     
+        # Reset button 
+        resetBtn = ttk.Button(
+            canvasFrame, 
+            text='Reset Cards', 
+            command=self.playGameController.resetCards
+        )
+        resetBtn.pack(pady=10)
+
     def updateTurnLabel(self, turn):
         self.turnLabel.config(text=f'Turn: {turn}')
     
     def updateHealthLabel(self, health):
         self.healthLabel.config(text=f'Health: {health}')
     
+    def updateProgressBar(self, checkpointsReached):
+        self.progressBar['value'] = checkpointsReached
 
+    def updateMoveHistory(self, history):
+        self.moveHistoryTxt.configure(state='normal')
+        self.moveHistoryTxt.delete(1.0, tk.END)
 
+        # populate the text box 
+        for move in history: 
+            turn = move['turn']
+            direction = move['direction']
+            steps = move['steps']
+            start = move['start']
+            end = move['end']
+            collision = move.get('collision', False)
+
+            if collision: 
+                self.moveHistoryTxt.insert(tk.END, 
+                                       f'Obstacle hittt at {end}!! \n')
+
+            else: 
+                self.moveHistoryTxt.insert(tk.END, 
+                                       f'{turn}: {steps} steps {direction} from {start} to {end} \n')
+        
+        self.moveHistoryTxt.configure(state='disabled')

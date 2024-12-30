@@ -7,6 +7,11 @@ from View.playGameView import PlayGameView
 from cardsAndRegisters import model
 from cardsAndRegisters import view
 
+global cell
+cell = 20 
+
+global size 
+size = 10 
 
 class PlayGameController: 
     def __init__(self, root, canvas):
@@ -40,8 +45,32 @@ class PlayGameController:
         self.playerHealth=5 
         self.botHealth = 5 
 
+        # checkpoint stuff 
+        self.checkpoints = [] 
+        self.checkpointsReached = 0 
+        self.totalCheckpoints = 3 
+
         # view initilised here - self is the playGameController
-        self.playGameView = PlayGameView(root, canvas, self)
+        self.playGameView = PlayGameView(root, self.canvas, self)
+    
+    # method to place checkpoints 
+    def placeCheckpoints(self, checkpointPos):
+
+        for row, col in checkpointPos:
+            pass 
+            x1 = col*cell 
+            y1 = row*cell 
+            x2 = x1+cell 
+            y2 = y1+cell 
+
+            self.canvas.create_polygon(
+                x1+cell/2, y1+cell/4, 
+                x1+cell/4, y1+3*cell/4, 
+                x1+3*cell/4, y1+3*cell/4, 
+                fill='green', 
+                outline='black'
+            )
+            self.checkpoints.append((row, col))
     
     # converting to rank and file to help with move histoyr 
     def convertToRankAndFile(self, row, col):
@@ -61,8 +90,6 @@ class PlayGameController:
     
     def onSinglePlayerSelect(self):
         self.playGameView.showGameBoard(isSinglePlayer=True)
-        self.createRobot() # initialse robot on grid 
-        self.placeObstacles([(3,3), (4,5), (6,7)]) # gonan randomise placemnet, but this is just for a test 
     
     def onMultiplayerSelect(self):
         self.playGameView.showGameBoard(isSinglePlayer=False)
@@ -71,7 +98,6 @@ class PlayGameController:
         self.playGameView.showOptionWindow() 
     
     def placeObstacles(self, obstaclePos):
-        cell = 20 
         for row, col in obstaclePos:
             x1 = col*cell 
             y1 = row*cell 
@@ -83,8 +109,6 @@ class PlayGameController:
             self.obstacles.add((row, col))
     
     def makeGrid(self):
-        size = 10 
-        cell = 20
 
         # draw the actual grid 
         for i in range(size):
@@ -253,11 +277,24 @@ class PlayGameController:
                 onComplete=lambda: self.processCommands(commands,index+1))
         else: 
             # end of turn logic 
+            self.checkForCheckpoint()
             self.currentTurn +=1 
             self.playGameView.updateTurnLabel(self.currentTurn)  
 
             # add methods to clear register and cards for next turn 
             self.clearRegisterAndCards()
+        
+    #checking if the robot LANDS on the checkpoint 
+
+    def checkForCheckpoint(self):
+        if self.robotPos in self.checkpoints:
+            # remove checkpoint first 
+            self.checkpoints.remove(self.robotPos)
+            self.checkpointsReached +=1  
+            
+            # update progress bar in the view! 
+            self.playGameView.updateProgressBar(self.checkpointsReached)
+            messagebox.showinfo('Checkpoint reached!', f'Checkpoint reached at {self.convertToRankAndFile(*self.robotPos)}') 
 
     def clearRegisterAndCards(self):
         for cardPair in self.cards: 
@@ -279,27 +316,10 @@ class PlayGameController:
         self.makeRegisters() 
         self.createActionCards() 
 
-        # submit button 
-        submitBtn = ttk.Button(
-            self.root, 
-            text='submit', 
-            command=self.submitCards
-        )
-        submitBtn.pack(pady=10)
-    
-        # Reset button 
-        resetBtn = ttk.Button(
-            self.root, 
-            text='Reset Cards', 
-            command=self.resetCards
-        )
-        resetBtn.pack(pady=10)
-
     # Robot logic stuff begins here 
     def createRobot(self):
         # creating robot on grid, start with initial position
         self.robotPos = (5,5) 
-        cell = 20 
 
         # calculat corners of the cell 
         x1 = (self.robotPos[1] * cell + cell/4)
