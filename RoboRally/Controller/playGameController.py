@@ -2,16 +2,17 @@ import tkinter as tk
 from tkinter import ttk 
 from tkinter import messagebox
 import random 
+import time 
 
 from View.playGameView import PlayGameView
 from cardsAndRegisters import model
 from cardsAndRegisters import view
 
 global cell
-cell = 20 
+cell = 25 
 
 global size 
-size = 10 
+size = 20 
 
 class PlayGameController: 
     def __init__(self, root, canvas):
@@ -34,9 +35,11 @@ class PlayGameController:
 
         # move history list - this needs to be displayed by THE VIEW 
         self.moveHistory = []
+        self.botMoveHistory = [] # separate move histoyr for the bot? 
 
         # turn counter 
         self.currentTurn = 1 
+        self.isBotTurn = False 
 
         # obstaclessss (pronouced obs-ta-cles - yes, like the greek heros)
         self.obstacles = set() 
@@ -52,6 +55,18 @@ class PlayGameController:
 
         # view initilised here - self is the playGameController
         self.playGameView = PlayGameView(root, self.canvas, self)
+    
+    # bot moves - pretty random tbh... 
+    def generateBotMoves(self):
+        directions = ['Forward', 'Backward', 'Left', 'Right']
+        botCommands = [] 
+
+        for _ in range(3):
+            direction = random.choice(directions)
+            steps = random.randint(1,3)
+            botCommands.append({'direction': direction, 'steps':steps})
+        return botCommands
+
     
     # method to place checkpoints 
     def placeCheckpoints(self, checkpointPos):
@@ -127,7 +142,7 @@ class PlayGameController:
             file = chr(65+col) # convert 0-9 to letters 
             self.canvas.create_text(x,y,text=file) 
         
-        # number labels 
+        # steps labels 
         for row in range(size):
             x = cell / 2 
             y = (row+1) * cell + cell / 2 
@@ -136,13 +151,13 @@ class PlayGameController:
         
         
     def createActionCards(self):
-        actions = ['Forward', 'Backward', 'Left', 'Right', 'Forward', 'Backward']
+        directions = ['Forward', 'Backward', 'Left', 'Right', 'Forward', 'Backward']
         for i in range(5):
-            action = random.choice(actions)
-            number = random.randint(1,3) 
+            direction = random.choice(directions)
+            steps = random.randint(1,3) 
 
             # creating the model 
-            cardModel = model.CardModel(action, number)
+            cardModel = model.CardModel(direction, steps)
 
             # creating the card view 
             cardView = view.CardView(
@@ -151,7 +166,7 @@ class PlayGameController:
                 y=400, 
                 width = 100, 
                 height=50,
-                text =f'{action} {number}'
+                text =f'{direction} {steps}'
             ) 
 
             # storing model and view in controller (as a dictionary)
@@ -243,8 +258,8 @@ class PlayGameController:
             card = register['model'].card
             if card: 
                 commands.append({
-                    'direction' : card.action, 
-                    'steps': card.number
+                    'direction' : card.direction, 
+                    'steps': card.steps
                 })
             else: 
                 print('Whoops! No cards')
@@ -259,9 +274,17 @@ class PlayGameController:
             direction = command['direction']
             steps = command['steps']
 
+            # check current robot status 
+            if self.isBotTurn:
+                robotPos = self.botPos
+                moveHistory = self.botMoveHistory
+            else: 
+                robotPos = self.playerPos
+                moveHistory = self.moveHistory
+
             # Add to move history start point
-            startPos = self.convertToRankAndFile(*self.robotPos)
-            self.moveHistory.append({
+            startPos = self.convertToRankAndFile(*robotPos)
+            moveHistory.append({
                 'turn': self.currentTurn,
                 'direction': direction,
                 'steps': steps,
@@ -276,25 +299,33 @@ class PlayGameController:
                 stepCount=0, 
                 onComplete=lambda: self.processCommands(commands,index+1))
         else: 
-            # end of turn logic 
-            self.checkForCheckpoint()
-            self.currentTurn +=1 
-            self.playGameView.updateTurnLabel(self.currentTurn)  
+            if not self.isBotTurn: 
 
-            # add methods to clear register and cards for next turn 
-            self.clearRegisterAndCards()
-        
+                # end of turn logic 
+                self.checkForCheckpoint()
+                self.clearRegisterAndCards()
+
+                # bot turn should start once the player turn finishes! 
+                self.isBotTurn = True
+                time.sleep(3)
+                botCommands = self.generateBotMoves()
+                self.processCommands(botCommands)
+
+            else: 
+                self.isBotTurn = False
+                self.currentTurn +=1 
+                self.playGameView.updateTurnLabel(self.currentTurn)
+
     #checking if the robot LANDS on the checkpoint 
-
     def checkForCheckpoint(self):
-        if self.robotPos in self.checkpoints:
+        if self.playerPos in self.checkpoints:
             # remove checkpoint first 
-            self.checkpoints.remove(self.robotPos)
+            self.checkpoints.remove(self.playerPos)
             self.checkpointsReached +=1  
             
             # update progress bar in the view! 
             self.playGameView.updateProgressBar(self.checkpointsReached)
-            messagebox.showinfo('Checkpoint reached!', f'Checkpoint reached at {self.convertToRankAndFile(*self.robotPos)}') 
+            messagebox.showinfo('Checkpoint reached!', f'Checkpoint reached at {self.convertToRankAndFile(*self.playerPos)}') 
 
     def clearRegisterAndCards(self):
         for cardPair in self.cards: 
@@ -319,27 +350,56 @@ class PlayGameController:
     # Robot logic stuff begins here 
     def createRobot(self):
         # creating robot on grid, start with initial position
-        self.robotPos = (5,5) 
+        self.playerPos = (5,5) 
 
         # calculat corners of the cell 
-        x1 = (self.robotPos[1] * cell + cell/4)
-        y1 = (self.robotPos[0] * cell + cell/4)
+        x1 = (self.playerPos[1] * cell + cell/4)
+        y1 = (self.playerPos[0] * cell + cell/4)
         x2 = x1 + cell /2
         y2 = y1 + cell /2
 
         # draw the robot 
-        self.robotId = self.canvas.create_oval(x1, y1, x2, y2, fill='light blue')
-        self.robotLabel = self.canvas.create_text(
+        self.playerId = self.canvas.create_oval(x1, y1, x2, y2, fill='light blue')
+        self.playerLabel = self.canvas.create_text(
             (x1+x2)/2, 
             (y1+y2)/2, 
-            text='S'
+            text='P'
+        )
+
+        # Bot robot 
+        self.botPos = (8,8)
+        x1 = (self.botPos[1] * cell + cell/4)
+        y1 = (self.botPos[0] * cell + cell/4)
+        x2 = x1 + cell /2
+        y2 = y1 + cell /2
+
+        self.botId = self.canvas.create_oval(x1, y1, x2, y2, fill='red')
+        self.botLabel = self.canvas.create_text(
+            (x1+x2)/2, 
+            (y1+y2)/2, 
+            text='B'
         )
     
     # this is more like 'animateRobotMoving' but I can't be bothered to refactor... 
     def moveRobot(self, direction, steps, stepCount=0, onComplete=None):
-        cell = 20
+
+        # First need to check which bot is moving 
+        if self.isBotTurn:
+            robotPos = self.botPos
+            health = self.botHealth 
+            history = self.botMoveHistory
+            id = self.botId
+            label = self.botLabel
+        
+        else:
+            robotPos = self.playerPos
+            health = self.playerHealth
+            history = self.moveHistory 
+            id = self.playerId
+            label = self.playerLabel
+
         # Current position
-        row, col = self.robotPos
+        row, col = robotPos
 
         # Calculate the next step position
         if direction == 'Forward':
@@ -358,23 +418,24 @@ class PlayGameController:
         # check for obstacles 
         if (row, col) in self.obstacles:
             # Update health and move history for collision
-            self.playerHealth -= 1
-            self.playGameView.updateHealthLabel(self.playerHealth)
+            health -=1 
+            history[-1]['end'] = self.convertToRankAndFile(row, col)
+            history[-1]['collision'] = True
+            self.playGameView.updateHealthLabel(isBot=self.isBotTurn)
 
-            # Update move history to mark collision
-            self.moveHistory[-1]['end'] = self.convertToRankAndFile(row, col)
-            self.moveHistory[-1]['collision'] = True
-            self.playGameView.updateMoveHistory(self.moveHistory)
-
-            # messagebox alert 
-            messagebox.showinfo('Obstacle!', f'Robot hit obstacle at {self.convertToRankAndFile(row, col)}!')
-
-            # Stop moving on collision
-            self.clearRegisterAndCards() 
+            messagebox.showinfo(
+                "Collision!",
+                f"{'Bot' if self.isBotTurn else 'Player'} hit an obstacle!"
+            )
+            if onComplete:
+                onComplete()
             return
 
         # Update robot position
-        self.robotPos = (row, col)
+        if self.isBotTurn:
+            self.botPos = (row, col)
+        else: 
+            self.playerPos = (row, col)
 
         # Calculate new coordinates
         x1 = (col) * cell + cell / 4
@@ -383,8 +444,8 @@ class PlayGameController:
         y2 = y1 + cell / 2
 
         # Update robot's position on the canvas
-        self.canvas.coords(self.robotId, x1, y1, x2, y2)
-        self.canvas.coords(self.robotLabel, (x1 + x2) / 2, (y1 + y2) / 2)
+        self.canvas.coords(id, x1, y1, x2, y2)
+        self.canvas.coords(label, (x1 + x2) / 2, (y1 + y2) / 2)
 
         # Continue animating steps if more remain
         if stepCount + 1 < steps:
@@ -398,8 +459,8 @@ class PlayGameController:
 
         else: 
             # update move history 
-            self.moveHistory[-1]['end'] = self.convertToRankAndFile(row,col)
-            self.playGameView.updateMoveHistory(self.moveHistory)
+            history[-1]['end'] = self.convertToRankAndFile(row,col)
+            self.playGameView.updateMoveHistory(history, isBot=self.isBotTurn)
 
             # calling onComplete 
             if onComplete: 

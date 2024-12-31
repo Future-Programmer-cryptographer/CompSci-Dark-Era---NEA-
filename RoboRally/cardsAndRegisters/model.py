@@ -1,7 +1,7 @@
 class CardModel: 
-    def __init__(self, action, number):
-        self.action = action # being forward, backward, left, right
-        self.number = number # being 1,2,3 of each of the action 
+    def __init__(self, direction, steps):
+        self.direction = direction # being forward, backward, left, right
+        self.steps = steps # being 1,2,3 of each of the action 
     
 
 

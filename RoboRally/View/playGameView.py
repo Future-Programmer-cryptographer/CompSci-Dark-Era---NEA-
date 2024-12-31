@@ -69,7 +69,7 @@ class PlayGameView:
         # center - game board 
         # right turn, health, progress, etc 
         self.gameBoardFrame.columnconfigure(0, weight=1)
-        self.gameBoardFrame.columnconfigure(1, weight=3)
+        self.gameBoardFrame.columnconfigure(1, weight=2)
         self.gameBoardFrame.columnconfigure(2, weight=1)
 
         # move history 
@@ -88,6 +88,9 @@ class PlayGameView:
         moveHistoryLabel.grid(row=0, column=0, pady=5)
         self.moveHistoryTxt = tk.Text(moveHistoryFrame, width=60, height=10, state='disabled')
         self.moveHistoryTxt.grid(row=1, column=0, padx=5, pady=5)
+
+        self.botMoveHistoryTxt = tk.Text(moveHistoryFrame, width=60, height=10, state='disabled')
+        self.botMoveHistoryTxt.grid(row=2, column=0, padx=5, pady=5)
 
         # Game board 
         canvasFrame = tk.Frame(self.gameBoardFrame, highlightbackground="blue",highlightthickness=3)
@@ -122,41 +125,47 @@ class PlayGameView:
             controlsFrame, 
             text=f'Turn: {self.playGameController.currentTurn}'
         )
-        self.turnLabel.grid(row=0, column=2, pady=5)
+        self.turnLabel.grid(row=0, column=0, pady=5)
 
         # health counter - middle right
         self.healthLabel = ttk.Label(
             controlsFrame, 
-            text=f'Health: {self.playGameController.playerHealth}'
+            text=f'Player Health: {self.playGameController.playerHealth}'
         )
         self.healthLabel.grid(row=1, column=0, pady=5)
+
+        self.botHealthLabel = ttk.Label(
+            controlsFrame, 
+            text=f'Bot Health: {self.playGameController.botHealth}'
+        )
+        self.botHealthLabel.grid(row=2, column=0, pady=5)
 
         # progress bar - middle right 
         progressLabel = ttk.Label(
             controlsFrame, 
             text='Checkpoint Progress',
         )
-        progressLabel.grid(row=2, column=0, pady=5)
+        progressLabel.grid(row=3, column=0, pady=5)
 
         self.progressBar = ttk.Progressbar(
             controlsFrame, 
             orient='horizontal', 
-            length=200, 
+            length=150, 
             mode='determinate'
         )
-        self.progressBar.grid(row=3, column=0, pady=5) 
+        self.progressBar.grid(row=4, column=0, padx=5, pady=5) 
         self.progressBar['maximum'] = 3 # currently default for 3 checkpoints 
         self.progressBar['value'] = 0 
 
-        # registers and cards - bottom right 
-        registerLabel = ttk.Label(
-            controlsFrame, 
-            text='Registers and Cards', 
-        )
-        registerLabel.grid(row=4, column=0, pady=5)
+        # # registers and cards - bottom right 
+        # registerLabel = ttk.Label(
+        #     controlsFrame, 
+        #     text='Registers and Cards', 
+        # )
+        # registerLabel.grid(row=4, column=0, pady=5)
 
-        cardsFrame = tk.Frame(controlsFrame, highlightbackground="black",highlightthickness=1)
-        cardsFrame.grid(row=5, column=0, pady=5)
+        # cardsFrame = tk.Frame(controlsFrame, highlightbackground="black",highlightthickness=1)
+        # cardsFrame.grid(row=5, column=0, pady=5)
         self.playGameController.makeRegistersAndCards() 
 
         # make the game grid + stuff 
@@ -185,15 +194,22 @@ class PlayGameView:
     def updateTurnLabel(self, turn):
         self.turnLabel.config(text=f'Turn: {turn}')
     
-    def updateHealthLabel(self, health):
-        self.healthLabel.config(text=f'Health: {health}')
+    def updateHealthLabel(self, isBot=False):
+        if isBot:
+            self.botHealthLabel.config(
+                text=f"Bot Health: {self.playGameController.botHealth}")
+        else:
+            self.healthLabel.config(
+                text=f"Player Health: {self.playGameController.playerHealth}")
+
     
     def updateProgressBar(self, checkpointsReached):
         self.progressBar['value'] = checkpointsReached
 
-    def updateMoveHistory(self, history):
-        self.moveHistoryTxt.configure(state='normal')
-        self.moveHistoryTxt.delete(1.0, tk.END)
+    def updateMoveHistory(self, history, isBot=False):
+        textBox = self.botMoveHistoryTxt if isBot else self.moveHistoryTxt
+        textBox.configure(state='normal')
+        textBox.delete(1.0, tk.END)
 
         # populate the text box 
         for move in history: 
@@ -205,11 +221,11 @@ class PlayGameView:
             collision = move.get('collision', False)
 
             if collision: 
-                self.moveHistoryTxt.insert(tk.END, 
+                textBox.insert(tk.END, 
                                        f'Obstacle hittt at {end}!! \n')
 
             else: 
-                self.moveHistoryTxt.insert(tk.END, 
+                textBox.insert(tk.END, 
                                        f'{turn}: {steps} steps {direction} from {start} to {end} \n')
         
-        self.moveHistoryTxt.configure(state='disabled')
+        textBox.configure(state='disabled')
