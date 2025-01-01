@@ -9,10 +9,16 @@ from cardsAndRegisters import model
 from cardsAndRegisters import view
 
 global cell
-cell = 25 
+cell = 50
 
 global size 
-size = 20 
+size = 10 
+
+global checkpointCount 
+checkpointCount = 5 
+
+global obstacleCount 
+obstacleCount = 5 
 
 class PlayGameController: 
     def __init__(self, root, canvas):
@@ -22,16 +28,12 @@ class PlayGameController:
         self.canvas = canvas 
         self.cards = [] 
         self.registers = [] 
-        
-        # coords display label 
-        self.coordsLabel = ttk.Label(root, text='Coords: (0,0)')
-        self.coordsLabel.pack() 
-
-        # bind motion to show coords 
-        self.canvas.bind('<Motion>', self.updateCoords)
 
         # animation speed 
         self.animationSpeed = 500
+
+        # checkpoint 
+        self.checkpointCount = checkpointCount
 
         # move history list - this needs to be displayed by THE VIEW 
         self.moveHistory = []
@@ -51,7 +53,7 @@ class PlayGameController:
         # checkpoint stuff 
         self.checkpoints = [] 
         self.checkpointsReached = 0 
-        self.totalCheckpoints = 3 
+        self.totalCheckpoints = checkpointCount
 
         # view initilised here - self is the playGameController
         self.playGameView = PlayGameView(root, self.canvas, self)
@@ -67,9 +69,34 @@ class PlayGameController:
             botCommands.append({'direction': direction, 'steps':steps})
         return botCommands
 
+    # would be nice to be able to place random checkpoints and obstacles 
+    def generateRandomSquares(self, count, exclude=None):
+        exclude = exclude or [] 
+        positions = set() 
+        while len(positions) < count: 
+            row = random.randint(1, size-1)
+            col = random.randint(1, size-1)
+            if (row, col) not in exclude and (row,col) not in positions:
+                positions.add((row, col))
+        
+        return list(positions)
+
+
+    def placeCheckpointsAndObstacles(self):
+        exclude = [self.playerPos, self.botPos]
+
+        obstacles = self.generateRandomSquares(obstacleCount, exclude)
+        exclude += obstacles # haha, this is so that obstacles and checkpoints don't overlap!! 
+
+        checkpoints = self.generateRandomSquares(checkpointCount, exclude)
+
+        self.placeObstacles(obstacles)
+        self.placeCheckpoints(checkpoints)
+
     
     # method to place checkpoints 
     def placeCheckpoints(self, checkpointPos):
+        self.checkpointIds = {} 
 
         for row, col in checkpointPos:
             pass 
@@ -78,13 +105,14 @@ class PlayGameController:
             x2 = x1+cell 
             y2 = y1+cell 
 
-            self.canvas.create_polygon(
+            checkpointId = self.canvas.create_polygon(
                 x1+cell/2, y1+cell/4, 
                 x1+cell/4, y1+3*cell/4, 
                 x1+3*cell/4, y1+3*cell/4, 
                 fill='green', 
                 outline='black'
             )
+            self.checkpointIds[(row, col)] = checkpointId
             self.checkpoints.append((row, col))
     
     # converting to rank and file to help with move histoyr 
@@ -92,10 +120,6 @@ class PlayGameController:
         rank = chr(64+col)
         file = row 
         return f'{rank}{file}'
-    
-    def updateCoords(self, event):
-        x,y = event.x, event.y
-        self.coordsLabel.config(text=f'Moues at :({x}, {y})')
 
     def initialiseView(self, root):
         self.playGameView.showSelectBoardWindow() 
@@ -150,32 +174,30 @@ class PlayGameController:
             self.canvas.create_text(x,y,text=rank)
         
         
-    def createActionCards(self):
+    def createActionCards(self, canvas):
         directions = ['Forward', 'Backward', 'Left', 'Right', 'Forward', 'Backward']
         for i in range(5):
             direction = random.choice(directions)
-            steps = random.randint(1,3) 
+            steps = random.randint(1, 3)
 
-            # creating the model 
             cardModel = model.CardModel(direction, steps)
-
-            # creating the card view 
             cardView = view.CardView(
-                self.canvas, 
-                x=100 + i * 150, 
-                y=400, 
-                width = 100, 
+                canvas,
+                x=5 + i * 80,
+                y=150,  # Adjust as needed
+                width=75,
                 height=50,
-                text =f'{direction} {steps}'
-            ) 
+                text=f"{direction} {steps}"
+            )
+
 
             # storing model and view in controller (as a dictionary)
             self.cards.append({'model':cardModel, 'view':cardView})
 
             # binding drag n drop stuff 
-            self.canvas.tag_bind(cardView.cardId, '<ButtonPress-1>', lambda e, card=cardView: self.startDrag(e, card))
-            self.canvas.tag_bind(cardView.cardId, '<B1-Motion>', lambda e, card=cardView: self.continueDrag(e, card))
-            self.canvas.tag_bind(cardView.cardId, '<ButtonRelease-1>', lambda e, card=cardView: self.endDrag(e, card))
+            canvas.tag_bind(cardView.cardId, '<ButtonPress-1>', lambda e, card=cardView: self.startDrag(e, card))
+            canvas.tag_bind(cardView.cardId, '<B1-Motion>', lambda e, card=cardView: self.continueDrag(e, card))
+            canvas.tag_bind(cardView.cardId, '<ButtonRelease-1>', lambda e, card=cardView: self.endDrag(e, card))
 
             # storing starting coords in case of a reset 
             cardView.start_x = 100+i*150
@@ -189,17 +211,19 @@ class PlayGameController:
             dy = cardView.start_y - current_y
             cardView.move(dx,dy)
         
-    def makeRegisters(self):
+    def makeRegisters(self, canvas):
         for i in range(3):
-            registerModel = model.RegisterModel() 
+            registerModel = model.RegisterModel()
             registerView = view.RegisterView(
-                self.canvas, 
-                x= 50 + i * 150, 
-                y=300, 
-                width=100, 
-                height=50
+                canvas,
+                x=40 + i * 150,
+                y=50,  # Adjust as needed
+                width=75,
+                height=50,
+                colour='black'
             )
-            self.registers.append({'model':registerModel, 'view':registerView})
+            self.registers.append({'model': registerModel, 'view': registerView})
+
 
 
     # Logic for drag and drop here 
@@ -307,8 +331,8 @@ class PlayGameController:
 
                 # bot turn should start once the player turn finishes! 
                 self.isBotTurn = True
-                time.sleep(3)
                 botCommands = self.generateBotMoves()
+                time.sleep(2)
                 self.processCommands(botCommands)
 
             else: 
@@ -321,38 +345,51 @@ class PlayGameController:
         if self.playerPos in self.checkpoints:
             # remove checkpoint first 
             self.checkpoints.remove(self.playerPos)
+
+            # delete checkpoint 
+            checkpointId = self.checkpointIds.pop(self.playerPos, None)
+            if checkpointId:
+                self.canvas.delete(checkpointId)
+
             self.checkpointsReached +=1  
+
             
             # update progress bar in the view! 
             self.playGameView.updateProgressBar(self.checkpointsReached)
             messagebox.showinfo('Checkpoint reached!', f'Checkpoint reached at {self.convertToRankAndFile(*self.playerPos)}') 
 
     def clearRegisterAndCards(self):
+        canvas = self.playGameView.cardsCanvas
+
         for cardPair in self.cards: 
             cardView = cardPair['view']
-            self.canvas.delete(cardView.cardId)
-            self.canvas.delete(cardView.textId)
+            canvas.delete(cardView.cardId)
+            canvas.delete(cardView.textId)
         self.cards =[]
-        self.createActionCards() 
+        self.createActionCards(canvas) 
 
         for register in self.registers:
             register['model'].card = None 
         self.registers = [] 
 
-        self.makeRegisters()         
+        self.makeRegisters(canvas)         
 
 
-    def makeRegistersAndCards(self):
+    def makeRegistersAndCards(self, canvas):
         # create empty registers 
-        self.makeRegisters() 
-        self.createActionCards() 
+        self.makeRegisters(canvas) 
+        self.createActionCards(canvas) 
 
     # Robot logic stuff begins here 
     def createRobot(self):
-        # creating robot on grid, start with initial position
-        self.playerPos = (5,5) 
+        # creating robots on grid, start with initial position
+        exclude = self.checkpoints + list(self.obstacles)
+
+        playerStart = self.generateRandomSquares(1, exclude)[0]
+        botStart = self.generateRandomSquares(1, exclude)[0]
 
         # calculat corners of the cell 
+        self.playerPos = playerStart
         x1 = (self.playerPos[1] * cell + cell/4)
         y1 = (self.playerPos[0] * cell + cell/4)
         x2 = x1 + cell /2
@@ -367,7 +404,7 @@ class PlayGameController:
         )
 
         # Bot robot 
-        self.botPos = (8,8)
+        self.botPos = botStart 
         x1 = (self.botPos[1] * cell + cell/4)
         y1 = (self.botPos[0] * cell + cell/4)
         x2 = x1 + cell /2
@@ -421,7 +458,7 @@ class PlayGameController:
             health -=1 
             history[-1]['end'] = self.convertToRankAndFile(row, col)
             history[-1]['collision'] = True
-            self.playGameView.updateHealthLabel(isBot=self.isBotTurn)
+            self.playGameView.updateHealthLabel(health, isBot=self.isBotTurn)
 
             messagebox.showinfo(
                 "Collision!",

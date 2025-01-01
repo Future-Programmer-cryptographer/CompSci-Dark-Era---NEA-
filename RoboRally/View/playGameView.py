@@ -65,48 +65,35 @@ class PlayGameView:
         self.root.title('Single player' if isSinglePlayer else 'Multiplayer')
 
         # config grid layout 
-        # left - move history 
-        # center - game board 
-        # right turn, health, progress, etc 
         self.gameBoardFrame.columnconfigure(0, weight=1)
         self.gameBoardFrame.columnconfigure(1, weight=2)
-        self.gameBoardFrame.columnconfigure(2, weight=1)
+        self.gameBoardFrame.columnconfigure(2, weight=2)
 
         # move history 
         moveHistoryFrame = tk.Frame(self.gameBoardFrame, highlightbackground="black",highlightthickness=1)
         moveHistoryFrame.grid(
             row=0,
             column=0, 
-            sticky='ns',
-            padx=5, 
-            pady=5
-        )
-        moveHistoryLabel = ttk.Label(
-            moveHistoryFrame, 
-            text='Move History'
-        )
-        moveHistoryLabel.grid(row=0, column=0, pady=5)
-        self.moveHistoryTxt = tk.Text(moveHistoryFrame, width=60, height=10, state='disabled')
-        self.moveHistoryTxt.grid(row=1, column=0, padx=5, pady=5)
-
-        self.botMoveHistoryTxt = tk.Text(moveHistoryFrame, width=60, height=10, state='disabled')
-        self.botMoveHistoryTxt.grid(row=2, column=0, padx=5, pady=5)
-
-        # Game board 
-        canvasFrame = tk.Frame(self.gameBoardFrame, highlightbackground="blue",highlightthickness=3)
-        canvasFrame.grid(
-            row=0, 
-            column=1, 
             sticky='news',
             padx=5, 
             pady=5
         )
-        
-        # adding a new canvas to frame cuz previous one was causing issues 
-        self.canvas = tk.Canvas(canvasFrame, width=800, height=600, highlightthickness=1, highlightbackground="black")
-        self.canvas.pack(fill=tk.BOTH, expand=True)
+        moveHistoryLabel = ttk.Label(moveHistoryFrame, text='Move History')
+        moveHistoryLabel.grid(row=0, column=0, pady=5)
+        self.moveHistoryTxt = tk.Text(moveHistoryFrame, width=40, height=15, state='disabled')
+        self.moveHistoryTxt.grid(row=1, column=0, padx=5, pady=5)
 
-        # Pass the new canvas to the controller
+        self.botMoveHistoryTxt = tk.Text(moveHistoryFrame, width=40, height=15, state='disabled')
+        self.botMoveHistoryTxt.grid(row=2, column=0, padx=5, pady=5)
+
+
+        # Game board canvas
+        canvasFrame = tk.Frame(self.gameBoardFrame, highlightbackground="blue", highlightthickness=3)
+        canvasFrame.grid(
+            row=0, column=1, sticky="nsew", padx=5, pady=5
+        )
+        self.canvas = tk.Canvas(canvasFrame, width=500, height=600, highlightthickness=1, highlightbackground="black")
+        self.canvas.pack(fill=tk.BOTH, expand=True)
         self.playGameController.canvas = self.canvas
 
         # right controls 
@@ -114,93 +101,69 @@ class PlayGameView:
         controlsFrame.grid(
             row=0, 
             column=2, 
-            sticky='ns',
+            sticky='news',
             padx=5, 
             pady=5
         )
-        controlsFrame.columnconfigure(0, weight=1)
+        controlsFrame.columnconfigure(0, weight=2)
 
-        # turn counter - top right 
-        self.turnLabel = ttk.Label(
-            controlsFrame, 
-            text=f'Turn: {self.playGameController.currentTurn}'
+        # Register and Cards Frame
+        cardsAndRegistersFrame = tk.Frame(controlsFrame, highlightbackground="black", highlightthickness=2)
+        cardsAndRegistersFrame.grid(
+            row=5, column=0, sticky="nsew", padx=5, pady=5
         )
+        cardsAndRegistersFrame.columnconfigure(0, weight=1)
+
+        # Create a canvas inside the registers and cards frame
+        self.cardsCanvas = tk.Canvas(cardsAndRegistersFrame, width=400, height=300, bg="white", highlightthickness=1)
+        self.cardsCanvas.pack(fill=tk.BOTH, expand=False)
+
+        # Call makeRegistersAndCards
+        self.playGameController.makeRegistersAndCards(self.cardsCanvas)
+        # turn counter - top right 
+        self.turnLabel = ttk.Label(controlsFrame, text=f'Turn: {self.playGameController.currentTurn}')
         self.turnLabel.grid(row=0, column=0, pady=5)
 
         # health counter - middle right
-        self.healthLabel = ttk.Label(
-            controlsFrame, 
-            text=f'Player Health: {self.playGameController.playerHealth}'
-        )
+        self.healthLabel = ttk.Label(controlsFrame, text=f'Player Health: {self.playGameController.playerHealth}')
         self.healthLabel.grid(row=1, column=0, pady=5)
 
-        self.botHealthLabel = ttk.Label(
-            controlsFrame, 
-            text=f'Bot Health: {self.playGameController.botHealth}'
-        )
+        self.botHealthLabel = ttk.Label(controlsFrame, text=f'Bot Health: {self.playGameController.botHealth}')
         self.botHealthLabel.grid(row=2, column=0, pady=5)
 
         # progress bar - middle right 
-        progressLabel = ttk.Label(
-            controlsFrame, 
-            text='Checkpoint Progress',
-        )
+        progressLabel = ttk.Label(controlsFrame, text='Checkpoint Progress',)
         progressLabel.grid(row=3, column=0, pady=5)
 
-        self.progressBar = ttk.Progressbar(
-            controlsFrame, 
-            orient='horizontal', 
-            length=150, 
-            mode='determinate'
-        )
+        self.progressBar = ttk.Progressbar(controlsFrame, orient='horizontal', length=150, mode='determinate')
         self.progressBar.grid(row=4, column=0, padx=5, pady=5) 
-        self.progressBar['maximum'] = 3 # currently default for 3 checkpoints 
+        self.progressBar['maximum'] = self.playGameController.checkpointCount # currently default for 3 checkpoints 
         self.progressBar['value'] = 0 
-
-        # # registers and cards - bottom right 
-        # registerLabel = ttk.Label(
-        #     controlsFrame, 
-        #     text='Registers and Cards', 
-        # )
-        # registerLabel.grid(row=4, column=0, pady=5)
-
-        # cardsFrame = tk.Frame(controlsFrame, highlightbackground="black",highlightthickness=1)
-        # cardsFrame.grid(row=5, column=0, pady=5)
-        self.playGameController.makeRegistersAndCards() 
 
         # make the game grid + stuff 
         self.playGameController.makeGrid()
         self.playGameController.createRobot() # initialse robot on grid 
-        self.playGameController.placeObstacles([(3,3), (4,5), (6,7)]) # gonan randomise placemnet, but this is just for a test 
-        self.playGameController.placeCheckpoints([(1,1), (5,6), (3,8)])
+        self.playGameController.placeCheckpointsAndObstacles() 
 
 
         # submit button 
-        submitBtn = ttk.Button(
-            canvasFrame, 
-            text='submit', 
-            command=self.playGameController.submitCards
-        )
-        submitBtn.pack(pady=10)
+        submitBtn = ttk.Button(controlsFrame, text='submit', command=self.playGameController.submitCards)
+        submitBtn.grid(row=6, column=0, pady=5)
     
         # Reset button 
-        resetBtn = ttk.Button(
-            canvasFrame, 
-            text='Reset Cards', 
-            command=self.playGameController.resetCards
-        )
-        resetBtn.pack(pady=10)
+        resetBtn = ttk.Button(controlsFrame, text='Reset Cards', command=self.playGameController.resetCards)
+        resetBtn.grid(row=7, column=0, pady=5)
 
     def updateTurnLabel(self, turn):
         self.turnLabel.config(text=f'Turn: {turn}')
     
-    def updateHealthLabel(self, isBot=False):
+    def updateHealthLabel(self, health, isBot=False):
         if isBot:
             self.botHealthLabel.config(
-                text=f"Bot Health: {self.playGameController.botHealth}")
+                text=f"Bot Health: {health}")
         else:
             self.healthLabel.config(
-                text=f"Player Health: {self.playGameController.playerHealth}")
+                text=f"Player Health: {health}")
 
     
     def updateProgressBar(self, checkpointsReached):
