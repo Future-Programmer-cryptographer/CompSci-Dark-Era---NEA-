@@ -11,12 +11,12 @@ class CardView:
                                               text=text,
                                               anchor='center')
 
-    def move(self, dx,dy):
-        self.canvas.move(self.cardId, dx, dy)
-        self.canvas.move(self.textId, dx, dy)
+    def move(self, canvas, dx,dy):
+        canvas.move(self.cardId, dx, dy)
+        canvas.move(self.textId, dx, dy)
     
-    def getPosition(self):
-        coords = self.canvas.coords(self.cardId) # this will return [x1, y1, x2,y2]
+    def getPosition(self, canvas):
+        coords = canvas.coords(self.cardId) # this will return [x1, y1, x2,y2]
         x,y = coords[0], coords[1]
         return x,y 
     

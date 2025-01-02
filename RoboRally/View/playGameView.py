@@ -142,9 +142,7 @@ class PlayGameView:
 
         # make the game grid + stuff 
         self.playGameController.makeGrid()
-        self.playGameController.createRobot() # initialse robot on grid 
-        self.playGameController.placeCheckpointsAndObstacles() 
-
+        #self.playGameController.createRobot() # initialse robot on grid 
 
         # submit button 
         submitBtn = ttk.Button(controlsFrame, text='submit', command=self.playGameController.submitCards)
