@@ -90,7 +90,11 @@ class PlayGameController:
 
     def placeCheckpointsAndObstacles(self):
         # Start with positions already taken by checkpoints, obstacles, and players
-        exclude = set(self.multiplayerPos + list(self.obstacles)+ [self.playerPos, self.botPos])
+        if self.isMultiplayer:
+            exclude = set(self.multiplayerPos + list(self.obstacles))  # Multiplayer robots
+        else:
+            exclude = set([self.playerPos, self.botPos] + list(self.obstacles))  # Single-player positions
+
 
         # Generate obstacles
         obstacles = self.generateRandomSquares(obstacleCount, exclude)
@@ -341,7 +345,12 @@ class PlayGameController:
             else: 
                 print('Whoops! No cards')
         
-        self.processCommands(commands, isBot=False, onComplete=self.handleBotTurn)
+        if self.isMultiplayer:
+            # Process only the active player's commands
+            self.processCommands(commands, isBot=False, onComplete=self.endTurn)
+        else:
+            # Single-player: handle bot after player
+            self.processCommands(commands, isBot=False, onComplete=self.handleBotTurn)
 
     def handleBotTurn(self):
         if not self.isMultiplayer:
@@ -349,11 +358,20 @@ class PlayGameController:
             self.processCommands(botCommands, isBot=True, onComplete=self.endTurn)
         
     def endTurn(self):
-        self.currentTurn += 1
-        self.playGameView.updateTurnLabel(self.currentTurn)
+        if self.isMultiplayer:
+            # Rotate to the next player
+            self.currentPlayerIdx = (self.currentPlayerIdx + 1) % self.totalPlayers
+            if self.currentPlayerIdx == 0:
+                self.currentTurn += 1
+            self.playGameView.updateTurnLabel(f"Player {self.currentPlayerIdx + 1}'s Turn")
+            self.clearRegisterAndCards()
+        else:
+            self.currentTurn += 1
+            self.playGameView.updateTurnLabel(self.currentTurn)
+            self.clearRegisterAndCards()
+        
         self.checkForCheckpoint()
-        self.clearRegisterAndCards()
-            
+        
     
     # new method to process commands in an order because submitCards and Robot methods were not doing well... 
     def processCommands(self, commands, index=0, isBot=False, onComplete=None):
@@ -366,21 +384,25 @@ class PlayGameController:
             if isBot:
                 robotPos = self.botPos
                 moveHistory = self.botMoveHistory
-            else: 
+            elif self.isMultiplayer:
+                robotPos = self.multiplayerPos[self.currentPlayerIdx]
+                moveHistory = self.moveHistory
+            else:
                 robotPos = self.playerPos
                 moveHistory = self.moveHistory
 
             # Add to move history start point
             startPos = self.convertToRankAndFile(*robotPos)
-            moveHistory.append({
-                'turn': self.currentTurn,
-                'player' : 'Bot' if isBot else 'Player',
-                'direction': direction,
-                'steps': steps,
-                'start': startPos,
-                'end': None,  # Will be updated later
-                'collision': False  # Will be updated if a collision happens
-            })
+            if not self.isMultiplayer: 
+                moveHistory.append({
+                    'turn': self.currentTurn,
+                    'player' : 'Bot' if isBot else 'Player',
+                    'direction': direction,
+                    'steps': steps,
+                    'start': startPos,
+                    'end': None,  # Will be updated later
+                    'collision': False  # Will be updated if a collision happens
+                })
 
             self.moveRobot(
                 direction, 
@@ -468,15 +490,20 @@ class PlayGameController:
         # First need to check which bot is moving 
         if isBot:
             robotPos = self.botPos
-            health = self.botHealth 
+            health = self.botHealth
             history = self.botMoveHistory
             id = self.botId
             label = self.botLabel
-        
+            
+        elif self.isMultiplayer:
+            robotPos = self.multiplayerPos[self.currentPlayerIdx]
+            id = self.playerIds[self.currentPlayerIdx]
+            label = self.playerLabels[self.currentPlayerIdx]
+
         else:
             robotPos = self.playerPos
             health = self.playerHealth
-            history = self.moveHistory 
+            history = self.moveHistory
             id = self.playerId
             label = self.playerLabel
 
@@ -498,25 +525,28 @@ class PlayGameController:
         col = max(1, min(10, col))
 
         # check for obstacles 
-        if (row, col) in self.obstacles:
-            # Update health and move history for collision
-            health -=1 
-            history[-1]['end'] = self.convertToRankAndFile(row, col)
-            history[-1]['collision'] = True
-            self.playGameView.updateHealthLabel(health, isBot=isBot)
+        if not self.isMultiplayer:
+            if (row, col) in self.obstacles:
+                # Update health and move history for collision
+                health -=1 
+                history[-1]['end'] = self.convertToRankAndFile(row, col)
+                history[-1]['collision'] = True
+                self.playGameView.updateHealthLabel(health, isBot=isBot)
 
-            messagebox.showinfo(
-                "Collision!",
-                f"{'Bot' if isBot else 'Player'} hit an obstacle!"
-            )
-            if onComplete:
-                onComplete()
-            return
+                messagebox.showinfo(
+                    "Collision!",
+                    f"{'Bot' if isBot else 'Player'} hit an obstacle!"
+                )
+                if onComplete:
+                    onComplete()
+                return
 
         # Update robot position
         if isBot:
             self.botPos = (row, col)
-        else: 
+        elif self.isMultiplayer:
+            self.multiplayerPos[self.currentPlayerIdx] = (row, col)
+        else:
             self.playerPos = (row, col)
 
         # Calculate new coordinates
@@ -541,14 +571,14 @@ class PlayGameController:
                 isBot)
 
         else: 
-            # update move history 
-            history[-1]['end'] = self.convertToRankAndFile(row,col)
-            self.playGameView.updateMoveHistory(history, isBot=isBot)
+            if not self.isMultiplayer:
+                # update move history 
+                history[-1]['end'] = self.convertToRankAndFile(row,col)
+                self.playGameView.updateMoveHistory(history, isBot=isBot)
 
-            # calling onComplete 
+                # calling onComplete 
             if onComplete: 
                 onComplete() 
-
 
 
 
