@@ -7,6 +7,10 @@ import time
 from View.playGameView import PlayGameView
 from cardsAndRegisters import model
 from cardsAndRegisters import view
+from cardsAndRegisters import controller
+
+from Controller.helperFunctions import generateRandomSquares, convertToRankAndFile
+from Controller.botLogic import generateBotMoves
 
 global cell
 cell = 50
@@ -62,82 +66,12 @@ class PlayGameController:
 
         # view initilised here - self is the playGameController
         self.playGameView = PlayGameView(root, self.canvas, self)
-    
-    # bot moves - pretty random tbh... 
-    def generateBotMoves(self):
-        directions = ['Forward', 'Backward', 'Left', 'Right']
-        botCommands = [] 
-
-        for _ in range(3):
-            direction = random.choice(directions)
-            steps = random.randint(1,3)
-            botCommands.append({'direction': direction, 'steps':steps})
-        return botCommands
-
-    # would be nice to be able to place random checkpoints and obstacles 
-    def generateRandomSquares(self, count, exclude):
-        exclude = set(exclude)
-        positions = set() 
-        while len(positions) < count: 
-            row = random.randint(1, size-1)
-            col = random.randint(1, size-1)
-            if (row, col) not in exclude:
-                exclude.add((row, col))
-                positions.add((row, col))
-        
-        return list(positions)
-
-
-    def placeCheckpointsAndObstacles(self):
-        # Start with positions already taken by checkpoints, obstacles, and players
-        if self.isMultiplayer:
-            exclude = set(self.multiplayerPos + list(self.obstacles))  # Multiplayer robots
-        else:
-            exclude = set([self.playerPos, self.botPos] + list(self.obstacles))  # Single-player positions
-
-
-        # Generate obstacles
-        obstacles = self.generateRandomSquares(obstacleCount, exclude)
-        self.obstacles.update(obstacles)
-        exclude.update(obstacles)
-
-        # Generate checkpoints
-        checkpoints = self.generateRandomSquares(checkpointCount, exclude)
-        self.checkpoints.extend(checkpoints)
-
-        # Place obstacles and checkpoints on the canvas
-        self.placeObstacles(obstacles)
-        self.placeCheckpoints(checkpoints)
-
-    # method to place checkpoints 
-    def placeCheckpoints(self, checkpointPos):
-        self.checkpointIds = {} 
-
-        for row, col in checkpointPos:
-            pass 
-            x1 = col*cell 
-            y1 = row*cell 
-            x2 = x1+cell 
-            y2 = y1+cell 
-
-            checkpointId = self.canvas.create_polygon(
-                x1+cell/2, y1+cell/4, 
-                x1+cell/4, y1+3*cell/4, 
-                x1+3*cell/4, y1+3*cell/4, 
-                fill='green', 
-                outline='black'
-            )
-            self.checkpointIds[(row, col)] = checkpointId
-            self.checkpoints.append((row, col))
-    
-    # converting to rank and file to help with move histoyr 
-    def convertToRankAndFile(self, row, col):
-        rank = chr(64+col)
-        file = row 
-        return f'{rank}{file}'
 
     def initialiseView(self, root):
         self.playGameView.showSelectBoardWindow() 
+    
+    def backToOptions(self):
+        self.playGameView.showOptionWindow() 
     
     def onBoardSelect(self):
         self.playGameView.showOptionWindow() 
@@ -148,15 +82,21 @@ class PlayGameController:
         self.playGameView.showGameBoard(isSinglePlayer=True)
         self.singlePlayerAndBot()
     
-
+    def onMultiplayerSelect(self):
+        self.isMultiplayer = True
+        self.totalPlayers = 4
+        self.playGameView.showGameBoard(isSinglePlayer=False)
+        self.createRobot(playerCount=self.totalPlayers)
+        self.placeCheckpointsAndObstacles() 
+    
     def singlePlayerAndBot(self):
         # Generate starting positions for player and bot
         exclude = set(self.checkpoints + list(self.obstacles))
 
-        self.playerPos = self.generateRandomSquares(1, exclude)[0]
+        self.playerPos = generateRandomSquares(obstacleCount, exclude, size)[0]
         exclude.add(self.playerPos)
 
-        self.botPos = self.generateRandomSquares(1, exclude)[0]
+        self.botPos = generateRandomSquares(obstacleCount, exclude, size)[0]
         exclude.add(self.botPos)
 
         row, col = self.playerPos
@@ -178,17 +118,65 @@ class PlayGameController:
 
         self.placeCheckpointsAndObstacles()
 
+        # Placing obstacles and checkpoints 
     
-    def onMultiplayerSelect(self):
-        self.isMultiplayer = True
-        self.totalPlayers = 4
-        self.playGameView.showGameBoard(isSinglePlayer=False)
-        self.createRobot(playerCount=self.totalPlayers)
-        self.placeCheckpointsAndObstacles() 
+    def placeCheckpointsAndObstacles(self):
+        # Start with positions already taken by checkpoints, obstacles, and players
+        if self.isMultiplayer:
+            exclude = set(self.multiplayerPos + list(self.obstacles))  # Multiplayer robots
+        else:
+            exclude = set([self.playerPos, self.botPos] + list(self.obstacles))  # Single-player positions
 
+        # Generate obstacles
+        obstacles = generateRandomSquares(obstacleCount, exclude, size)
+        self.obstacles.update(obstacles)
+        exclude.update(obstacles)
+
+        # Generate checkpoints
+        checkpoints = generateRandomSquares(obstacleCount, exclude, size)
+        self.checkpoints.extend(checkpoints)
+
+        # Place obstacles and checkpoints on the canvas
+        self.placeObstacles(obstacles)
+        self.placeCheckpoints(checkpoints)
+
+    # method to place checkpoints 
+    def placeCheckpoints(self, checkpointPos):
+        self.checkpointIds = {} 
+
+        for row, col in checkpointPos:
+            x1 = col*cell 
+            y1 = row*cell 
+            x2 = x1+cell 
+            y2 = y1+cell 
+
+            checkpointId = self.canvas.create_polygon(
+                x1+cell/2, y1+cell/4, 
+                x1+cell/4, y1+3*cell/4, 
+                x1+3*cell/4, y1+3*cell/4, 
+                fill='green', 
+                outline='black'
+            )
+            self.checkpointIds[(row, col)] = checkpointId
+            self.checkpoints.append((row, col))
     
-    def backToOptions(self):
-        self.playGameView.showOptionWindow() 
+    #checking if the robot LANDS on the checkpoint 
+    def checkForCheckpoint(self):
+        if self.playerPos in self.checkpoints:
+            # remove checkpoint first 
+            self.checkpoints.remove(self.playerPos)
+
+            # delete checkpoint 
+            checkpointId = self.checkpointIds.pop(self.playerPos, None)
+            if checkpointId:
+                self.canvas.delete(checkpointId)
+
+            self.checkpointsReached +=1  
+
+            
+            # update progress bar in the view! 
+            self.playGameView.updateProgressBar(self.checkpointsReached)
+            messagebox.showinfo('Checkpoint reached!', f'Checkpoint reached at {convertToRankAndFile(*self.playerPos)}') 
     
     def placeObstacles(self, obstaclePos):
         for row, col in obstaclePos:
@@ -200,9 +188,10 @@ class PlayGameController:
             # Draw/render the obstacle 
             self.canvas.create_rectangle(x1,y1,x2,y2,fill='gray', outline='black')
             self.obstacles.add((row, col))
+
+        # Grid and action cards and registers
     
     def makeGrid(self):
-
         # draw the actual grid 
         for i in range(size):
             for j in range(size):
@@ -226,6 +215,24 @@ class PlayGameController:
             y = (row+1) * cell + cell / 2 
             rank = str(row+1)
             self.canvas.create_text(x,y,text=rank)
+
+
+    def makeRegistersAndCards(self, canvas):
+        self.makeRegisters(canvas) 
+        self.createActionCards(canvas) 
+    
+    def makeRegisters(self, canvas):
+        for i in range(3):
+            registerModel = model.RegisterModel()
+            registerView = view.RegisterView(
+                canvas,
+                x=40 + i * 150,
+                y=50,  # Adjust as needed
+                width=75,
+                height=50,
+                colour='black'
+            )
+            self.registers.append({'model': registerModel, 'view': registerView})
         
         
     def createActionCards(self, canvas):
@@ -244,7 +251,6 @@ class PlayGameController:
                 text=f"{direction} {steps}"
             )
 
-
             # storing model and view in controller (as a dictionary)
             self.cards.append({'model':cardModel, 'view':cardView})
 
@@ -256,8 +262,8 @@ class PlayGameController:
             # storing starting coords in case of a reset 
             cardView.start_x = 100+i*150
             cardView.start_y= 400 
-    
-    def resetCards(self):
+
+    def resetCards(self): # THIS IS BUGGY 
         canvas = self.playGameView.cardsCanvas
         for cardPair in self.cards: 
             cardView = cardPair['view']
@@ -265,21 +271,22 @@ class PlayGameController:
             dx = cardView.start_x - current_x
             dy = cardView.start_y - current_y
             cardView.move(canvas, dx,dy)
-        
-    def makeRegisters(self, canvas):
-        for i in range(3):
-            registerModel = model.RegisterModel()
-            registerView = view.RegisterView(
-                canvas,
-                x=40 + i * 150,
-                y=50,  # Adjust as needed
-                width=75,
-                height=50,
-                colour='black'
-            )
-            self.registers.append({'model': registerModel, 'view': registerView})
+    
+    def clearRegisterAndCards(self):
+        canvas = self.playGameView.cardsCanvas
 
+        for cardPair in self.cards: 
+            cardView = cardPair['view']
+            canvas.delete(cardView.cardId)
+            canvas.delete(cardView.textId)
+        self.cards =[]
+        self.createActionCards(canvas) 
 
+        for register in self.registers:
+            register['model'].card = None 
+        self.registers = [] 
+
+        self.makeRegisters(canvas)   
 
     # Logic for drag and drop here 
 
@@ -350,11 +357,11 @@ class PlayGameController:
             self.processCommands(commands, isBot=False, onComplete=self.endTurn)
         else:
             # Single-player: handle bot after player
-            self.processCommands(commands, isBot=False, onComplete=self.handleBotTurn)
-
+            self.processCommands(commands, isBot=False, onComplete=self.handleBotTurn)  
+    
     def handleBotTurn(self):
         if not self.isMultiplayer:
-            botCommands = self.generateBotMoves() 
+            botCommands = generateBotMoves() 
             self.processCommands(botCommands, isBot=True, onComplete=self.endTurn)
         
     def endTurn(self):
@@ -371,89 +378,8 @@ class PlayGameController:
             self.clearRegisterAndCards()
         
         self.checkForCheckpoint()
-        
-    
-    # new method to process commands in an order because submitCards and Robot methods were not doing well... 
-    def processCommands(self, commands, index=0, isBot=False, onComplete=None):
-        if index < len(commands):
-            command = commands[index]
-            direction = command['direction']
-            steps = command['steps']
 
-            # check current robot status 
-            if isBot:
-                robotPos = self.botPos
-                moveHistory = self.botMoveHistory
-            elif self.isMultiplayer:
-                robotPos = self.multiplayerPos[self.currentPlayerIdx]
-                moveHistory = self.moveHistory
-            else:
-                robotPos = self.playerPos
-                moveHistory = self.moveHistory
-
-            # Add to move history start point
-            startPos = self.convertToRankAndFile(*robotPos)
-            if not self.isMultiplayer: 
-                moveHistory.append({
-                    'turn': self.currentTurn,
-                    'player' : 'Bot' if isBot else 'Player',
-                    'direction': direction,
-                    'steps': steps,
-                    'start': startPos,
-                    'end': None,  # Will be updated later
-                    'collision': False  # Will be updated if a collision happens
-                })
-
-            self.moveRobot(
-                direction, 
-                steps, 
-                stepCount=0, 
-                isBot = isBot,
-                onComplete=lambda: self.processCommands(commands,index+1, isBot, onComplete))
-        else: 
-            if onComplete:
-                onComplete() 
-
-    #checking if the robot LANDS on the checkpoint 
-    def checkForCheckpoint(self):
-        if self.playerPos in self.checkpoints:
-            # remove checkpoint first 
-            self.checkpoints.remove(self.playerPos)
-
-            # delete checkpoint 
-            checkpointId = self.checkpointIds.pop(self.playerPos, None)
-            if checkpointId:
-                self.canvas.delete(checkpointId)
-
-            self.checkpointsReached +=1  
-
-            
-            # update progress bar in the view! 
-            self.playGameView.updateProgressBar(self.checkpointsReached)
-            messagebox.showinfo('Checkpoint reached!', f'Checkpoint reached at {self.convertToRankAndFile(*self.playerPos)}') 
-
-    def clearRegisterAndCards(self):
-        canvas = self.playGameView.cardsCanvas
-
-        for cardPair in self.cards: 
-            cardView = cardPair['view']
-            canvas.delete(cardView.cardId)
-            canvas.delete(cardView.textId)
-        self.cards =[]
-        self.createActionCards(canvas) 
-
-        for register in self.registers:
-            register['model'].card = None 
-        self.registers = [] 
-
-        self.makeRegisters(canvas)         
-
-
-    def makeRegistersAndCards(self, canvas):
-        # create empty registers 
-        self.makeRegisters(canvas) 
-        self.createActionCards(canvas) 
-
+    # CREATING AND MOVING THE ROBOT 
     # Robot logic stuff begins here 
     def createRobot(self, playerCount):
         self.multiplayerPos = [] 
@@ -465,7 +391,7 @@ class PlayGameController:
 
         for i in range(playerCount):
             # Generate a random position for the player, ensuring no overlap
-            startPos = self.generateRandomSquares(1, exclude)[0]
+            startPos = generateRandomSquares(obstacleCount, exclude, size)[0]
             self.multiplayerPos.append(startPos)
             exclude.add(startPos)  # Immediately add to exclude set
 
@@ -529,7 +455,7 @@ class PlayGameController:
             if (row, col) in self.obstacles:
                 # Update health and move history for collision
                 health -=1 
-                history[-1]['end'] = self.convertToRankAndFile(row, col)
+                history[-1]['end'] = convertToRankAndFile(row, col)
                 history[-1]['collision'] = True
                 self.playGameView.updateHealthLabel(health, isBot=isBot)
 
@@ -573,12 +499,52 @@ class PlayGameController:
         else: 
             if not self.isMultiplayer:
                 # update move history 
-                history[-1]['end'] = self.convertToRankAndFile(row,col)
+                history[-1]['end'] = convertToRankAndFile(row,col)
                 self.playGameView.updateMoveHistory(history, isBot=isBot)
 
                 # calling onComplete 
             if onComplete: 
                 onComplete() 
+    
+     # new method to process commands in an order because submitCards and Robot methods were not doing well... 
+    def processCommands(self, commands, index=0, isBot=False, onComplete=None):
+        if index < len(commands):
+            command = commands[index]
+            direction = command['direction']
+            steps = command['steps']
 
+            # check current robot status 
+            if isBot:
+                robotPos = self.botPos
+                moveHistory = self.botMoveHistory
+            elif self.isMultiplayer:
+                robotPos = self.multiplayerPos[self.currentPlayerIdx]
+                moveHistory = self.moveHistory
+            else:
+                robotPos = self.playerPos
+                moveHistory = self.moveHistory
 
+            # Add to move history start point
+            startPos = convertToRankAndFile(*robotPos)
+            if not self.isMultiplayer: 
+                moveHistory.append({
+                    'turn': self.currentTurn,
+                    'player' : 'Bot' if isBot else 'Player',
+                    'direction': direction,
+                    'steps': steps,
+                    'start': startPos,
+                    'end': None,  # Will be updated later
+                    'collision': False  # Will be updated if a collision happens
+                })
 
+            self.moveRobot(
+                direction, 
+                steps, 
+                stepCount=0, 
+                isBot = isBot,
+                onComplete=lambda: self.processCommands(commands,index+1, isBot, onComplete))
+        else: 
+            if onComplete:
+                onComplete() 
+
+    
