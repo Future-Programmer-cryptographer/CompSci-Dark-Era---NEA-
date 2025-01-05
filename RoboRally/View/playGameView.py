@@ -137,7 +137,7 @@ class PlayGameView:
 
         self.progressBar = ttk.Progressbar(controlsFrame, orient='horizontal', length=150, mode='determinate')
         self.progressBar.grid(row=4, column=0, padx=5, pady=5) 
-        self.progressBar['maximum'] = self.playGameController.checkpointCount # currently default for 3 checkpoints 
+        self.progressBar['maximum'] = self.playGameController._checkpointCount # currently default for 3 checkpoints 
         self.progressBar['value'] = 0 
 
         # make the game grid + stuff 
@@ -151,6 +151,10 @@ class PlayGameView:
         # Reset button 
         resetBtn = ttk.Button(controlsFrame, text='Reset Cards', command=self.playGameController.resetCards)
         resetBtn.grid(row=7, column=0, pady=5)
+
+        # Undo button 
+        undoBtn = ttk.Button(controlsFrame, text='Undo', command=self.playGameController.undoLastAction)
+        undoBtn.grid(row=8, column=0, pady=5)
 
     def updateTurnLabel(self, turn):
         self.turnLabel.config(text=f'Turn: {turn}')
