@@ -5,6 +5,10 @@ from Controller.leaderboard import displayLeaderboard
 from View.rules import RulesWindow
 from View.playGameView import PlayGameView
 
+from tkinter import filedialog
+from tkinter import messagebox
+import os 
+
 class MainMenuController: 
     def __init__(self, mainMenuView):
         self.mainMenuView = mainMenuView 
@@ -45,9 +49,52 @@ class MainMenuController:
         leaderboardLabel.pack(pady=20)
 
     def ldSavedWindow(self):
-        # include some logic for saving game and maybe a message like 'sure you wanna save this thing' 
-        pass 
-        print('saving game button works!')
+        savedFiles = [f for f in os.listdir('.') if f.endswith('.md')]
 
+        if not savedFiles: 
+            messagebox.showinfo('No Saved Games')
+            return 
+        
+        # Open a top level window 
+        selectionWindow = Toplevel(self.mainMenuView.root)
+        selectionWindow.title('Load Saved Game')
+        selectionWindow.geometry('500x500')
+
+        ttk.Label(selectionWindow, text='Select a saved game').pack(pady=10)
+
+        for file in savedFiles: 
+            with open(file, 'r') as f: 
+                lines = f.readlines() 
+                dateLine = next((line for line in lines if "**Date Played:**" in line), "").strip()
+                try:
+                    date = dateLine.split("**Date Played:**", 1)[1].strip()
+                except IndexError:
+                    date = "No record found"
+            
+            # add a button for each file so that user can click that 
+            ttk.Button(selectionWindow, 
+                       text=f'{file} (Played: {date})', 
+                       command=lambda filename=file: self.loadGameState(filename, selectionWindow)).pack(pady=5)
+        
+    def loadGameState(self, filename, selectionWindow):
+        try:
+            with open(filename, 'r') as f:
+                # Read the file content
+                data = f.readlines()
+
+            # Parse the file and restore the game state
+            self.playGameController.parseGameState(data)
+
+            # Close the selection window
+            selectionWindow.destroy()
+
+            # Notify user
+            messagebox.showinfo("Game Loaded", f"Successfully loaded game from {filename}")
+
+        except Exception as e:
+            print(f'{e}')
+
+            
+                       
     def rulesWindow(self):
         RulesWindow(self.mainMenuView.root)

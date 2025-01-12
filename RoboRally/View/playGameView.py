@@ -22,18 +22,18 @@ class PlayGameView:
         titleLabel.pack(pady=10)
 
         # importing an image - this is a board  
-        # boardImage = Image.open('Images/board1.png').resize((300,300))
-        # imageTk = ImageTk.PhotoImage(boardImage)
+        boardImage = Image.open('Images/easy.png').resize((300,300))
+        imageTk = ImageTk.PhotoImage(boardImage)
 
         # button widget 
-        button = ttk.Button(self.selectBoardFrame, 
+        button = ttk.Button(self.selectBoardFrame,  
                             text='Example board', 
+                            image = imageTk,
                             command=self.playGameController.onBoardSelect)
         button.pack() 
     
     def showSelectBoardWindow(self):
         self.selectBoardFrame.pack(fill=tk.BOTH)
-    
     
     def showOptionWindow(self): 
 
@@ -125,10 +125,10 @@ class PlayGameView:
         self.turnLabel.grid(row=0, column=0, pady=5)
 
         # health counter - middle right
-        self.healthLabel = ttk.Label(controlsFrame, text=f'Player Health: {self.playGameController.playerHealth}')
+        self.healthLabel = ttk.Label(controlsFrame, text=f'Player Health: {self.playGameController._playerHealth}')
         self.healthLabel.grid(row=1, column=0, pady=5)
 
-        self.botHealthLabel = ttk.Label(controlsFrame, text=f'Bot Health: {self.playGameController.botHealth}')
+        self.botHealthLabel = ttk.Label(controlsFrame, text=f'Bot Health: {self.playGameController._botHealth}')
         self.botHealthLabel.grid(row=2, column=0, pady=5)
 
         # progress bar - middle right 
@@ -142,7 +142,6 @@ class PlayGameView:
 
         # make the game grid + stuff 
         self.playGameController.makeGrid()
-        #self.playGameController.createRobot() # initialse robot on grid 
 
         # submit button 
         submitBtn = ttk.Button(controlsFrame, text='submit', command=self.playGameController.submitCards)
@@ -155,6 +154,10 @@ class PlayGameView:
         # Undo button 
         undoBtn = ttk.Button(controlsFrame, text='Undo', command=self.playGameController.undoLastAction)
         undoBtn.grid(row=8, column=0, pady=5)
+
+        # Save button 
+        saveBtn = ttk.Button(controlsFrame, text='Save', command=self.playGameController._saveGameState)
+        saveBtn.grid(row=9, column=0, pady=5)
 
     def updateTurnLabel(self, turn):
         self.turnLabel.config(text=f'Turn: {turn}')

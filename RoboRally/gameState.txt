@@ -1,0 +1,25 @@
+# Robo Rally game state file
+[General]
+size=10
+cell=50
+currentTurn=3
+currentPlayerIdx=0
+isMultiplayer=False
+checkpointsReached=0
+
+[Player]
+health=5
+position=5,2
+label=P
+
+[Bot]
+health=5
+position=7,1
+label=B
+
+[Checkpoints]
+positions=5,5;9,6;5,7;9,5;9,8;8,6;8,2;9,1;9,7;3,5;5,5;9,6;5,7;9,5;9,8;8,6;8,2;9,1;9,7;3,5
+
+[Obstacles]
+positions=8,1;4,2;7,9;3,9;5,9
+
