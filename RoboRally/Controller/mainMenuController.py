@@ -65,7 +65,8 @@ class MainMenuController:
         for file in savedFiles: 
             with open(file, 'r') as f: 
                 lines = f.readlines() 
-                dateLine = next((line for line in lines if "**Date Played:**" in line), "").strip()
+                # dateLine 
+                dateLine = next((line for line in lines if '**Date Played:**' in line), '').strip()
                 try:
                     date = dateLine.split("**Date Played:**", 1)[1].strip()
                 except IndexError:
@@ -82,14 +83,14 @@ class MainMenuController:
                 # Read the file content
                 data = f.readlines()
 
-            # Parse the file and restore the game state
+            # File stuff needs read by the controller 
             self.playGameController.parseGameState(data)
 
-            # Close the selection window
+            # close this window... 
             selectionWindow.destroy()
 
-            # Notify user
-            messagebox.showinfo("Game Loaded", f"Successfully loaded game from {filename}")
+            # Tell user (messagebox is useful so why not...)
+            messagebox.showinfo("Game Loading...", f"Loaded game from {filename}")
 
         except Exception as e:
             print(f'{e}')

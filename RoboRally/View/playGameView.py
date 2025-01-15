@@ -87,7 +87,7 @@ class PlayGameView:
         self.botMoveHistoryTxt.grid(row=2, column=0, padx=5, pady=5)
 
 
-        # Game board canvas
+        # Game board canvas and frame
         canvasFrame = tk.Frame(self.gameBoardFrame, highlightbackground="blue", highlightthickness=3)
         canvasFrame.grid(
             row=0, column=1, sticky="nsew", padx=5, pady=5

@@ -115,7 +115,7 @@ class PlayGameController:
         self.botMoveHistory = state['botMoveHistory']
         self.checkpointsReached = state['checkpointsReached']
 
-        self.__redrawGameState() 
+        self._redrawGameState() 
 
     def makeRegistersAndCards(self, canvas):
         self.__makeRegisters(canvas) 
@@ -162,46 +162,45 @@ class PlayGameController:
         
         file = f'{filename}.md'
 
-        # save it with current date and time 
+        # save it with current date n time- will could be useful to show on leaderboard later 
         now = datetime.now().strftime('%Y-%m-%d %H:%M')
 
         with open(file, 'w') as f: 
             f.write('# Robo Rally File\n')
             f.write(f"**Date Played:** {now}\n\n")
 
-            # Summmary section of the file 
-            f.write("## General\n")
-            f.write(f"- **Size:** {self.__size}\n")
-            f.write(f"- **Cell:** {self.__cell}\n")
-            f.write(f"- **Current Turn:** {self.currentTurn}\n")
-            f.write(f"- **Current Player Index:** {self.currentPlayerIdx}\n")
-            f.write(f"- **Is Multiplayer:** {self.isMultiplayer}\n")
-            f.write(f"- **Checkpoints Reached:** {self.checkpointsReached}\n\n")
+            # Start with summary!
+            f.write('## Summary\n')
+            f.write(f'- **Grid Size:** {self.__size} x {self.__size}\n')
+            f.write(f'- **Current Turn:** {self.currentTurn}\n')
+            f.write(f'- **Current Player:** {self.currentPlayerIdx}\n')
+            f.write(f'- **Multiplayer Game?:** {self.isMultiplayer}\n')
+            f.write(f'- **Checkpoints Reached:** {self.checkpointsReached}\n\n')
 
-            # Player Section
-            f.write("## Player\n")
-            f.write(f"- **Health:** {self._playerHealth}\n")
-            f.write(f"- **Position:** ({self.playerPos[0]}, {self.playerPos[1]})\n\n")
+            # Player and multiplayer stuff 
+            if not self.isMultiplayer: 
+                f.write('## Player\n')
+                f.write(f'- **Health:** {self._playerHealth}\n')
+                f.write(f'- **Position:** ({self.playerPos[0]}, {self.playerPos[1]})\n\n')
+            else: 
+                f.write('## Multiplayer\n')
+                positions = '', ''.join([f'({p[0]}, {p[1]})' for p in self.multiplayerPos])
+                f.write(f'- **Positions:** {positions}\n')
+                f.write(f'- **Current Player Index:** {self.currentPlayerIdx}\n\n')
 
-            # Bot Section
-            f.write("## Bot\n")
-            f.write(f"- **Health:** {self._botHealth}\n")
-            f.write(f"- **Position:** ({self.botPos[0]}, {self.botPos[1]})\n\n")
+            # need to initilaise isBot at some point 
+            # Bot stuff
+            f.write('## Bot\n')
+            f.write(f'- **Health:** {self._botHealth}\n')
+            f.write(f'- **Position:** ({self.botPos[0]}, {self.botPos[1]})\n\n')
 
-            # Multiplayer Section
-            if self.isMultiplayer:
-                f.write("## Multiplayer\n")
-                positions = ", ".join([f"({p[0]}, {p[1]})" for p in self.multiplayerPos])
-                f.write(f"- **Positions:** {positions}\n")
-                f.write(f"- **Current Player Index:** {self.currentPlayerIdx}\n\n")
-            
             # Checkpoints Section
-            f.write("## Checkpoints\n")
-            f.write("- **Positions:** " + ", ".join([f"({p[0]}, {p[1]})" for p in self.__checkpoints]) + "\n\n")
+            f.write('## Checkpoints\n')
+            f.write('- **Positions:** ' + '', ''.join([f'({p[0]}, {p[1]})' for p in self.__checkpoints]) + '\n\n')
 
             # Obstacles Section
-            f.write("## Obstacles\n")
-            f.write("- **Positions:** " + ", ".join([f"({p[0]}, {p[1]})" for p in self.__obstacles]) + "\n")
+            f.write('## Obstacles\n')
+            f.write('- **Positions:** ' + '', ''.join([f'({p[0]}, {p[1]})' for p in self.__obstacles]) + '\n\n')
 
 
         messagebox.showinfo("Save Game", f"Game state saved to {file}")
@@ -399,9 +398,9 @@ class PlayGameController:
         row, col = robotPos
 
         # Calculate the next step position
-        if direction == 'Forward':
+        if direction == 'Up':
             row -= 1
-        elif direction == 'Backward':
+        elif direction == 'Down':
             row += 1
         elif direction == 'Left':
             col -= 1
@@ -412,7 +411,7 @@ class PlayGameController:
         row = max(1, min(10, row))
         col = max(1, min(10, col))
 
-        # check for obstacles 
+        # check for obstacles and going off grid... 
         if not self.isMultiplayer:
             if (row, col) in self.__obstacles:
                 # Update health and move history for collision
@@ -428,6 +427,9 @@ class PlayGameController:
                 if onComplete:
                     onComplete()
                 return
+            
+            # logic here for if robot goes off grid 
+            
 
         # Update robot position
         if isBot:
@@ -462,7 +464,7 @@ class PlayGameController:
             if not self.isMultiplayer:
                 # update move history 
                 history[-1]['end'] = convertToRankAndFile(row,col)
-                self.playGameView.updateMoveHistory(history, isBot=isBot)
+                self.playGameView.updateMoveHistory(history, isBot)
 
                 # calling onComplete 
             if onComplete: 
@@ -471,7 +473,7 @@ class PlayGameController:
     def __createActionCards(self, canvas):
         self.cardsController = DragAndDropController(self.playGameView.cardsCanvas)
 
-        directions = ['Forward', 'Backward', 'Left', 'Right', 'Forward', 'Backward']
+        directions = ['Up', 'Down', 'Left', 'Right', 'Up', 'Down']
         for i in range(5):
             direction = random.choice(directions)
             steps = random.randint(1, 3)
