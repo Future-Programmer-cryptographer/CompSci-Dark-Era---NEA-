@@ -20,17 +20,18 @@ class MainMenuView:
         self.mainMenuFrame = tk.Frame(self.root)
         self.mainMenuFrame.pack(fill=tk.BOTH)
         
-        self.label = ttk.Label(self.mainMenuFrame, text='This is the Main Menu')
-        self.label.pack(pady=20)
+        label = ttk.Label(self.mainMenuFrame, text='Welcome to Robo Rally Pythonised!', font=('fixedsys 20 bold'))
+        label2 = ttk.Label(self.mainMenuFrame, text='This is the Main Menu. Please select one of the options below', font=('Arial 12 bold'))
+        label.pack(pady=20)
+        label2.pack(pady=5)
         
         self.buttons = []
-        
-        self.tutorialBtn = ttk.Button(self.mainMenuFrame, 
-                                      text='Tutorial', 
-                                      command=lambda: self.controller.handleClick('Tutorial'))
+
+        btnHeight = 3
+        btnWidth = 10
         
         self.playGameBtn = ttk.Button(self.mainMenuFrame, 
-                                text='Play Game', 
+                                text='Play Game',
                                 command=lambda: self.controller.handleClick('PlayGame'))
         
         self.LeaderboardBtn = ttk.Button(self.mainMenuFrame, 
@@ -38,17 +39,17 @@ class MainMenuView:
                                         command=lambda: self.controller.handleClick('Leaderboard'))
         
         self.LdSavedBtn = ttk.Button(self.mainMenuFrame, 
-                                  text='Load Saved', 
+                                  text='Load A Saved Game',
                                   command=lambda: self.controller.handleClick('LdSaved'))
         
         self.rulesBtn= ttk.Button(self.mainMenuFrame, 
                                 text='View Robo Rally Rules', 
                                 command=lambda: self.controller.handleClick('Rules'))
 
-        self.buttons=[self.tutorialBtn, self.playGameBtn, self.LeaderboardBtn, self.LdSavedBtn, self.rulesBtn]
+        self.buttons=[self.playGameBtn, self.LeaderboardBtn, self.LdSavedBtn, self.rulesBtn]
 
         for button in self.buttons: 
-            button.pack(pady=10)
+            button.pack(ipadx=20, ipady=20, pady=10)
         
         
     def mainloop(self):

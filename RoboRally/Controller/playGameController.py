@@ -59,6 +59,18 @@ class PlayGameController:
     def parseGameState(self, contents):
         print('this owrkS!')
     
+    def updateDifficulty(self, difficulty):
+        if difficulty == 'E':
+            self._obstacleCount = 5 
+            self._checkpointCount = 20 
+        elif difficulty == 'M':
+            self._checkpointCount = 10 
+            self._obstacleCount = 5
+        else:
+            self._checkpointCount = 5 
+            self._obstacleCount = 20 
+        
+
     def initialiseView(self, root):
         self.playGameView.showSelectBoardWindow() 
     
@@ -153,6 +165,10 @@ class PlayGameController:
             self.canvas.create_text(x,y,text=rank)
 
     # Protected Methods 
+
+    def _getMdValue(self, contents, key):
+        pass 
+
 
     def _saveGameState(self):
         filename = askstring('Save Game', 'Name your file (without extension!): ')
@@ -421,7 +437,7 @@ class PlayGameController:
                 self.playGameView.updateHealthLabel(health, isBot=isBot)
 
                 messagebox.showinfo(
-                    "Collision!",
+                    'Collision!',
                     f"{'Bot' if isBot else 'Player'} hit an obstacle!"
                 )
                 if onComplete:

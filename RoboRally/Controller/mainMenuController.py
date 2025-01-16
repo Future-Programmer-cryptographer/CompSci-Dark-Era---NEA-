@@ -19,9 +19,7 @@ class MainMenuController:
         
         self.mainMenuView.mainMenuFrame.pack_forget() 
 
-        if action == 'Tutorial':
-            self.tutorialWindow() 
-        elif action == 'PlayGame':
+        if action == 'PlayGame':
             self.playGame() 
         elif action == 'Leaderboard':
             self.leaderboardWindow() 

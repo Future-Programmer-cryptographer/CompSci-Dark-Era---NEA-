@@ -22,15 +22,26 @@ class PlayGameView:
         titleLabel.pack(pady=10)
 
         # importing an image - this is a board  
-        boardImage = Image.open('Images/easy.png').resize((300,300))
-        imageTk = ImageTk.PhotoImage(boardImage)
+
+        easyBoardImage = Image.open('Images/easy.png').resize((300,300))
+        easyBoard = ImageTk.PhotoImage(easyBoardImage)
 
         # button widget 
-        button = ttk.Button(self.selectBoardFrame,  
-                            text='Example board', 
-                            image = imageTk,
+        easyBtn = ttk.Button(self.selectBoardFrame, 
+                            text='EASY',
+                            image = easyBoard,
                             command=self.playGameController.onBoardSelect)
-        button.pack() 
+        easyBtn.pack(pady=5) 
+
+        mediumBtn = ttk.Button(self.selectBoardFrame, 
+                            text = 'MEDIUM',
+                            command=self.playGameController.onBoardSelect)
+        mediumBtn.pack(pady=5) 
+
+        hardBtn = ttk.Button(self.selectBoardFrame, 
+                            text = 'HARD',
+                            command=self.playGameController.onBoardSelect)
+        hardBtn.pack(pady=5) 
     
     def showSelectBoardWindow(self):
         self.selectBoardFrame.pack(fill=tk.BOTH)
@@ -68,6 +79,19 @@ class PlayGameView:
         self.gameBoardFrame.columnconfigure(0, weight=1)
         self.gameBoardFrame.columnconfigure(1, weight=2)
         self.gameBoardFrame.columnconfigure(2, weight=2)
+
+        # helpful informations frame 
+        infoFrame = tk.Frame(self.gameBoardFrame, highlightbackground="black",highlightthickness=5)
+        infoFrame.grid(row=1, columnspan=3, sticky='news')
+
+        infoLabel = ttk.Label(infoFrame, text='Helpful information: ')
+        infoLabel.grid(row=0, column=0, pady=5)
+
+        directionsImg = Image.open('Images/checkpoint.png').resize((100,100))
+        print('image created?')
+        img = ImageTk.PhotoImage(directionsImg)
+        stuff = ttk.Label(infoFrame, image=img)
+        stuff.grid(row=0, column=1, pady=5)
 
         # move history 
         moveHistoryFrame = tk.Frame(self.gameBoardFrame, highlightbackground="black",highlightthickness=1)
@@ -137,7 +161,7 @@ class PlayGameView:
 
         self.progressBar = ttk.Progressbar(controlsFrame, orient='horizontal', length=150, mode='determinate')
         self.progressBar.grid(row=4, column=0, padx=5, pady=5) 
-        self.progressBar['maximum'] = self.playGameController._checkpointCount # currently default for 3 checkpoints 
+        self.progressBar['maximum'] = self.playGameController._checkpointCount 
         self.progressBar['value'] = 0 
 
         # make the game grid + stuff 
