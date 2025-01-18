@@ -53,6 +53,8 @@ class MainMenuController:
             messagebox.showinfo('No Saved Games')
             return 
         
+        savedFiles.sort(key=os.path.getmtime, reverse=True)
+        
         # Open a top level window 
         selectionWindow = Toplevel(self.mainMenuView.root)
         selectionWindow.title('Load Saved Game')

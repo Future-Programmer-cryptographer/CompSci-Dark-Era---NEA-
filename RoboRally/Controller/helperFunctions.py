@@ -5,7 +5,7 @@ def generateRandomSquares(count, exclude, size):
     positions = set()
     while len(positions) < count:
         row = random.randint(1, size - 1)
-        col = random.randint(1, size - 1)
+        col = random.randint(1, size - 1) 
         if (row, col) not in exclude:
             exclude.add((row, col))
             positions.add((row, col))

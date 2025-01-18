@@ -41,7 +41,7 @@ class PlayGameView:
         hardBtn = ttk.Button(self.selectBoardFrame, 
                             text = 'HARD',
                             command=self.playGameController.onBoardSelect)
-        hardBtn.pack(pady=5) 
+        hardBtn.pack(pady=5)
     
     def showSelectBoardWindow(self):
         self.selectBoardFrame.pack(fill=tk.BOTH)
