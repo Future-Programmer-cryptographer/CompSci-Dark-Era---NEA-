@@ -84,25 +84,11 @@ class PlayGameController:
 
         self._redrawGameState() 
 
-    def updateDifficulty(self, difficulty):
-        if difficulty == 'EASY':
-            self._obstacleCount = 5 
-            self._checkpointCount = 20 
-        elif difficulty == 'MEDIUM':
-            self._checkpointCount = 10 
-            self._obstacleCount = 5
-        elif difficulty == 'HARD':
-            self._checkpointCount = 5 
-            self._obstacleCount = 20  
-        else: 
-            self._checkpointCount = 20
-            self._obstacleCount = 5
-
     def initialiseView(self, root):
         self.playGameView.showSelectBoardWindow() 
     
     def onBoardSelect(self, difficulty=None):
-        self.updateDifficulty(difficulty)
+        self.__updateDifficulty(difficulty)
         self.playGameView.showOptionWindow() 
     
     def onSinglePlayerSelect(self):
@@ -332,6 +318,20 @@ class PlayGameController:
         print('done redrwaing game state')
 
     # Private Methods 
+    
+    def __updateDifficulty(self, difficulty):
+        if difficulty == 'EASY':
+            self._obstacleCount = 5 
+            self._checkpointCount = 20 
+        elif difficulty == 'MEDIUM':
+            self._checkpointCount = 10 
+            self._obstacleCount = 5
+        elif difficulty == 'HARD':
+            self._checkpointCount = 5 
+            self._obstacleCount = 20  
+        else: 
+            self._checkpointCount = 20
+            self._obstacleCount = 5
 
     def __parsePosition(self, pos):
         print('reached parse psos')

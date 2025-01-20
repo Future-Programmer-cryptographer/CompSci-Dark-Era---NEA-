@@ -18,30 +18,40 @@ class PlayGameView:
         # creating another frame 
         self.selectBoardFrame = tk.Frame(self.root)
 
-        titleLabel = ttk.Label(self.selectBoardFrame, text='Select one of the three boards for single/multiplayer')
+        titleLabel = ttk.Label(self.selectBoardFrame, text='Select one of the three boards for single/multiplayer', font=('Arial',20))
         titleLabel.pack(pady=10)
 
         # importing an image - this is a board  
 
-        easyBoardImage = Image.open('Images/easy.png').resize((300,300))
-        easyBoard = ImageTk.PhotoImage(easyBoardImage)
+
+        # need to use self.easyBoard instead of easyBoard due to 'garbage collection' 
+        easyBoardImage = Image.open('Images/easy.png').resize((400,400))
+        self.easyBoard = ImageTk.PhotoImage(easyBoardImage)
+
+        mediumBoardImage = Image.open('Images/medium.png').resize((400,400))
+        self.mediumBoard = ImageTk.PhotoImage(mediumBoardImage)
+
+        hardBoardImage = Image.open('Images/hard.png').resize((400,400))
+        self.hardBoard = ImageTk.PhotoImage(hardBoardImage)
 
         # button widget 
         easyBtn = ttk.Button(self.selectBoardFrame, 
                             text='EASY',
-                            image = easyBoard,
-                            command=self.playGameController.onBoardSelect)
-        easyBtn.pack(pady=5) 
+                            image = self.easyBoard,
+                            command= lambda: self.playGameController.onBoardSelect('EASY'))
+        easyBtn.pack(side=LEFT, expand=True) 
 
         mediumBtn = ttk.Button(self.selectBoardFrame, 
                             text = 'MEDIUM',
-                            command=self.playGameController.onBoardSelect)
-        mediumBtn.pack(pady=5) 
+                            image = self.mediumBoard, 
+                            command= lambda: self.playGameController.onBoardSelect('MEDIUM'))
+        mediumBtn.pack(side=LEFT, expand=True) 
 
         hardBtn = ttk.Button(self.selectBoardFrame, 
                             text = 'HARD',
-                            command=self.playGameController.onBoardSelect)
-        hardBtn.pack(pady=5)
+                            image = self.hardBoard,
+                            command= lambda: self.playGameController.onBoardSelect('HARD'))
+        hardBtn.pack(side=LEFT,expand=True) 
     
     def showSelectBoardWindow(self):
         self.selectBoardFrame.pack(fill=tk.BOTH)
