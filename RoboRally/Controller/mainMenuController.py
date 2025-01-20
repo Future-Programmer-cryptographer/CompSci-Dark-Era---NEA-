@@ -81,10 +81,11 @@ class MainMenuController:
         try:
             with open(filename, 'r') as f:
                 # Read the file content
-                data = f.readlines()
+                contents = f.readlines()
+                print(contents)
 
             # File stuff needs read by the controller 
-            self.playGameController.parseGameState(data)
+            self.playGameController.parseGameState(contents)
 
             # close this window... 
             selectionWindow.destroy()

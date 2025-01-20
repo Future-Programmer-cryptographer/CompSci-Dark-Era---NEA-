@@ -58,12 +58,12 @@ class PlayGameController:
     # Public methods 
 
     def parseGameState(self, contents):
+
         self.__size = int(self._getMdValue(contents, 'Size').split(' x ')[0])
         self.currentTurn = int(self._getMdValue(contents, 'Current Turn'))
         self.currentPlayerIdx = int(self._getMdValue(contents, 'Current Player Index'))
         self.isMultiplayer = self._getMdValue(contents, 'Is Multiplayer') 
         self.checkpointsReached = int(self._getMdValue(contents, 'Checkpoints Reached'))
-        print('reached this point!')
 
         if not self.isMultiplayer: 
             self._playerHealth = int(self._getMdValue(contents, 'Health', section='Player'))
@@ -91,9 +91,12 @@ class PlayGameController:
         elif difficulty == 'MEDIUM':
             self._checkpointCount = 10 
             self._obstacleCount = 5
-        else:
+        elif difficulty == 'HARD':
             self._checkpointCount = 5 
             self._obstacleCount = 20  
+        else: 
+            self._checkpointCount = 20
+            self._obstacleCount = 5
 
     def initialiseView(self, root):
         self.playGameView.showSelectBoardWindow() 
@@ -331,6 +334,7 @@ class PlayGameController:
     # Private Methods 
 
     def __parsePosition(self, pos):
+        print('reached parse psos')
         if pos.startswith("(") and pos.endswith(")"):
             try:
                 row, col = map(int, pos[1:-1].split(","))
@@ -520,8 +524,12 @@ class PlayGameController:
         row = max(1, min(10, row))
         col = max(1, min(10, col))
 
+
         # check for obstacles and going off grid... 
         if not self.isMultiplayer:
+
+            # self.__checkForBounds(row, col)
+
             if (row, col) in self.__obstacles:
                 # Update health and move history for collision
                 health -=1 
@@ -531,14 +539,25 @@ class PlayGameController:
 
                 messagebox.showinfo(
                     'Collision!',
-                    f"{'Bot' if isBot else 'Player'} hit an obstacle!"
+                    f"{'Bot' if isBot else 'Player'} has a collision!"
                 )
                 if onComplete:
                     onComplete()
                 return
-            
-            # logic here for if robot goes off grid 
-            
+
+            # if self.__checkForBounds: 
+            #     health -= 1 
+            #     history[-1]['end'] = convertToRankAndFile(row, col)
+            #     history[-1]['collision'] = True
+            #     self.playGameView.updateHealthLabel(health, isBot=isBot)
+
+            #     messagebox.showinfo(
+            #         'Gone off grid!',
+            #         f"{'Bot' if isBot else 'Player'} has gone off grid!"
+            #     )
+            #     if onComplete:
+            #         onComplete()
+            #     return
 
         # Update robot position
         if isBot:
@@ -578,6 +597,12 @@ class PlayGameController:
                 # calling onComplete 
             if onComplete: 
                 onComplete() 
+
+    def __checkForBounds(self,row, col):
+                if row< 1 or row > self.__size or col <1 or col > self.__size: 
+                    return True 
+                else: 
+                    return False 
 
     def __createActionCards(self, canvas):
         self.cardsController = DragAndDropController(self.playGameView.cardsCanvas)

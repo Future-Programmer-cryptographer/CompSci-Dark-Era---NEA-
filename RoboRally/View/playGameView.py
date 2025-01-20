@@ -80,18 +80,22 @@ class PlayGameView:
         self.gameBoardFrame.columnconfigure(1, weight=2)
         self.gameBoardFrame.columnconfigure(2, weight=2)
 
-        # helpful informations frame 
+        # helpful info frame 
         infoFrame = tk.Frame(self.gameBoardFrame, highlightbackground="black",highlightthickness=5)
         infoFrame.grid(row=1, columnspan=3, sticky='news')
 
-        infoLabel = ttk.Label(infoFrame, text='Helpful information: ')
+        infoLabel = ttk.Label(infoFrame, text='Helpful information: ', font=('Arial', 20))
         infoLabel.grid(row=0, column=0, pady=5)
 
         directionsImg = Image.open('Images/checkpoint.png').resize((100,100))
-        print('image created?')
-        img = ImageTk.PhotoImage(directionsImg)
-        stuff = ttk.Label(infoFrame, image=img)
-        stuff.grid(row=0, column=1, pady=5)
+        # print('image created?')
+        # img = ImageTk.PhotoImage(directionsImg)
+        # stuff = ttk.Label(infoFrame, image=img)
+        # stuff.grid(row=0, column=1, pady=5)
+
+        summary = ttk.Label(infoFrame, 
+                            text='AIM: drag and drop 3 action cards into the register slots to move your robot and get to all the checkpoints before other robots \n GREEN TRIANGLES are CHECKPOINTS \n DARK GREY SQUARES are OBSTACLES- collision with an obstacle will result in a loss of health, AVOID them if you can. \n Up = 1 square up \n Down = 1 square down  \n Left = one square to the left \n Right = one square to the right \n MOVE HISTORY: you can view your past moves (and the bot if playing against bot) in the move history text box on the left hand side of this screen.')
+        summary.grid(row=0, column=1, pady=5)
 
         # move history 
         moveHistoryFrame = tk.Frame(self.gameBoardFrame, highlightbackground="black",highlightthickness=1)
