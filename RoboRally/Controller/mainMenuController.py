@@ -37,6 +37,9 @@ class MainMenuController:
     
     def rulesWindow(self):
         RulesWindow(self.mainMenuView.root)
+    
+    def displayMain(self):
+        self.mainMenuView.mainMenuFrame.pack() 
 
     def ldSavedWindow(self):
         savedFiles = [f for f in os.listdir('.') if f.endswith('.md')]

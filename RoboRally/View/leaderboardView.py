@@ -13,6 +13,8 @@ class LeaderboardView:
         # creating the buttons and options 
         label = ttk.Label(self.leaderboardFrame, text='Leaderboard', font=('Arial',20))
         label.pack(pady=5)
+
+        # make a back button 
     
     def showLeaderboard(self):
         self.root.title('Leaderboard')

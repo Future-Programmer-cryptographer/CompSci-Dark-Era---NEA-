@@ -7,6 +7,8 @@ import re
 from tkinter.simpledialog import askstring
 
 from View.playGameView import PlayGameView
+from Controller.mainMenuController import MainMenuController
+from View.mainMenuView import MainMenuView
 from cardsAndRegisters import model
 from cardsAndRegisters import view
 from cardsAndRegisters.controller import DragAndDropController
@@ -21,6 +23,7 @@ class PlayGameController:
         self.root = root
         self.canvas = canvas
         self.playGameView = PlayGameView(root, self.canvas, self)
+        self.mainMenuController = MainMenuController(MainMenuView)
         self.currentTurn = 1
         self.isMultiplayer = False
         self.totalPlayers = 4
@@ -91,9 +94,13 @@ class PlayGameController:
         self.__updateDifficulty(difficulty)
         self.playGameView.showOptionWindow() 
     
-    def backToMain(self):
-        pass 
-        # generic button to take user back to main menu 
+    # generic button to take user back to main menu 
+    def backToMain(self,token=None):
+        if token: 
+            self.playGameView.selectBoardFrame.pack_forget() 
+        else: 
+            self.playGameView.gameBoardFrame.pack_forget() 
+        self.mainMenuController.displayMain() 
     
     def onSinglePlayerSelect(self):
         self.isMultiplayer = False 

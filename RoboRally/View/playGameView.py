@@ -49,6 +49,11 @@ class PlayGameView:
                             image = self.hardBoard,
                             command= lambda: self.playGameController.onBoardSelect('HARD'))
         hardBtn.pack(side=LEFT,expand=True) 
+
+        backBtn = ttk.Button(self.selectBoardFrame, 
+                             text='Back to Main Menu', 
+                             command=lambda: self.playGameController.backToMain (1))
+        backBtn.pack(side='bottom', pady=5, padx=10)
     
     def showSelectBoardWindow(self):
         self.root.title('Choose Game Option')
