@@ -13,15 +13,12 @@ class PlayGameView:
         self.root = root 
         self.canvas = canvas 
         self.playGameController = playGameController 
-        self.root.title('Select game board')
 
         # creating another frame 
         self.selectBoardFrame = tk.Frame(self.root)
 
         titleLabel = ttk.Label(self.selectBoardFrame, text='Select one of the three boards for single/multiplayer', font=('Arial',20))
         titleLabel.pack(pady=10)
-
-        # importing an image - this is a board  
 
 
         # need to use self.easyBoard instead of easyBoard due to 'garbage collection' 
@@ -54,6 +51,7 @@ class PlayGameView:
         hardBtn.pack(side=LEFT,expand=True) 
     
     def showSelectBoardWindow(self):
+        self.root.title('Choose Game Option')
         self.selectBoardFrame.pack(fill=tk.BOTH)
     
     def showOptionWindow(self): 
@@ -64,10 +62,9 @@ class PlayGameView:
         self.optionWindowFrame = tk.Frame(self.root)
         self.optionWindowFrame.pack(fill=tk.BOTH)
 
-        self.root.title('Choose Game option')
 
         singlePlayerBtn = ttk.Button(self.optionWindowFrame, 
-                                     text='Single Player', 
+                                     text='Single Player vs Bot', 
                                      command=self.playGameController.onSinglePlayerSelect)
         singlePlayerBtn.pack(pady=10)
 
@@ -196,6 +193,10 @@ class PlayGameView:
         # Save button 
         saveBtn = ttk.Button(controlsFrame, text='Save', command=self.playGameController._saveGameState)
         saveBtn.grid(row=9, column=0, pady=5)
+
+        # Quit to main menu button 
+        quitBtn = ttk.Button(controlsFrame, text='Quit to Main Menu', command=self.playGameController.backToMain)
+        quitBtn.grid(row=10, column=0, pady=5)
 
     def updateTurnLabel(self, turn):
         self.turnLabel.config(text=f'Turn: {turn}')

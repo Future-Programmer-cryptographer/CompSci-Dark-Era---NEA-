@@ -91,6 +91,10 @@ class PlayGameController:
         self.__updateDifficulty(difficulty)
         self.playGameView.showOptionWindow() 
     
+    def backToMain(self):
+        pass 
+        # generic button to take user back to main menu 
+    
     def onSinglePlayerSelect(self):
         self.isMultiplayer = False 
         self.totalPlayers = 1 
@@ -316,6 +320,7 @@ class PlayGameController:
         self.playGameView.updateProgressBar(self.checkpointsReached)
 
         print('done redrwaing game state')
+
 
     # Private Methods 
     

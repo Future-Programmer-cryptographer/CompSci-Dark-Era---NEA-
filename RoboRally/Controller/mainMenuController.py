@@ -13,6 +13,7 @@ class MainMenuController:
     def __init__(self, mainMenuView):
         self.mainMenuView = mainMenuView 
         self.playGameController = None
+        self.leaderboardController = None
 
     # so when the clicks, open a new window for each of these 
     def handleClick(self,action):
@@ -28,23 +29,14 @@ class MainMenuController:
         elif action == 'Rules':
             self.rulesWindow() 
     
-    def tutorialWindow(self):
-        tutorialWindow = Toplevel(self.mainMenuView.root)
-        tutorialWindow.title('Tutorial')
-        tutorialWindow.geometry('400x300')
-        label = ttk.Label(tutorialWindow,text='Welcome to the Tutorial')
-        label.pack(pady=20)
-    
     def playGame(self):
         self.playGameController.initialiseView(self.mainMenuView.root)
 
     def leaderboardWindow(self):
-        leaderboardWindow = Toplevel(self.mainMenuView.root)
-        leaderboardWindow.title('Leaderboard')
-        leaderboardWindow.geometry('400x300')
-        data = displayLeaderboard() 
-        leaderboardLabel = ttk.Label(leaderboardWindow, text=data)
-        leaderboardLabel.pack(pady=20)
+        self.leaderboardController.initialiseLeaderboard(self.mainMenuView.root)
+    
+    def rulesWindow(self):
+        RulesWindow(self.mainMenuView.root)
 
     def ldSavedWindow(self):
         savedFiles = [f for f in os.listdir('.') if f.endswith('.md')]
@@ -75,9 +67,9 @@ class MainMenuController:
             # add a button for each file so that user can click that 
             ttk.Button(selectionWindow, 
                        text=f'{file} (Played: {date})', 
-                       command=lambda filename=file: self.loadGameState(filename, selectionWindow)).pack(pady=5)
+                       command=lambda filename=file: self.__loadGameState(filename, selectionWindow)).pack(pady=5)
         
-    def loadGameState(self, filename, selectionWindow):
+    def __loadGameState(self, filename, selectionWindow):
         try:
             with open(filename, 'r') as f:
                 # Read the file content
@@ -96,7 +88,4 @@ class MainMenuController:
         except Exception as e:
             print(f'{e}')
 
-            
-                       
-    def rulesWindow(self):
-        RulesWindow(self.mainMenuView.root)
+                    

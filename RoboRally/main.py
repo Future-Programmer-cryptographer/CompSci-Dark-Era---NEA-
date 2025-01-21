@@ -3,6 +3,8 @@ from Controller.mainMenuController import MainMenuController
 from View.mainMenuView import MainMenuView
 from Controller.playGameController import PlayGameController
 from Model.playGameModel import PlayGameModel
+from Controller.leaderboardController import LeaderboardController
+from View.leaderboardView import LeaderboardView
 
 def main():
     # Initialize root window
@@ -10,14 +12,11 @@ def main():
 
     # Create a canvas for drawing
     canvas = tk.Canvas(root, width=800, height=600, highlightthickness=1, highlightbackground="black")
-    # canvas.pack()
-
-    # initialise PlayGameView
-    # playGameView = PlayGameView(root, canvas, PlayGameController)
 
     # initialise controllers and model
     mainMenuController = MainMenuController(None)
     playGameController = PlayGameController(root, canvas)
+    leaderboardController = LeaderboardController(root, canvas)
     mainMenuView = MainMenuView(root, mainMenuController)
     playGameModel = PlayGameModel()
 
@@ -26,6 +25,11 @@ def main():
     mainMenuController.playGameController = playGameController  
     playGameController.mainMenuController = mainMenuController
     playGameController.playGameModel = playGameModel
+
+    # I don't know why these lines below work, but they do... 
+    leaderboardController.mainMenuController = mainMenuController
+    mainMenuController.leaderboardController = leaderboardController
+    
 
     # treating main.py as the 'master view' 
     root.mainloop()
