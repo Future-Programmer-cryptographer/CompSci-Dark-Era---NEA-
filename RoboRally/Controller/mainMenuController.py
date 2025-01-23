@@ -26,6 +26,7 @@ class MainMenuController:
             self.leaderboardWindow() 
         elif action == 'LdSaved':
             self.ldSavedWindow()
+            self.mainMenuView.mainMenuFrame.pack() 
         elif action == 'Rules':
             self.rulesWindow() 
     

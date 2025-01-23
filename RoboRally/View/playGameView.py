@@ -17,8 +17,19 @@ class PlayGameView:
         # creating another frame 
         self.selectBoardFrame = tk.Frame(self.root)
 
-        titleLabel = ttk.Label(self.selectBoardFrame, text='Select one of the three boards for single/multiplayer', font=('Arial',20))
+        titleLabel = ttk.Label(self.selectBoardFrame, text='Select one of the three boards for single player vs Bot Multiplayer \n Boards are sorted by difficulty, easy-medium-hard (left to right)', font=('Arial',15))
         titleLabel.pack(pady=10)
+
+        backBtn = ttk.Button(self.selectBoardFrame, 
+                        text='Back to Main Menu',
+                        command=lambda: self.playGameController.backToMain (1))
+        backBtn.pack(side=BOTTOM, ipadx=25, ipady=25, expand=True)
+
+        
+        customBtn = ttk.Button(self.selectBoardFrame, 
+                               text='Make Custom Board',
+                               command = self.playGameController._makeCustomBoard)
+        customBtn.pack(side=BOTTOM, ipadx=25, ipady=25, expand=True)
 
 
         # need to use self.easyBoard instead of easyBoard due to 'garbage collection' 
@@ -49,11 +60,6 @@ class PlayGameView:
                             image = self.hardBoard,
                             command= lambda: self.playGameController.onBoardSelect('HARD'))
         hardBtn.pack(side=LEFT,expand=True) 
-
-        backBtn = ttk.Button(self.selectBoardFrame, 
-                             text='Back to Main Menu', 
-                             command=lambda: self.playGameController.backToMain (1))
-        backBtn.pack(side='bottom', pady=5, padx=10)
     
     def showSelectBoardWindow(self):
         self.root.title('Choose Game Option')
@@ -80,6 +86,7 @@ class PlayGameView:
     
     def showGameBoard(self, isSinglePlayer=True):
 
+        self.showOptionWindow() 
         self.optionWindowFrame.pack_forget() 
 
         # creating game board frame with GRID layout 
@@ -106,7 +113,7 @@ class PlayGameView:
         # stuff.grid(row=0, column=1, pady=5)
 
         summary = ttk.Label(infoFrame, 
-                            text='AIM: drag and drop 3 action cards into the register slots to move your robot and get to all the checkpoints before other robots \n GREEN TRIANGLES are CHECKPOINTS \n DARK GREY SQUARES are OBSTACLES- collision with an obstacle will result in a loss of health, AVOID them if you can. \n Up = 1 square up \n Down = 1 square down  \n Left = one square to the left \n Right = one square to the right \n MOVE HISTORY: you can view your past moves (and the bot if playing against bot) in the move history text box on the left hand side of this screen.')
+                            text="AIM: drag and drop 3 action cards into the register slots to move your robot and get to all the checkpoints before other robots \n The robot you will be controller is the blue token on the board with the label 'P', if playing against a bot, it will be a red token with the label 'B'. \n GREEN TRIANGLES are CHECKPOINTS \n DARK GREY SQUARES are OBSTACLES- collision with an obstacle will result in a loss of health, AVOID them if you can. \n Up = 1 square up \n Down = 1 square down  \n Left = one square to the left \n Right = one square to the right \n MOVE HISTORY: you can view your past moves (and the bot if playing against bot) in the move history text box on the left hand side of this screen.")
         summary.grid(row=0, column=1, pady=5)
 
         # move history 

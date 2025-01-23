@@ -15,6 +15,8 @@ class LeaderboardView:
         label.pack(pady=5)
 
         # make a back button 
+        quitBtn = ttk.Button(self.leaderboardFrame, text='Back to Main Menu', command=self.leaderboardController.backToMain)
+        quitBtn.pack(pady=5)
     
     def showLeaderboard(self):
         self.root.title('Leaderboard')

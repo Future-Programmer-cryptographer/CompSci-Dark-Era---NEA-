@@ -1,6 +1,7 @@
 import tkinter as tk 
 from tkinter import ttk 
 
+
 class RulesWindow: 
     def __init__(self, root): 
         self.root = root 
@@ -36,5 +37,6 @@ class RulesWindow:
 
         section3.grid(row=0, column=2, padx=20, pady=10)
         text3.grid(row=1, column=2, padx=20, pady=10)
+
 
         

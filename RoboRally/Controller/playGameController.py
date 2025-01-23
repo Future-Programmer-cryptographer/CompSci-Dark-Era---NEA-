@@ -4,6 +4,7 @@ from tkinter import messagebox
 import random 
 from datetime import datetime
 import re 
+from tkinter import simpledialog
 from tkinter.simpledialog import askstring
 
 from View.playGameView import PlayGameView
@@ -110,7 +111,6 @@ class PlayGameController:
     
     def onMultiplayerSelect(self):
         self.isMultiplayer = True
-        self.totalPlayers = 4
         self.playGameView.showGameBoard(isSinglePlayer=False)
         self.__createRobot(playerCount=self.totalPlayers)
         self.__placeCheckpointsAndObstacles() 
@@ -328,6 +328,22 @@ class PlayGameController:
 
         print('done redrwaing game state')
 
+    def _makeCustomBoard(self):
+
+        players = simpledialog.askstring('Input', 'Enter number of players', parent=self.root)
+        size = simpledialog.askstring('Input', 'Enter a grid size. Max size of 20', parent=self.root)
+        obstacles = simpledialog.askstring('Input', 'Enter number of obstacles', parent=self.root)
+        checkpoints = simpledialog.askstring('Input', 'Enter number of Checkpoints', parent=self.root)
+
+        self.totalPlayers = int(players)
+        self.__size = int(size) 
+        # NEED SOME MATHS TO FIX THE CELL SIZE BELOW... 
+        self.__cell = 25
+        self._obstacleCount = int(obstacles)
+        self._checkpointCount = int(checkpoints)
+
+        #self.playGameView.selectBoardFrame.pack_forget() 
+        self.onMultiplayerSelect() 
 
     # Private Methods 
     
@@ -651,7 +667,7 @@ class PlayGameController:
         self.playerLabels = [] 
         self.playerIds = [] 
 
-        colours = ['SpringGreen2', 'yellow', 'firebrick1', 'DarkOrchid1']
+        colours = ['SpringGreen2', 'yellow', 'firebrick1', 'DarkOrchid1', 'deep pink', 'cyan2', 'goldenrod1']
         exclude = set(self.__checkpoints + list(self.__obstacles))  # Combine checkpoints and obstacles
 
         for i in range(playerCount):
