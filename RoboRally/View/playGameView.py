@@ -17,7 +17,7 @@ class PlayGameView:
         # creating another frame 
         self.selectBoardFrame = tk.Frame(self.root)
 
-        titleLabel = ttk.Label(self.selectBoardFrame, text='Select one of the three boards for single player vs Bot Multiplayer \n Boards are sorted by difficulty, easy-medium-hard (left to right)', font=('Arial',15))
+        titleLabel = ttk.Label(self.selectBoardFrame, text='Select one of the three boards for single player vs Bot OR Multiplayer \n Boards are sorted by difficulty, easy-medium-hard (left to right) \n You can also make a custom board for multiplayer gameplay', font=('Arial',15))
         titleLabel.pack(pady=10)
 
         backBtn = ttk.Button(self.selectBoardFrame, 
@@ -28,7 +28,7 @@ class PlayGameView:
         
         customBtn = ttk.Button(self.selectBoardFrame, 
                                text='Make Custom Board',
-                               command = self.playGameController._makeCustomBoard)
+                               command = self.onCustomBoard)
         customBtn.pack(side=BOTTOM, ipadx=25, ipady=25, expand=True)
 
 
@@ -76,24 +76,34 @@ class PlayGameView:
 
         singlePlayerBtn = ttk.Button(self.optionWindowFrame, 
                                      text='Single Player vs Bot', 
-                                     command=self.playGameController.onSinglePlayerSelect)
+                                     command=self.onOptionWindowSelectSinglePlayer)
         singlePlayerBtn.pack(pady=10)
 
         multiplayerBtn = ttk.Button(self.optionWindowFrame, 
                                      text='Multiplayer', 
-                                     command=self.playGameController.onMultiplayerSelect)
+                                     command=self.onOptionWindowSelectMultiplayer)
         multiplayerBtn.pack(pady=10)
     
-    def showGameBoard(self, isSinglePlayer=True):
-
-        self.showOptionWindow() 
+    def onCustomBoard(self):
+        self.selectBoardFrame.pack_forget() 
+        self.playGameController._makeCustomBoard() 
+    
+    def onOptionWindowSelectSinglePlayer(self):
         self.optionWindowFrame.pack_forget() 
+        self.playGameController.onSinglePlayerSelect() 
+    
+    def onOptionWindowSelectMultiplayer(self):
+        self.optionWindowFrame.pack_forget() 
+        self.playGameController.onMultiplayerSelect() 
+    
+    def showGameBoard(self, isSinglePlayer=True):
 
         # creating game board frame with GRID layout 
         self.gameBoardFrame = tk.Frame(self.root, highlightbackground="black",highlightthickness=1)
         self.gameBoardFrame.pack(fill=tk.BOTH, expand=True)
         self.root.title('Single player' if isSinglePlayer else 'Multiplayer')
 
+        
         # config grid layout 
         self.gameBoardFrame.columnconfigure(0, weight=1)
         self.gameBoardFrame.columnconfigure(1, weight=2)

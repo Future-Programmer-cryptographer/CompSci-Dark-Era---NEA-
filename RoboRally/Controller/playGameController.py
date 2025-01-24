@@ -342,7 +342,6 @@ class PlayGameController:
         self._obstacleCount = int(obstacles)
         self._checkpointCount = int(checkpoints)
 
-        #self.playGameView.selectBoardFrame.pack_forget() 
         self.onMultiplayerSelect() 
 
     # Private Methods 

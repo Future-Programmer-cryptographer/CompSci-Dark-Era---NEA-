@@ -26,9 +26,6 @@ class MainMenuView:
         label2.pack(pady=5)
         
         self.buttons = []
-
-        btnHeight = 3
-        btnWidth = 10
         
         self.playGameBtn = ttk.Button(self.mainMenuFrame, 
                                 text='Play Game',
