@@ -14,6 +14,9 @@ class MainMenuController:
         self.mainMenuView = mainMenuView 
         self.playGameController = None
         self.leaderboardController = None
+    
+    def hideMain(self):
+        self.mainMenuView.mainMenuFrame.pack_forget() 
 
     # so when the clicks, open a new window for each of these 
     def handleClick(self,action):
@@ -78,7 +81,7 @@ class MainMenuController:
             with open(filename, 'r') as f:
                 # Read the file content
                 contents = f.readlines()
-                print(contents)
+                # print(contents)
 
             # File stuff needs read by the controller 
             self.playGameController.parseGameState(contents)

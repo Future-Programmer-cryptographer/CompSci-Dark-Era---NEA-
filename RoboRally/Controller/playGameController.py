@@ -62,31 +62,41 @@ class PlayGameController:
     # Public methods 
 
     def parseGameState(self, contents):
+        try:
+            # General section
+            self.__size = int(getMdValue(contents, "Size"))
+            self.__cell = int(getMdValue(contents, "Cell"))
+            self.currentTurn = int(getMdValue(contents, "Current Turn"))
+            self.currentPlayerIdx = int(getMdValue(contents, "Current Player Index"))
+            self.isMultiplayer = getMdValue(contents, "Is Multiplayer") == "True"
+            self.checkpointsReached = int(getMdValue(contents, "Checkpoints Reached"))
 
-        self.__size = int(self._getMdValue(contents, 'Size').split(' x ')[0])
-        self.currentTurn = int(self._getMdValue(contents, 'Current Turn'))
-        self.currentPlayerIdx = int(self._getMdValue(contents, 'Current Player Index'))
-        self.isMultiplayer = self._getMdValue(contents, 'Is Multiplayer') 
-        self.checkpointsReached = int(self._getMdValue(contents, 'Checkpoints Reached'))
+            # Player section
+            self._playerHealth = int(getMdValue(contents, "Health"))
+            self.playerPos = tuple(map(int, getMdValue(contents, "Position").strip("()").split(", ")))
 
-        if not self.isMultiplayer: 
-            self._playerHealth = int(self._getMdValue(contents, 'Health', section='Player'))
-            self.playerPos = self.__parsePosition(self._getMdValue(contents, 'Position', section='Player'))
-        else: 
-            positions = self._getMdValue(contents, 'Positions', section='Multiplayer')
-            self.multiplayerPos =  [self.__parsePosition(pos.strip()) for pos in positions.split('','')]
+            # Bot section
+            self._botHealth = int(getMdValue(contents, "Health"))
+            self.botPos = tuple(map(int, getMdValue(contents, "Position").strip("()").split(", ")))
+
+            # Checkpoints section
+            self.__checkpoints = get_md_positions(contents, "Checkpoint Positions")
+            print(f"Parsed checkpoints: {self.__checkpoints}")
+
+            # Obstacles section
+            self.__obstacles = get_md_positions(contents, "Obstacle Positions")
+            print(f"Parsed obstacles: {self.__obstacles}")
+
+        except ValueError as e:
+            messagebox.showerror("Error", str(e))
         
-        self._botHealth = int(self._getMdValue(contents, 'Health', section='Bot'))
-        self.botPos = self.__parsePosition(self._getMdValue(contents, 'Position', section='Bot'))
-
-        checkpoints = self._getMdValue(contents, 'Positions', section='Checkpoints')
-        self.__checkpoints = [self.__parsePosition(pos.strip()) for pos in checkpoints.split('','')]
-
-        obstacles = self._getMdValue(contents, 'Positions', section='Obstacles')
-        self.__obstacles = {self.__parsePosition(pos.strip()) for pos in obstacles.split('','')}
+        try:
+            self._redrawGameState()
+        except Exception as e:
+            print(f"Error during redraw: {e}")
+            messagebox.showerror("Error", f"An error occurred while redrawing the game state: {e}")
 
 
-        self._redrawGameState() 
 
     def initialiseView(self, root):
         self.playGameView.showSelectBoardWindow() 
@@ -191,18 +201,6 @@ class PlayGameController:
 
     # Protected Methods 
 
-    def _getMdValue(self, contents, key, section=None):
-        # Check if section-specific key exists
-        if section:
-            section_start = f"## {section}"
-            section_lines = contents[contents.index(section_start):]
-            line = next((l for l in section_lines if l.startswith(f"- **{key}:**")), None)
-        else:
-            line = next((l for l in contents if l.startswith(f"- **{key}:**")), None)
-        if line:
-            return line.split(": ", 1)[1].strip()
-        return None  # Return None if key is not found
-
 
     def _saveGameState(self):
         filename = askstring('Save Game', 'Name your file (without extension!): ')
@@ -221,7 +219,7 @@ class PlayGameController:
 
             # Start with summary!
             f.write('## Summary\n')
-            f.write(f'- **Grid Size:** {self.__size} x {self.__size}\n')
+            f.write(f'- **Grid Size:** {self.__size}\n')
             f.write(f'- **Current Turn:** {self.currentTurn}\n')
             f.write(f'- **Current Player:** {self.currentPlayerIdx}\n')
             f.write(f'- **Multiplayer Game?:** {self.isMultiplayer}\n')
@@ -256,15 +254,9 @@ class PlayGameController:
         messagebox.showinfo("Save Game", f"Game state saved to {file}")
 
     def _redrawGameState(self):
-        print('reached redraw game state')
-
-        self.canvas.delete("all")  # Clear all canvas elements
-
-        # Redraw the grid
-        self.makeGrid()
-
-        # Redraw player robot
-        if not self.isMultiplayer:
+        self.canvas.delete('all')
+        self.makeGrid()  
+        if self.playerPos:
             row, col = self.playerPos
             x1 = col * self.__cell + self.__cell / 4
             y1 = row * self.__cell + self.__cell / 4
@@ -273,60 +265,30 @@ class PlayGameController:
             self.playerId = self.canvas.create_oval(x1, y1, x2, y2, fill='light blue')
             self.playerLabel = self.canvas.create_text((x1 + x2) / 2, (y1 + y2) / 2, text='P')
 
-        # Redraw multiplayer robots
-        if self.isMultiplayer:
-            self.playerIds = []
-            self.playerLabels = []
-            colours = ['SpringGreen2', 'yellow', 'firebrick1', 'DarkOrchid1']
-            for i, (row, col) in enumerate(self.multiplayerPos):
-                x1 = col * self.__cell + self.__cell / 4
-                y1 = row * self.__cell + self.__cell / 4
-                x2 = x1 + self.__cell / 2
-                y2 = y1 + self.__cell / 2
-                playerId = self.canvas.create_oval(x1, y1, x2, y2, fill=colours[i])
-                self.playerIds.append(playerId)
-                label = self.canvas.create_text((x1 + x2) / 2, (y1 + y2) / 2, text=f'P{i + 1}')
-                self.playerLabels.append(label)
-
         # Redraw bot
-        row, col = self.botPos
-        x1 = col * self.__cell + self.__cell / 4
-        y1 = row * self.__cell + self.__cell / 4
-        x2 = x1 + self.__cell / 2
-        y2 = y1 + self.__cell / 2
-        self.botId = self.canvas.create_oval(x1, y1, x2, y2, fill='red')
-        self.botLabel = self.canvas.create_text((x1 + x2) / 2, (y1 + y2) / 2, text='B')
-
-        # Redraw checkpoints
-        self.checkpointIds = {}
-        for row, col in self.__checkpoints:
-            x1 = col * self.__cell
-            y1 = row * self.__cell
-            x2 = x1 + self.__cell
-            y2 = y1 + self.__cell
-            checkpointId = self.canvas.create_polygon(
-                x1 + self.__cell / 2, y1 + self.__cell / 4,
-                x1 + self.__cell / 4, y1 + 3 * self.__cell / 4,
-                x1 + 3 * self.__cell / 4, y1 + 3 * self.__cell / 4,
-                fill='green', outline='black'
-            )
-            self.checkpointIds[(row, col)] = checkpointId
+        if self.botPos:
+            row, col = self.botPos
+            x1 = col * self.__cell + self.__cell / 4
+            y1 = row * self.__cell + self.__cell / 4
+            x2 = x1 + self.__cell / 2
+            y2 = y1 + self.__cell / 2
+            self.botId = self.canvas.create_oval(x1, y1, x2, y2, fill='red')
+        
+        self.__placeCheckpoints(self.__checkpoints)
 
         # Redraw obstacles
-        for row, col in self.__obstacles:
-            x1 = col * self.__cell
-            y1 = row * self.__cell
-            x2 = x1 + self.__cell
-            y2 = y1 + self.__cell
-            self.canvas.create_rectangle(x1, y1, x2, y2, fill='gray', outline='black')
+        self.__placeObstacles(self.__obstacles)
+        
+        # Update labels and progress
+        #self.playGameView.updateTurnLabel(self.currentTurn)
+        # self.playGameView.updateHealthLabel(self._playerHealth, isBot=False)
+        # self.playGameView.updateHealthLabel(self._botHealth, isBot=True)
+        # self.playGameView.updateProgressBar(self.checkpointsReached)
 
-        # Update the UI components
-        self.playGameView.updateHealthLabel(self._playerHealth, isBot=False)
-        self.playGameView.updateHealthLabel(self._botHealth, isBot=True)
-        self.playGameView.updateTurnLabel(self.currentTurn)
-        self.playGameView.updateProgressBar(self.checkpointsReached)
+        self.mainMenuController.hideMain() 
+        self.playGameView.showGameBoard(isSinglePlayer=not self.isMultiplayer)
+        self.playGameView.moveHistoryFrame.pack_forget() 
 
-        print('done redrwaing game state')
 
     def _makeCustomBoard(self):
 
@@ -345,6 +307,7 @@ class PlayGameController:
         self.onMultiplayerSelect() 
 
     # Private Methods 
+
     
     def __updateDifficulty(self, difficulty):
         if difficulty == 'EASY':
@@ -359,16 +322,6 @@ class PlayGameController:
         else: 
             self._checkpointCount = 20
             self._obstacleCount = 5
-
-    def __parsePosition(self, pos):
-        print('reached parse psos')
-        if pos.startswith("(") and pos.endswith(")"):
-            try:
-                row, col = map(int, pos[1:-1].split(","))
-                return (row, col)
-            except ValueError:
-                raise ValueError(f"Invalid position format: {pos}")
-        raise ValueError(f"Invalid position string: {pos}")
 
     def __singlePlayerAndBot(self):
         # Generate starting positions for player and bot
@@ -468,7 +421,7 @@ class PlayGameController:
 
             # Draw/render the obstacle 
             self.canvas.create_rectangle(x1,y1,x2,y2,fill='gray', outline='black')
-            self.__obstacles.add((row, col))
+            #self.__obstacles.add((row, col))
     
     def __placeCheckpoints(self, checkpointPos):
         self.checkpointIds = {} 
@@ -487,7 +440,7 @@ class PlayGameController:
                 outline='black'
             )
             self.checkpointIds[(row, col)] = checkpointId
-            self.__checkpoints.append((row, col))
+            #self.__checkpoints.append((row, col))
 
     def __checkForCheckpoint(self):
         if self.isMultiplayer: 
@@ -756,4 +709,29 @@ class PlayGameController:
         self.__undoStack.append(state)
 
 
-    
+
+def get_md_positions(contents, key):
+    for line in contents:
+        if key in line:
+            # Extract the positions string after '**Positions:**'
+            positions = line.split("**")[2].strip()
+            try:
+                # Convert each coordinate string '(x, y)' into a tuple (x, y)
+                return [
+                    tuple(map(int, pos.strip("()").split(", ")))
+                    for pos in positions.split("), ")
+                ]
+            except ValueError as e:
+                raise ValueError(f"Malformed positions in '{key}': {positions}") from e
+    return []
+
+
+
+def getMdValue(contents, key):
+        for line in contents:
+            if key in line:
+                try:
+                    return line.split("**")[2].strip()
+                except IndexError:
+                    pass
+        raise ValueError(f"Key '{key}' not found in the file or is malformed.")

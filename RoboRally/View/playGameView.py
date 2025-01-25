@@ -127,20 +127,20 @@ class PlayGameView:
         summary.grid(row=0, column=1, pady=5)
 
         # move history 
-        moveHistoryFrame = tk.Frame(self.gameBoardFrame, highlightbackground="black",highlightthickness=1)
-        moveHistoryFrame.grid(
+        self.moveHistoryFrame = tk.Frame(self.gameBoardFrame, highlightbackground="black",highlightthickness=1)
+        self.moveHistoryFrame.grid(
             row=0,
             column=0, 
             sticky='news',
             padx=5, 
             pady=5
         )
-        moveHistoryLabel = ttk.Label(moveHistoryFrame, text='Move History')
+        moveHistoryLabel = ttk.Label(self.moveHistoryFrame, text='Move History')
         moveHistoryLabel.grid(row=0, column=0, pady=5)
-        self.moveHistoryTxt = tk.Text(moveHistoryFrame, width=40, height=15, state='disabled')
+        self.moveHistoryTxt = tk.Text(self.moveHistoryFrame, width=40, height=15, state='disabled')
         self.moveHistoryTxt.grid(row=1, column=0, padx=5, pady=5)
 
-        self.botMoveHistoryTxt = tk.Text(moveHistoryFrame, width=40, height=15, state='disabled')
+        self.botMoveHistoryTxt = tk.Text(self.moveHistoryFrame, width=40, height=15, state='disabled')
         self.botMoveHistoryTxt.grid(row=2, column=0, padx=5, pady=5)
 
 
