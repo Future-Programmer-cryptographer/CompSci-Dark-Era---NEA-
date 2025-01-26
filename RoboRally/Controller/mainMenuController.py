@@ -40,7 +40,8 @@ class MainMenuController:
         self.leaderboardController.initialiseLeaderboard(self.mainMenuView.root)
     
     def rulesWindow(self):
-        RulesWindow(self.mainMenuView.root)
+        rulesWindow = Toplevel(self.mainMenuView.root)
+        RulesWindow(rulesWindow)
     
     def displayMain(self):
         self.mainMenuView.mainMenuFrame.pack() 

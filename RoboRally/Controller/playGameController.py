@@ -14,7 +14,7 @@ from cardsAndRegisters import model
 from cardsAndRegisters import view
 from cardsAndRegisters.controller import DragAndDropController
 
-from Controller.helperFunctions import generateRandomSquares, convertToRankAndFile
+from Controller.helperFunctions import generateRandomSquares, convertToRankAndFile, getMdPos, getMdValue
 from Controller.botLogic import generateBotMoves
 
 class PlayGameController:
@@ -30,6 +30,8 @@ class PlayGameController:
         self.totalPlayers = 4
         self.checkpointsReached = 0 
         self.currentPlayerIdx = 0 
+
+        self.difficulty = '' 
 
         self.cards = []
         self.registers = [] 
@@ -80,11 +82,11 @@ class PlayGameController:
             self.botPos = tuple(map(int, getMdValue(contents, "Position").strip("()").split(", ")))
 
             # Checkpoints section
-            self.__checkpoints = get_md_positions(contents, "Checkpoint Positions")
+            self.__checkpoints = getMdPos(contents, "Checkpoint Positions")
             print(f"Parsed checkpoints: {self.__checkpoints}")
 
             # Obstacles section
-            self.__obstacles = get_md_positions(contents, "Obstacle Positions")
+            self.__obstacles = getMdPos(contents, "Obstacle Positions")
             print(f"Parsed obstacles: {self.__obstacles}")
 
         except ValueError as e:
@@ -222,6 +224,7 @@ class PlayGameController:
             f.write(f'- **Grid Size:** {self.__size}\n')
             f.write(f'- **Current Turn:** {self.currentTurn}\n')
             f.write(f'- **Current Player:** {self.currentPlayerIdx}\n')
+            f.write(f'- **Difficulty:** {self.difficulty}\n')
             f.write(f'- **Multiplayer Game?:** {self.isMultiplayer}\n')
             f.write(f'- **Checkpoints Reached:** {self.checkpointsReached}\n\n')
 
@@ -243,13 +246,14 @@ class PlayGameController:
             f.write(f'- **Position:** ({self.botPos[0]}, {self.botPos[1]})\n\n')
 
             # Checkpoints Section
+            checkpoints = ', '.join([f'({p[0]}, {p[1]})' for p in self.__checkpoints])
             f.write('## Checkpoints\n')
-            f.write('- **Positions:** ' + '', ''.join([f'({p[0]}, {p[1]})' for p in self.__checkpoints]) + '\n\n')
+            f.write(f'- **Checkpoint Positions:** {checkpoints}\n\n')
 
             # Obstacles Section
+            obstacles = ', '.join([f'({p[0]}, {p[1]})' for p in self.__obstacles])
             f.write('## Obstacles\n')
-            f.write('- **Positions:** ' + '', ''.join([f'({p[0]}, {p[1]})' for p in self.__obstacles]) + '\n\n')
-
+            f.write(f'- **Obstacle Positions:** {obstacles}\n\n')
 
         messagebox.showinfo("Save Game", f"Game state saved to {file}")
 
@@ -311,12 +315,15 @@ class PlayGameController:
     
     def __updateDifficulty(self, difficulty):
         if difficulty == 'EASY':
+            self.difficulty = 'EASY'
             self._obstacleCount = 5 
             self._checkpointCount = 20 
         elif difficulty == 'MEDIUM':
+            self.difficulty = 'MEDIUM'
             self._checkpointCount = 10 
             self._obstacleCount = 5
         elif difficulty == 'HARD':
+            self.difficulty = 'HARD'
             self._checkpointCount = 5 
             self._obstacleCount = 20  
         else: 
@@ -709,29 +716,3 @@ class PlayGameController:
         self.__undoStack.append(state)
 
 
-
-def get_md_positions(contents, key):
-    for line in contents:
-        if key in line:
-            # Extract the positions string after '**Positions:**'
-            positions = line.split("**")[2].strip()
-            try:
-                # Convert each coordinate string '(x, y)' into a tuple (x, y)
-                return [
-                    tuple(map(int, pos.strip("()").split(", ")))
-                    for pos in positions.split("), ")
-                ]
-            except ValueError as e:
-                raise ValueError(f"Malformed positions in '{key}': {positions}") from e
-    return []
-
-
-
-def getMdValue(contents, key):
-        for line in contents:
-            if key in line:
-                try:
-                    return line.split("**")[2].strip()
-                except IndexError:
-                    pass
-        raise ValueError(f"Key '{key}' not found in the file or is malformed.")

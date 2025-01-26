@@ -1,20 +1,20 @@
 # Robo Rally File
-**Date Played:** 16-01-2025 09:16
+**Date Played:** 26-01-2025 14:24
 
 ## Summary
 - **Grid Size:** 10
-- **Current Turn:** 24
+- **Current Turn:** 2
 - **Current Player:** 0
 - **Difficulty:** EASY
 - **Multiplayer Game?:** False
-- **Checkpoints Reached:** 9
+- **Checkpoints Reached:** 1
 
 ## Player
 - **Health:** 5
-- **Position:** (7, 5)
+- **Position:** (3, 9)
 
 ## Bot
 - **Health:** 5
-- **Position:** (8, 6)
+- **Position:** (3, 3)
 
 ## Checkpoints

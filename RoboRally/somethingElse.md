@@ -1,13 +1,14 @@
 # Robo Rally File
-**Date Played:** 2025-01-12 18:02
+**Date Played:** 12-01-2025 18:02
 
 ## General
 - **Size:** 10
 - **Cell:** 50
 - **Current Turn:** 3
 - **Current Player Index:** 0
+- **Difficulty:** MEDIUM
 - **Is Multiplayer:** False
-- **Checkpoints Reached:** 0
+- **Checkpoints Reached:** 5
 
 ## Player
 - **Health:** 5
