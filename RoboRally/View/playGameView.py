@@ -174,33 +174,35 @@ class PlayGameView:
         # Call makeRegistersAndCards
         self.playGameController.makeRegistersAndCards(self.cardsCanvas)
 
+        stateFrame = tk.Frame(controlsFrame)
+        stateFrame.grid(row=1, column=0)
 
         # turn counter - top right 
-        self.turnLabel = ttk.Label(controlsFrame, text=f'Turn: {self.playGameController.currentTurn}')
-        self.turnLabel.grid(row=0, column=0, pady=5)
+        self.turnLabel = ttk.Label(stateFrame, text=f'Turn: {self.playGameController.currentTurn}')
+        self.turnLabel.grid(row=0, column=1, pady=5)
 
         # health counter - middle right
-        self.healthLabel = ttk.Label(controlsFrame, text=f'Player Health: {self.playGameController._playerHealth}')
+        self.healthLabel = ttk.Label(stateFrame, text=f'Player Health: {self.playGameController._playerHealth}')
         self.healthLabel.grid(row=1, column=0, pady=5)
 
-        self.botHealthLabel = ttk.Label(controlsFrame, text=f'Bot Health: {self.playGameController._botHealth}')
-        self.botHealthLabel.grid(row=2, column=0, pady=5)
+        self.botHealthLabel = ttk.Label(stateFrame, text=f'Bot Health: {self.playGameController._botHealth}')
+        self.botHealthLabel.grid(row=1, column=2, pady=5)
 
         # progress bar - middle right 
-        progressLabel = ttk.Label(controlsFrame, text='Player Checkpoint Progress',)
+        progressLabel = ttk.Label(stateFrame, text='Player Checkpoint Progress')
         progressLabel.grid(row=3, column=0, pady=5)
 
-        self.progressBar = ttk.Progressbar(controlsFrame, orient='horizontal', length=150, mode='determinate')
+        self.progressBar = ttk.Progressbar(stateFrame, orient='horizontal', length=150, mode='determinate')
         self.progressBar.grid(row=4, column=0, padx=5, pady=5) 
         self.progressBar['maximum'] = self.playGameController._checkpointCount 
         self.progressBar['value'] = 0 
 
         # Creating a bot progress bar 
-        self.botProgressLabel = ttk.Label(controlsFrame, text='Bot Checkpoint Progress')
-        self.botProgressLabel.grid(row=5, column=0, pady=5)
+        self.botProgressLabel = ttk.Label(stateFrame, text='Bot Checkpoint Progress')
+        self.botProgressLabel.grid(row=3, column=2, pady=5)
 
-        self.botProgressBar = ttk.Progressbar(controlsFrame, orient='horizontal', length=150, mode='determinate')
-        self.botProgressBar.grid(row=6, column=0, padx=5, pady=5)
+        self.botProgressBar = ttk.Progressbar(stateFrame, orient='horizontal', length=150, mode='determinate')
+        self.botProgressBar.grid(row=4, column=2, pady=5)
         self.botProgressBar['maximum'] = self.playGameController._checkpointCount 
         self.botProgressBar['value'] = 0 
 
