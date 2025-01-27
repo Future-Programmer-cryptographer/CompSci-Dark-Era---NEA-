@@ -13,7 +13,7 @@ class LeaderboardView:
         self.leaderboardFrame = tk.Frame(self.root)
         
         # creating the buttons and options 
-        label = ttk.Label(self.leaderboardFrame, text='Leaderboard', font=('Arial',20))
+        label = ttk.Label(self.leaderboardFrame, text='Leaderboard', font=('fixedsys 20 bold'))
         label.pack(pady=5)
 
         # Sorting optoins 
@@ -38,9 +38,9 @@ class LeaderboardView:
             command = lambda: self.leaderboardController.sortLeaderboard('checkpoints')
         )
 
-        sortByDateBtn.pack(side=tk.LEFT, padx=5)
-        sortByScoreBtn.pack(side=tk.LEFT, padx=5)
-        sortByDiffBtn.pack(side=tk.LEFT, padx=5)
+        sortByDateBtn.pack(side=tk.LEFT, ipadx=5, ipady=10, padx=5)
+        sortByScoreBtn.pack(side=tk.LEFT, ipadx=5, ipady=10, padx=5)
+        sortByDiffBtn.pack(side=tk.LEFT, ipadx=5, ipady=10, padx=5)
 
         # Tabel for leaderboard 
         self.table = ttk.Treeview(self.leaderboardFrame, columns=('filename', 'date', 'difficulty', 'checkpoints'), show='headings')

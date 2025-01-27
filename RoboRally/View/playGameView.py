@@ -113,18 +113,13 @@ class PlayGameView:
         infoFrame = tk.Frame(self.gameBoardFrame, highlightbackground="black",highlightthickness=5)
         infoFrame.grid(row=1, columnspan=3, sticky='news')
 
-        infoLabel = ttk.Label(infoFrame, text='Helpful information: ', font=('Arial', 20))
-        infoLabel.grid(row=0, column=0, pady=5)
-
-        directionsImg = Image.open('Images/checkpoint.png').resize((100,100))
-        # print('image created?')
-        # img = ImageTk.PhotoImage(directionsImg)
-        # stuff = ttk.Label(infoFrame, image=img)
-        # stuff.grid(row=0, column=1, pady=5)
+        infoLabel = ttk.Label(infoFrame, text='Helpful information:', font=('fixedsys 20 bold'))
+        infoLabel.grid(row=0, column=0, pady=5, padx=5)
 
         summary = ttk.Label(infoFrame, 
-                            text="AIM: drag and drop 3 action cards into the register slots to move your robot and get to all the checkpoints before other robots \n The robot you will be controller is the blue token on the board with the label 'P', if playing against a bot, it will be a red token with the label 'B'. \n GREEN TRIANGLES are CHECKPOINTS \n DARK GREY SQUARES are OBSTACLES- collision with an obstacle will result in a loss of health, AVOID them if you can. \n Up = 1 square up \n Down = 1 square down  \n Left = one square to the left \n Right = one square to the right \n MOVE HISTORY: you can view your past moves (and the bot if playing against bot) in the move history text box on the left hand side of this screen.")
+                            text="AIM: drag and drop 3/5 CARDS into the EMPTY WHITE CARD SLOTS to move your robot and get to all the checkpoints before other ROBOT \n The robot you will be controlling is the blue token on the board with the label 'P', if playing against a bot, it will be a red token with the label 'B'. \n GREEN TRIANGLES are CHECKPOINTS \n DARK GREY SQUARES are OBSTACLES- collision with an obstacle will result in a loss of health, AVOID them if you can. \n Up = 1 square up \n Down = 1 square down  \n Left = one square to the left \n Right = one square to the right \n MOVE HISTORY: you can view your past moves (and the bot if playing against bot) in the move history text box on the left hand side of this screen.", font=('Arial', 12))
         summary.grid(row=0, column=1, pady=5)
+
 
         # move history 
         self.moveHistoryFrame = tk.Frame(self.gameBoardFrame, highlightbackground="black",highlightthickness=1)
@@ -135,14 +130,15 @@ class PlayGameView:
             padx=5, 
             pady=5
         )
-        moveHistoryLabel = ttk.Label(self.moveHistoryFrame, text='Move History')
+        moveHistoryLabel = ttk.Label(self.moveHistoryFrame, text='Player Move History', font=('fixedsys 20 bold'))
         moveHistoryLabel.grid(row=0, column=0, pady=5)
         self.moveHistoryTxt = tk.Text(self.moveHistoryFrame, width=40, height=15, state='disabled')
         self.moveHistoryTxt.grid(row=1, column=0, padx=5, pady=5)
 
+        moveHistoryLabel2 = ttk.Label(self.moveHistoryFrame, text='Bot Move History', font=('fixedsys 20 bold'))
+        moveHistoryLabel2.grid(row=2, column=0, pady=2)
         self.botMoveHistoryTxt = tk.Text(self.moveHistoryFrame, width=40, height=15, state='disabled')
-        self.botMoveHistoryTxt.grid(row=2, column=0, padx=5, pady=5)
-
+        self.botMoveHistoryTxt.grid(row=3, column=0, padx=5, pady=5)
 
         # Game board canvas and frame
         canvasFrame = tk.Frame(self.gameBoardFrame, highlightbackground="blue", highlightthickness=3)
@@ -163,7 +159,7 @@ class PlayGameView:
             pady=5
         )
         controlsFrame.columnconfigure(0, weight=2)
-
+        
         # Register and Cards Frame
         cardsAndRegistersFrame = tk.Frame(controlsFrame, highlightbackground="black", highlightthickness=2)
         cardsAndRegistersFrame.grid(
@@ -177,6 +173,8 @@ class PlayGameView:
 
         # Call makeRegistersAndCards
         self.playGameController.makeRegistersAndCards(self.cardsCanvas)
+
+
         # turn counter - top right 
         self.turnLabel = ttk.Label(controlsFrame, text=f'Turn: {self.playGameController.currentTurn}')
         self.turnLabel.grid(row=0, column=0, pady=5)
@@ -189,13 +187,22 @@ class PlayGameView:
         self.botHealthLabel.grid(row=2, column=0, pady=5)
 
         # progress bar - middle right 
-        progressLabel = ttk.Label(controlsFrame, text='Checkpoint Progress',)
+        progressLabel = ttk.Label(controlsFrame, text='Player Checkpoint Progress',)
         progressLabel.grid(row=3, column=0, pady=5)
 
         self.progressBar = ttk.Progressbar(controlsFrame, orient='horizontal', length=150, mode='determinate')
         self.progressBar.grid(row=4, column=0, padx=5, pady=5) 
         self.progressBar['maximum'] = self.playGameController._checkpointCount 
         self.progressBar['value'] = 0 
+
+        # Creating a bot progress bar 
+        self.botProgressLabel = ttk.Label(controlsFrame, text='Bot Checkpoint Progress')
+        self.botProgressLabel.grid(row=5, column=0, pady=5)
+
+        self.botProgressBar = ttk.Progressbar(controlsFrame, orient='horizontal', length=150, mode='determinate')
+        self.botProgressBar.grid(row=6, column=0, padx=5, pady=5)
+        self.botProgressBar['maximum'] = self.playGameController._checkpointCount 
+        self.botProgressBar['value'] = 0 
 
         # make the game grid + stuff 
         self.playGameController.makeGrid()
@@ -220,6 +227,13 @@ class PlayGameView:
         quitBtn = ttk.Button(controlsFrame, text='Quit to Main Menu', command=self.playGameController.backToMain)
         quitBtn.grid(row=10, column=0, pady=5)
 
+        # hiding unnecessary features in multiplayer 
+        if not isSinglePlayer: 
+            self.moveHistoryFrame.grid_forget() 
+            self.botProgressLabel.grid_forget() 
+            self.botProgressBar.grid_forget() 
+            self.botHealthLabel.grid_forget() 
+
     def updateTurnLabel(self, turn):
         self.turnLabel.config(text=f'Turn: {turn}')
     
@@ -234,6 +248,9 @@ class PlayGameView:
     
     def updateProgressBar(self, checkpointsReached):
         self.progressBar['value'] = checkpointsReached
+    
+    def updateBotProgress(self, botCheckpointsReached):
+        self.botProgressBar['value'] = botCheckpointsReached 
 
     def updateMoveHistory(self, history, isBot=False):
         textBox = self.botMoveHistoryTxt if isBot else self.moveHistoryTxt

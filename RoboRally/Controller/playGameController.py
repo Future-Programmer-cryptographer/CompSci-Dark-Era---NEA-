@@ -29,6 +29,7 @@ class PlayGameController:
         self.isMultiplayer = False
         self.totalPlayers = 4
         self.checkpointsReached = 0 
+        self.botCheckpointsReached = 0 
         self.currentPlayerIdx = 0 
 
         self.difficulty = '' 
@@ -97,8 +98,6 @@ class PlayGameController:
         except Exception as e:
             print(f"Error during redraw: {e}")
             messagebox.showerror("Error", f"An error occurred while redrawing the game state: {e}")
-
-
 
     def initialiseView(self, root):
         self.playGameView.showSelectBoardWindow() 
@@ -310,6 +309,7 @@ class PlayGameController:
 
         self.onMultiplayerSelect() 
 
+  
     # Private Methods 
 
     
@@ -451,23 +451,33 @@ class PlayGameController:
 
     def __checkForCheckpoint(self):
         if self.isMultiplayer: 
-            position = self.multiplayerPos
+            position = self.multiplayerPos[0]
         else: 
             position = self.playerPos
+            positionBot = self.botPos
 
-        if position in self.__checkpoints:
+        if position or positionBot in self.__checkpoints:
             # remove checkpoint first 
             self.__checkpoints.remove(position)
 
+# we need to check for any of the multiplayer pos are on the checkpoints, and then update the progress bar accoridnly 
+
             # delete checkpoint 
             checkpointId = self.checkpointIds.pop(position, None)
+            self.checkpointsReached += 1 
+
             if checkpointId:
                 self.canvas.delete(checkpointId)
 
-            self.checkpointsReached +=1  
+            # some dodgy code here... 
+            if position in self.__checkpoints: 
+                self.checkpointsReached +=1  
+            else: 
+                self.botCheckpointsReached += 1 
             
             # update progress bar in the view! 
             self.playGameView.updateProgressBar(self.checkpointsReached)
+            self.playGameView.updateBotProgress(self.botCheckpointsReached)
             messagebox.showinfo('Checkpoint reached!', f'Checkpoint reached at {convertToRankAndFile(*position)}') 
     
     def __moveRobot(self, direction, steps, stepCount=0, onComplete=None, isBot=False):
@@ -498,13 +508,13 @@ class PlayGameController:
         row, col = robotPos
 
         # Calculate the next step position
-        if direction == 'Up':
+        if direction == 'UP':
             row -= 1
-        elif direction == 'Down':
+        elif direction == 'DOWN':
             row += 1
-        elif direction == 'Left':
+        elif direction == 'LEFT':
             col -= 1
-        elif direction == 'Right':
+        elif direction == 'RIGHT':
             col += 1
 
         # Constrain position within grid
@@ -594,7 +604,7 @@ class PlayGameController:
     def __createActionCards(self, canvas):
         self.cardsController = DragAndDropController(self.playGameView.cardsCanvas)
 
-        directions = ['Up', 'Down', 'Left', 'Right', 'Up', 'Down']
+        directions = ['UP', 'DOWN', 'LEFT', 'RIGHT']
         for i in range(5):
             direction = random.choice(directions)
             steps = random.randint(1, 3)
