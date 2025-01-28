@@ -2,8 +2,7 @@
 **Date Played:** 12-01-2025 18:02
 
 ## General
-- **Size:** 10
-- **Cell:** 50
+- **Grid Size:** 10
 - **Current Turn:** 3
 - **Current Player Index:** 0
 - **Difficulty:** MEDIUM
@@ -11,12 +10,12 @@
 - **Checkpoints Reached:** 5
 
 ## Player
-- **Health:** 5
-- **Position:** (7, 8)
+- **Player Health:** 5
+- **Player Position:** (7, 8)
 
 ## Bot
-- **Health:** 5
-- **Position:** (4, 5)
+- **Bot Health:** 5
+- **Bot Position:** (4, 5)
 
 ## Checkpoints
 - **Checkpoint Positions:** (7, 4), (1, 2), (1, 5), (8, 7), (2, 9), (2, 6), (4, 8), (8, 2), (9, 1), (4, 7), (7, 4), (1, 2), (1, 5), (8, 7), (2, 9), (2, 6), (4, 8), (8, 2), (9, 1), (4, 7)

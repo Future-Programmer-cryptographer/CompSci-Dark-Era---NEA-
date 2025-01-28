@@ -51,7 +51,7 @@ class LeaderboardController:
         self.leaderboardView.leaderboardFrame.pack_forget() 
         self.mainMenuController.displayMain() 
     
-    # merge sort algorithm for leaderboard 
+    # merge sort algorithm for leaderboard - comment this pls, I know geeksforgeeks was useful but for the love of god please comment this section!! 
     def mergeSort(self, data, key):
         if len(data) <=1: 
             return data 

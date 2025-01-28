@@ -40,8 +40,8 @@ class MainMenuController:
         self.leaderboardController.initialiseLeaderboard(self.mainMenuView.root)
     
     def rulesWindow(self):
-        rulesWindow = Toplevel(self.mainMenuView.root)
-        RulesWindow(rulesWindow)
+        # I have no idea why I created another class for this... like it's pretty pointless, a frame would do but I can't be asked to refactor... 
+        RulesWindow(self.mainMenuView.root)
     
     def displayMain(self):
         self.mainMenuView.mainMenuFrame.pack() 
@@ -68,9 +68,9 @@ class MainMenuController:
                 # dateLine 
                 dateLine = next((line for line in lines if '**Date Played:**' in line), '').strip()
                 try:
-                    date = dateLine.split("**Date Played:**", 1)[1].strip()
+                    date = dateLine.split('**Date Played:**', 1)[1].strip()
                 except IndexError:
-                    date = "No record found"
+                    date = 'No games found :('
             
             # add a button for each file so that user can click that 
             ttk.Button(selectionWindow, 
@@ -91,7 +91,7 @@ class MainMenuController:
             selectionWindow.destroy()
 
             # Tell user (messagebox is useful so why not...)
-            messagebox.showinfo("Game Loading...", f"Loaded game from {filename}")
+            messagebox.showinfo('Game Loading...', f'Loaded game from {filename}')
 
         except Exception as e:
             print(f'{e}')
