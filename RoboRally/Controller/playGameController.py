@@ -198,7 +198,6 @@ class PlayGameController:
 
     # Protected Methods 
 
-
     def _saveGameState(self):
         filename = askstring('Save Game', 'Name your file (without extension!): ')
         if not filename: 
@@ -214,11 +213,11 @@ class PlayGameController:
             f.write('# Robo Rally File\n')
             f.write(f"**Date Played:** {now}\n\n")
 
-            # Start with summary!
+            # Summary sec - use this for leaderboard parsing later on... 
             f.write('## Summary\n')
             f.write(f'- **Grid Size:** {self.__size}\n')
             f.write(f'- **Current Turn:** {self.currentTurn}\n')
-            f.write(f'- **Current Player:** {self.currentPlayerIdx}\n')
+            f.write(f'- **Current Player Index:** {self.currentPlayerIdx}\n')
             f.write(f'- **Difficulty:** {self.difficulty}\n')
             f.write(f'- **Is Multiplayer:** {self.isMultiplayer}\n')
             f.write(f'- **Checkpoints Reached:** {self.checkpointsReached}\n\n')
@@ -355,26 +354,25 @@ class PlayGameController:
         self.__placeCheckpointsAndObstacles()
     
     def __placeCheckpointsAndObstacles(self):
-        # Start with positions already taken by checkpoints, obstacles, and players
+        # Start with positions ALREADY taken by checkpoints/obstacles/players so that they don't overlap! 
         if self.isMultiplayer:
-            exclude = set(self.multiplayerPos + list(self._obstacles))  # Multiplayer robots
+            exclude = set(self.multiplayerPos + list(self._obstacles))
         else:
-            exclude = set([self.playerPos, self.botPos] + list(self._obstacles))  # Single-player positions
+            exclude = set([self.playerPos, self.botPos] + list(self._obstacles))  
 
-        # Generate obstacles
         obstacles = generateRandomSquares(self._obstacleCount, exclude, self.__size)
         self._obstacles.update(obstacles)
         exclude.update(obstacles)
 
-        # Generate checkpoints
         checkpoints = generateRandomSquares(self._checkpointCount, exclude, self.__size)
         self._checkpoints.extend(checkpoints)
 
-        # Place obstacles and checkpoints on the canvas
+        # NOW place obstacles and checkpoints on canvas
         self.__placeObstacles(obstacles)
         self.__placeCheckpoints(checkpoints)
     
     def __processCommands(self, commands, index=0, isBot=False, onComplete=None):
+        # print(isBot) # debug prints for bot... 
         if index < len(commands):
             command = commands[index]
             direction = command['direction']
@@ -502,6 +500,7 @@ class PlayGameController:
             robotPos = self.multiplayerPos[self.currentPlayerIdx]
             id = self.playerIds[self.currentPlayerIdx]
             label = self.playerLabels[self.currentPlayerIdx]
+            health = self._playerHealth
 
         else:
             robotPos = self.playerPos
@@ -510,10 +509,10 @@ class PlayGameController:
             id = self.playerId
             label = self.playerLabel
 
-        # Current position
+        # Current pos
         row, col = robotPos
 
-        # Calculate the next step position
+        # Calculate next up... 
         if direction == 'UP':
             row -= 1
         elif direction == 'DOWN':
@@ -523,44 +522,37 @@ class PlayGameController:
         elif direction == 'RIGHT':
             col += 1
 
-        # Constrain position within grid
-        row = max(1, min(10, row))
-        col = max(1, min(10, col))
-
-
         # check for obstacles and going off grid... 
-        if not self.isMultiplayer:
 
-            # self.__checkForBounds(row, col)
-
-            if (row, col) in self._obstacles:
-                # Update health and move history for collision
-                health -=1 
+        if (row, col) in self._obstacles:
+            # Update health and move history for collision
+            health -=1 
+            if not self.isMultiplayer:
                 history[-1]['end'] = convertToRankAndFile(row, col)
                 history[-1]['collision'] = True
-                self.playGameView.updateHealthLabel(health, isBot=isBot)
+            self.playGameView.updateHealthLabel(health, isBot=isBot)
 
-                messagebox.showinfo(
-                    'Collision!',
-                    f"{'Bot' if isBot else 'Player'} has a collision!"
-                )
-                if onComplete:
-                    onComplete()
-                return
+            messagebox.showinfo(
+                'Collision!',
+                f"{'Bot' if isBot else 'Player'} has a collision!"
+            )
+            if onComplete:
+                onComplete()
+            return
 
-            # if self.__checkForBounds: 
-            #     health -= 1 
-            #     history[-1]['end'] = convertToRankAndFile(row, col)
-            #     history[-1]['collision'] = True
-            #     self.playGameView.updateHealthLabel(health, isBot=isBot)
+        if self.__checkForBounds(row, col): 
+            health -= 1 
+            history[-1]['end'] = convertToRankAndFile(row, col)
+            history[-1]['collision'] = True
+            self.playGameView.updateHealthLabel(health, isBot=isBot)
 
-            #     messagebox.showinfo(
-            #         'Gone off grid!',
-            #         f"{'Bot' if isBot else 'Player'} has gone off grid!"
-            #     )
-            #     if onComplete:
-            #         onComplete()
-            #     return
+            messagebox.showinfo(
+                'Gone off grid!',
+                f"{'Bot' if isBot else 'Player'} has gone off grid!"
+            )
+            if onComplete:
+                onComplete()
+            return
 
         # Update robot position
         if isBot:
@@ -603,8 +595,10 @@ class PlayGameController:
 
     def __checkForBounds(self,row, col):
                 if row< 1 or row > self.__size or col <1 or col > self.__size: 
+                    # print(row, col)
                     return True 
                 else: 
+                    # print(row,col)
                     return False 
 
     def __createActionCards(self, canvas):
@@ -698,7 +692,8 @@ class PlayGameController:
     def __handleBotTurn(self):
         if not self.isMultiplayer:
             botCommands = generateBotMoves() 
-            self.__processCommands(botCommands, isBot=True, onComplete=self.__endTurn)
+            self.__processCommands(botCommands, index=0, isBot=True, onComplete=self.__endTurn)
+            # print('onto bot turn now!!')
         
     def __endTurn(self):
         if self.isMultiplayer:

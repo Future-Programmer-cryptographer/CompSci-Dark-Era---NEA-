@@ -4,17 +4,17 @@
 ## Summary
 - **Grid Size:** 10
 - **Current Turn:** 24
-- **Current Player:** 0
+- **Current Player Index:** 0
 - **Difficulty:** EASY
-- **Multiplayer Game?:** False
+- **Is Multiplayer:** False
 - **Checkpoints Reached:** 9
 
 ## Player
-- **Health:** 5
-- **Position:** (7, 5)
+- **Player Health:** 5
+- **Player Position:** (7, 5)
 
 ## Bot
-- **Health:** 5
-- **Position:** (8, 6)
+- **Bot Health:** 5
+- **Bot Position:** (8, 6)
 
 ## Checkpoints

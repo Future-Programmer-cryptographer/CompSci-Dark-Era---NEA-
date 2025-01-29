@@ -3,9 +3,7 @@ from tkinter import ttk
 from tkinter.ttk import *  
 from Controller.leaderboard import displayLeaderboard
 from View.rules import RulesWindow
-from View.playGameView import PlayGameView
 
-from tkinter import filedialog
 from tkinter import messagebox
 import os 
 

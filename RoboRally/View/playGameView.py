@@ -69,6 +69,8 @@ class PlayGameView:
 
         self.selectBoardFrame.pack_forget() 
 
+        style = ttk.Style() 
+
         # creating an options window frame
         self.optionWindowFrame = tk.Frame(self.root)
         self.optionWindowFrame.pack(fill=tk.BOTH)
@@ -76,13 +78,17 @@ class PlayGameView:
 
         singlePlayerBtn = ttk.Button(self.optionWindowFrame, 
                                      text='Single Player vs Bot', 
+                                     style='play.TButton',
                                      command=self.onOptionWindowSelectSinglePlayer)
-        singlePlayerBtn.pack(pady=10)
+        singlePlayerBtn.pack(ipady=10, ipadx=10, pady=10)
 
         multiplayerBtn = ttk.Button(self.optionWindowFrame, 
                                      text='Multiplayer', 
+                                     style='play.TButton',
                                      command=self.onOptionWindowSelectMultiplayer)
-        multiplayerBtn.pack(pady=10)
+        multiplayerBtn.pack(ipady=10, ipadx=10, pady=10)
+        
+        style.configure('play.TButton', font=('fixedsys 20 bold'), foreground='red3')
     
     def onCustomBoard(self):
         self.selectBoardFrame.pack_forget() 
@@ -110,15 +116,18 @@ class PlayGameView:
         self.gameBoardFrame.columnconfigure(2, weight=2)
 
         # helpful info frame 
-        infoFrame = tk.Frame(self.gameBoardFrame, highlightbackground="black",highlightthickness=5)
+        infoFrame = tk.Frame(self.gameBoardFrame, highlightbackground="black",highlightthickness=2)
         infoFrame.grid(row=1, columnspan=3, sticky='news')
 
         infoLabel = ttk.Label(infoFrame, text='Helpful information:', font=('fixedsys 20 bold'))
         infoLabel.grid(row=0, column=0, pady=5, padx=5)
 
-        summary = ttk.Label(infoFrame, 
-                            text="AIM: drag and drop 3/5 CARDS into the EMPTY WHITE CARD SLOTS to move your robot and get to all the checkpoints before other ROBOT \n The robot you will be controlling is the blue token on the board with the label 'P', if playing against a bot, it will be a red token with the label 'B'. \n GREEN TRIANGLES are CHECKPOINTS \n DARK GREY SQUARES are OBSTACLES- collision with an obstacle will result in a loss of health, AVOID them if you can. \n Up = 1 square up \n Down = 1 square down  \n Left = one square to the left \n Right = one square to the right \n MOVE HISTORY: you can view your past moves (and the bot if playing against bot) in the move history text box on the left hand side of this screen.", font=('Arial', 12))
-        summary.grid(row=0, column=1, pady=5)
+        self.summary = ttk.Label(infoFrame, 
+                            text="AIM: drag and drop 3 out of 5 CARDS into the EMPTY WHITE CARD SLOTS to move your robot and get to all the checkpoints before other ROBOT \n The robot you will be controlling is the blue token on the board with the label 'P', if playing against a bot, it will be a red token with the label 'B'. \n GREEN TRIANGLES are CHECKPOINTS \n DARK GREY SQUARES are OBSTACLES- collision with an obstacle will result in a loss of health, AVOID them if you can. \n Up = 1 square up \n Down = 1 square down  \n Left = one square to the left \n Right = one square to the right \n MOVE HISTORY: you can view your past moves (and the bot if playing against bot) in the move history text box on the left hand side of this screen.\n GOOD LUCK AND HAVE FUN!", font=('Arial', 12))
+        self.summary.grid(row=0, column=1, pady=5)
+
+        self.multiplayerSummary = ttk.Label(infoFrame, 
+                                            text='AIM: Work as a team to get to all the checkpoints in the shortest time possible! \n Assign each player in your multiplayer team a number and drag and drop 3 out of 5 CARDS in the EMPTY WHITE CARD SLOTS to move your numbered robot (numbered 1-4). \n GREEN TRIANGLES are CHECKPOINTS \n DARK GREY SQUARES are OBSTACLES- collision with an obstacle will result in a loss of health, AVOID them if you can. \n Up = 1 square up \n Down = 1 square down  \n Left = one square to the left \n Right = one square to the right. \n GOOD LUCK AND HAVE FUN!', font=('Arial', 12))
 
 
         # move history 
@@ -141,7 +150,7 @@ class PlayGameView:
         self.botMoveHistoryTxt.grid(row=3, column=0, padx=5, pady=5)
 
         # Game board canvas and frame
-        canvasFrame = tk.Frame(self.gameBoardFrame, highlightbackground="blue", highlightthickness=3)
+        canvasFrame = tk.Frame(self.gameBoardFrame, highlightbackground="black", highlightthickness=3)
         canvasFrame.grid(
             row=0, column=1, sticky="nsew", padx=5, pady=5
         )
@@ -179,7 +188,10 @@ class PlayGameView:
 
         # turn counter - top right 
         self.turnLabel = ttk.Label(stateFrame, text=f'Turn: {self.playGameController.currentTurn}')
-        self.turnLabel.grid(row=0, column=1, pady=5)
+        if isSinglePlayer: 
+            self.turnLabel.grid(row=0, column=1, pady=5)
+        else: 
+            self.turnLabel.grid(row=0, column=0, pady=5)
 
         # health counter - middle right
         self.healthLabel = ttk.Label(stateFrame, text=f'Player Health: {self.playGameController._playerHealth}')
@@ -235,6 +247,8 @@ class PlayGameView:
             self.botProgressLabel.grid_forget() 
             self.botProgressBar.grid_forget() 
             self.botHealthLabel.grid_forget() 
+            self.summary.grid_forget() 
+            self.multiplayerSummary.grid(row=0, column=1, pady=5)
 
     def updateTurnLabel(self, turn):
         self.turnLabel.config(text=f'Turn: {turn}')

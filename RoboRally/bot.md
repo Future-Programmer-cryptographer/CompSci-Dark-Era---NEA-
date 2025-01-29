@@ -4,7 +4,7 @@
 ## Summary
 - **Grid Size:** 10
 - **Current Turn:** 3
-- **Current Player:** 0
+- **Current Player Index:** 0
 - **Difficulty:** MEDIUM
 - **Is Multiplayer:** False
 - **Checkpoints Reached:** 1
