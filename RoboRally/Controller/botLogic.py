@@ -1,7 +1,7 @@
 import random 
 
 def generateBotMoves():
-        directions = ['Forward', 'Backward', 'Left', 'Right']
+        directions = ['UP', 'DOWN', 'LEFT', 'RIGHT']
         botCommands = [] 
 
         for _ in range(3):

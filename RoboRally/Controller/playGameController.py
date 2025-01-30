@@ -72,7 +72,8 @@ class PlayGameController:
             self.currentTurn = int(getMdValue(contents, 'Current Turn'))
             self.currentPlayerIdx = int(getMdValue(contents, 'Current Player Index'))
             self.isMultiplayer = getMdValue(contents, 'Is Multiplayer') == 'True'
-            self.checkpointsReached = int(getMdValue(contents, 'Checkpoints Reached'))
+            self.checkpointsReached = int(getMdValue(contents, 'Player Checkpoints Reached'))
+            self.botCheckpointsReached = int(getMdValue(contents, 'Bot Checkpoints Reached'))
 
             # Player info
             self._playerHealth = int(getMdValue(contents, 'Player Health'))
@@ -109,6 +110,7 @@ class PlayGameController:
         else: 
             self.playGameView.gameBoardFrame.pack_forget() 
         self.mainMenuController.displayMain() 
+        self.playGameView.stopTime() 
     
     def onSinglePlayerSelect(self):
         self.isMultiplayer = False 
@@ -123,23 +125,21 @@ class PlayGameController:
         self.__placeCheckpointsAndObstacles() 
     
     def submitCards(self):
-        commands = [] 
+        self.commands = [] 
         for i, register, in enumerate(self.registers): 
             card = register['model'].card
             if card: 
-                commands.append({
+                self.commands.append({
                     'direction' : card.direction, 
                     'steps': card.steps
                 })
-            else: 
-                print('Whoops! No cards')
         
         if self.isMultiplayer:
             # Process only the active player's commands
-            self.__processCommands(commands, isBot=False, onComplete=self.__endTurn)
+            self.__processCommands(self.commands, isBot=False, onComplete=self.__endTurn)
         else:
             # Single-player: handle bot after player
-            self.__processCommands(commands, isBot=False, onComplete=self.__handleBotTurn)  
+            self.__processCommands(self.commands, isBot=False, onComplete=self.__handleBotTurn)  
     
     def undoLastAction(self):
         if not self.__undoStack:
@@ -167,6 +167,7 @@ class PlayGameController:
 
     def resetCards(self): 
         canvas = self.playGameView.cardsCanvas
+        self.commands = [] 
         for cardPair in self.cards: 
             cardView = cardPair['view']
             cardView.resetPosition(canvas)
@@ -220,7 +221,8 @@ class PlayGameController:
             f.write(f'- **Current Player Index:** {self.currentPlayerIdx}\n')
             f.write(f'- **Difficulty:** {self.difficulty}\n')
             f.write(f'- **Is Multiplayer:** {self.isMultiplayer}\n')
-            f.write(f'- **Checkpoints Reached:** {self.checkpointsReached}\n\n')
+            f.write(f'- **Player Checkpoints Reached:** {self.checkpointsReached}\n')
+            f.write(f'- **Bot Checkpoints Reached:** {self.botCheckpointsReached}\n\n')
 
             # Player and multiplayer stuff 
             if not self.isMultiplayer: 
@@ -277,15 +279,15 @@ class PlayGameController:
         # Redraw obstacles
         self.__placeObstacles(self._obstacles)
         
-        # Update labels and progress
+        # Update labels and progress - remem to add bot checkpints later!!
         self.playGameView.updateTurnLabel(self.currentTurn)
         self.playGameView.updateHealthLabel(self._playerHealth, isBot=False)
         self.playGameView.updateHealthLabel(self._botHealth, isBot=True)
         self.playGameView.updateProgressBar(self.checkpointsReached)
+        self.playGameView.updateBotProgress(self.botCheckpointsReached)
 
         self.mainMenuController.hideMain() 
         self.playGameView.moveHistoryFrame.pack_forget() 
-
 
     def _makeCustomBoard(self):
 
@@ -311,7 +313,7 @@ class PlayGameController:
         if difficulty == 'EASY':
             self.difficulty = 'EASY'
             self._obstacleCount = 5 
-            self._checkpointCount = 20 
+            self._checkpointCount = 20
         elif difficulty == 'MEDIUM':
             self.difficulty = 'MEDIUM'
             self._checkpointCount = 10 
@@ -446,14 +448,11 @@ class PlayGameController:
 
         # okay, this needs some debuggin... 
         # maybe... start with a flag for player and bot and then deal with multiplayer separately?
-        playerReached = False 
-        botReached = False 
 
         # first chek for player checkpoint, then bot checkpoint 
         if self.playerPos in self._checkpoints: 
             self._checkpoints.remove(self.playerPos)
             checkpointId = self.checkpointIds.pop(self.playerPos, None)
-            playerReached = True 
             self.checkpointsReached += 1 
 
             if checkpointId:
@@ -464,8 +463,9 @@ class PlayGameController:
         if self.botPos in self._checkpoints:
             self._checkpoints.remove(self.botPos)
             checkpointId = self.checkpointIds.pop(self.botPos, None)
-            botReached = True 
             self.botCheckpointsReached += 1 
+            messagebox.showinfo('Checkpoint Reached!!', f'Bot reached checkpoint at {convertToRankAndFile(*self.botPos)}')
+
 
             if checkpointId: 
                 self.canvas.delete(checkpointId)
@@ -495,6 +495,7 @@ class PlayGameController:
             history = self.botMoveHistory
             id = self.botId
             label = self.botLabel
+            # print(f'Current pos: {robotPos}')
             
         elif self.isMultiplayer:
             robotPos = self.multiplayerPos[self.currentPlayerIdx]
@@ -542,8 +543,9 @@ class PlayGameController:
 
         if self.__checkForBounds(row, col): 
             health -= 1 
-            history[-1]['end'] = convertToRankAndFile(row, col)
-            history[-1]['collision'] = True
+            if not self.isMultiplayer: 
+                history[-1]['end'] = convertToRankAndFile(row, col)
+                history[-1]['collision'] = True
             self.playGameView.updateHealthLabel(health, isBot=isBot)
 
             messagebox.showinfo(
@@ -562,6 +564,7 @@ class PlayGameController:
         else:
             self.playerPos = (row, col)
 
+
         # Calculate new coordinates
         x1 = (col) * self.__cell + self.__cell / 4
         y1 = (row) * self.__cell + self.__cell / 4
@@ -571,6 +574,8 @@ class PlayGameController:
         # Update robot's position on the canvas
         self.canvas.coords(id, x1, y1, x2, y2)
         self.canvas.coords(label, (x1 + x2) / 2, (y1 + y2) / 2)
+
+        self.canvas.update_idletasks() 
 
         # Continue animating steps if more remain
         if stepCount + 1 < steps:

@@ -2,6 +2,7 @@ from tkinter import *
 from PIL import Image, ImageTk 
 import tkinter as tk 
 from tkinter import ttk 
+import time 
 
 # need a board selection screen with different difficulty 
 # need to have three different boards - tkinter framing... 
@@ -59,7 +60,13 @@ class PlayGameView:
                             text = 'HARD',
                             image = self.hardBoard,
                             command= lambda: self.playGameController.onBoardSelect('HARD'))
-        hardBtn.pack(side=LEFT,expand=True) 
+        hardBtn.pack(side=LEFT,expand=True)
+
+        self.start = 0.0 
+        self.elapsedTime = 0.0
+        self.running = 0 
+        self.timestr = StringVar()
+
     
     def showSelectBoardWindow(self):
         self.root.title('Choose Game Option')
@@ -100,7 +107,8 @@ class PlayGameView:
     
     def onOptionWindowSelectMultiplayer(self):
         self.optionWindowFrame.pack_forget() 
-        self.playGameController.onMultiplayerSelect() 
+        self.playGameController.onMultiplayerSelect()  
+        self.startTime() 
     
     def showGameBoard(self, isSinglePlayer=True):
 
@@ -123,11 +131,11 @@ class PlayGameView:
         infoLabel.grid(row=0, column=0, pady=5, padx=5)
 
         self.summary = ttk.Label(infoFrame, 
-                            text="AIM: drag and drop 3 out of 5 CARDS into the EMPTY WHITE CARD SLOTS to move your robot and get to all the checkpoints before other ROBOT \n The robot you will be controlling is the blue token on the board with the label 'P', if playing against a bot, it will be a red token with the label 'B'. \n GREEN TRIANGLES are CHECKPOINTS \n DARK GREY SQUARES are OBSTACLES- collision with an obstacle will result in a loss of health, AVOID them if you can. \n Up = 1 square up \n Down = 1 square down  \n Left = one square to the left \n Right = one square to the right \n MOVE HISTORY: you can view your past moves (and the bot if playing against bot) in the move history text box on the left hand side of this screen.\n GOOD LUCK AND HAVE FUN!", font=('Arial', 12))
+                            text="AIM: drag and drop UP TO 3 OUT OF 5 CARDS into the EMPTY WHITE CARD SLOTS to move your robot and get to all the checkpoints before other ROBOT \n The robot you will be controlling is the blue token on the board with the label 'P', if playing against a bot, it will be a red token with the label 'B'. \n GREEN TRIANGLES are CHECKPOINTS \n DARK GREY SQUARES are OBSTACLES- collision with an obstacle will result in a loss of health, AVOID them if you can. \n Up = 1 square up \n Down = 1 square down  \n Left = one square to the left \n Right = one square to the right \n MOVE HISTORY: you can view your past moves (and the bot if playing against bot) in the move history text box on the left hand side of this screen.\n GOOD LUCK AND HAVE FUN!", font=('Arial', 12))
         self.summary.grid(row=0, column=1, pady=5)
 
         self.multiplayerSummary = ttk.Label(infoFrame, 
-                                            text='AIM: Work as a team to get to all the checkpoints in the shortest time possible! \n Assign each player in your multiplayer team a number and drag and drop 3 out of 5 CARDS in the EMPTY WHITE CARD SLOTS to move your numbered robot (numbered 1-4). \n GREEN TRIANGLES are CHECKPOINTS \n DARK GREY SQUARES are OBSTACLES- collision with an obstacle will result in a loss of health, AVOID them if you can. \n Up = 1 square up \n Down = 1 square down  \n Left = one square to the left \n Right = one square to the right. \n GOOD LUCK AND HAVE FUN!', font=('Arial', 12))
+                                            text='AIM: Work as a team to get to all the checkpoints in the shortest time possible! \n Assign each player in your multiplayer team a number and drag and drop UP TO 3 OUT OF 5 CARDS in the EMPTY WHITE CARD SLOTS to move your numbered robot (numbered 1-4). \n GREEN TRIANGLES are CHECKPOINTS \n DARK GREY SQUARES are OBSTACLES- collision with an obstacle will result in a loss of health, AVOID them if you can. \n Up = 1 square up \n Down = 1 square down  \n Left = one square to the left \n Right = one square to the right. \n GOOD LUCK AND HAVE FUN!', font=('Arial', 12))
 
 
         # move history 
@@ -183,6 +191,7 @@ class PlayGameView:
         # Call makeRegistersAndCards
         self.playGameController.makeRegistersAndCards(self.cardsCanvas)
 
+        # frame to grid labels/turn coutners/etc. 
         stateFrame = tk.Frame(controlsFrame)
         stateFrame.grid(row=1, column=0)
 
@@ -218,6 +227,15 @@ class PlayGameView:
         self.botProgressBar['maximum'] = self.playGameController._checkpointCount 
         self.botProgressBar['value'] = 0 
 
+        # stopwatch for multiplayer! 
+        self.stopWatchFrame = tk.Frame(stateFrame)
+
+        time = ttk.Label(self.stopWatchFrame, text='Time elapsed:', font=('fixedsys 20 bold'))
+        time.grid(row=0, column=0)
+        timeLabel = ttk.Label(self.stopWatchFrame, textvariable=self.timestr, font=('fixedsys 20 bold'), background='black', foreground='white')
+        self.setTime(self.elapsedTime) 
+        timeLabel.grid(row=1, column=0, rowspan=3, columnspan=3)
+        
         # make the game grid + stuff 
         self.playGameController.makeGrid()
 
@@ -248,7 +266,36 @@ class PlayGameView:
             self.botProgressBar.grid_forget() 
             self.botHealthLabel.grid_forget() 
             self.summary.grid_forget() 
-            self.multiplayerSummary.grid(row=0, column=1, pady=5)
+            self.multiplayerSummary.grid(row=0, column=1, pady=5) 
+            self.stopWatchFrame.grid(row=0, column=1, columnspan=3, rowspan=3)
+        
+    def updateTime(self):
+        self.elapsedTime = time.time() - self.start
+        self.setTime(self.elapsedTime)
+        self.timer = self.canvas.after(50, self.updateTime)
+    
+    def setTime(self, elapsed):
+        mins = int(elapsed / 60)
+        hrs = int(mins / 60)
+        secs = int(elapsed - mins * 60.0)
+        self.timestr.set('%02d:%02d:%02d' % (hrs, mins, secs))
+    
+    def startTime(self):
+        if not self.running: 
+            self.start = time.time() - self.elapsedTime
+            self.updateTime() 
+            self.running = 1 
+        
+    def stopTime(self):
+        if self.running: 
+            self.canvas.after_cancel(self.timer)
+            self.elapsedTime = time.time() - self.start
+            self.setTime(self.elapsedTime)
+            self.running = 0 
+
+            self.start = time.time() 
+            self.elapsedTime = 0.0 
+            self.setTime(self.elapsedTime)
 
     def updateTurnLabel(self, turn):
         self.turnLabel.config(text=f'Turn: {turn}')
@@ -284,7 +331,7 @@ class PlayGameView:
 
             if collision: 
                 textBox.insert(tk.END, 
-                                       f'Obstacle hittt at {end}!! \n')
+                                       f'Lost health at {end}!! \n')
 
             else: 
                 textBox.insert(tk.END, 
