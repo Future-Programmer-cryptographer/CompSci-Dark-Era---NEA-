@@ -81,6 +81,8 @@ class LeaderboardController:
         elif key == 'difficulty':
             order = {'HARD':3, 'MEDIUM' :2, 'EASY':1}
             return order[i1['difficulty']] > order[i2['difficulty']] 
+        elif key == 'time':
+            return i1['time'] > i2['time']
 
     def sortLeaderboard(self, key):
         self.leaderboardData = self.mergeSort(self.leaderboardData, key)

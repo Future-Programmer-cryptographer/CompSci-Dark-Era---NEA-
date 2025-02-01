@@ -87,6 +87,9 @@ class PlayGameController:
             self._checkpoints = getMdPos(contents, 'Checkpoint Positions')
             self._obstacles = getMdPos(contents, "Obstacle Positions")
 
+            if self.isMultiplayer: 
+                self.timeToComplete = self.playGameView.elapsedTime = float(getMdValue(contents, 'Time Taken'))
+
             # # debug prints 
             # print(f'Checkpoitn parse debug- {self._checkpoints}')
             # print(f'Obstacle prase debug- {self._obstacles}')
@@ -105,12 +108,17 @@ class PlayGameController:
     
     # generic button to take user back to main menu 
     def backToMain(self,token=None):
-        if token: 
-            self.playGameView.selectBoardFrame.pack_forget() 
-        else: 
-            self.playGameView.gameBoardFrame.pack_forget() 
-        self.mainMenuController.displayMain() 
-        self.playGameView.stopTime() 
+
+        confirm = messagebox.askyesno('Quit To Main Menu', 'Are you SURE you want to quit? Unsaved game will be LOST')
+
+        if confirm: 
+
+            if token: 
+                self.playGameView.selectBoardFrame.pack_forget() 
+            else: 
+                self.playGameView.gameBoardFrame.pack_forget() 
+            self.mainMenuController.displayMain() 
+            self.playGameView.stopTime() 
     
     def onSinglePlayerSelect(self):
         self.isMultiplayer = False 
@@ -229,17 +237,20 @@ class PlayGameController:
                 f.write('## Player\n')
                 f.write(f'- **Player Health:** {self._playerHealth}\n')
                 f.write(f'- **Player Position:** ({self.playerPos[0]}, {self.playerPos[1]})\n\n')
+                
+                f.write('## Bot\n')
+                f.write(f'- **Bot Health:** {self._botHealth}\n')
+                f.write(f'- **Bot Position:** ({self.botPos[0]}, {self.botPos[1]})\n\n')
+
             else: 
                 f.write('## Multiplayer\n')
                 positions = '', ''.join([f'({p[0]}, {p[1]})' for p in self.multiplayerPos])
                 f.write(f'- **Positions:** {positions}\n')
                 f.write(f'- **Current Player Index:** {self.currentPlayerIdx}\n\n')
+                f.write(f'- **Time Taken:** {self.playGameView.elapsedTime:.2f} seconds\n')
 
             # need to initilaise isBot at some point 
             # Bot stuff
-            f.write('## Bot\n')
-            f.write(f'- **Bot Health:** {self._botHealth}\n')
-            f.write(f'- **Bot Position:** ({self.botPos[0]}, {self.botPos[1]})\n\n')
 
             # Checkpoints Section
             checkpoints = ', '.join([f'({p[0]}, {p[1]})' for p in self._checkpoints])
@@ -317,7 +328,7 @@ class PlayGameController:
         elif difficulty == 'MEDIUM':
             self.difficulty = 'MEDIUM'
             self._checkpointCount = 10 
-            self._obstacleCount = 5
+            self._obstacleCount = 10
         elif difficulty == 'HARD':
             self.difficulty = 'HARD'
             self._checkpointCount = 5 
@@ -527,11 +538,24 @@ class PlayGameController:
 
         if (row, col) in self._obstacles:
             # Update health and move history for collision
-            health -=1 
+            if isBot: 
+                self._botHealth -=1  
+                health = self._botHealth
+            else: 
+                self._playerHealth -= 1 
+                health = self._playerHealth
+
             if not self.isMultiplayer:
                 history[-1]['end'] = convertToRankAndFile(row, col)
                 history[-1]['collision'] = True
+
+            # Update health 
             self.playGameView.updateHealthLabel(health, isBot=isBot)
+
+            # Check for game over 
+            if health <= 0: 
+                self.__gameOver(isBot)
+                return 
 
             messagebox.showinfo(
                 'Collision!',
@@ -542,11 +566,24 @@ class PlayGameController:
             return
 
         if self.__checkForBounds(row, col): 
-            health -= 1 
+            if isBot: 
+                self._botHealth -=1  
+                health = self._botHealth
+            else: 
+                self._playerHealth -= 1 
+                health = self._playerHealth
+
             if not self.isMultiplayer: 
                 history[-1]['end'] = convertToRankAndFile(row, col)
                 history[-1]['collision'] = True
+
+            # Update health     
             self.playGameView.updateHealthLabel(health, isBot=isBot)
+
+            # Check for game over 
+            if health <= 0: 
+                self.__gameOver(isBot)
+                return 
 
             messagebox.showinfo(
                 'Gone off grid!',
@@ -575,7 +612,6 @@ class PlayGameController:
         self.canvas.coords(id, x1, y1, x2, y2)
         self.canvas.coords(label, (x1 + x2) / 2, (y1 + y2) / 2)
 
-        self.canvas.update_idletasks() 
 
         # Continue animating steps if more remain
         if stepCount + 1 < steps:
@@ -598,13 +634,29 @@ class PlayGameController:
             if onComplete: 
                 onComplete() 
 
+
+    def __gameOver(self, isBot):
+        if isBot: 
+            winner = 'Player'
+            # Well, talk about sensible variable names... 
+            notWinner  = 'Bot'
+        
+            messagebox.showinfo('GAME OVER', f'{notWinner} health is 0. {winner} wins!')
+
+        else:
+            messagebox.showinfo('GAME OVER', f'Overall health is 0')
+        
+        self.__clearRegisterAndCards()
+        self.cards = [] 
+        self.registers = [] 
+
     def __checkForBounds(self,row, col):
-                if row< 1 or row > self.__size or col <1 or col > self.__size: 
-                    # print(row, col)
-                    return True 
-                else: 
-                    # print(row,col)
-                    return False 
+        if row< 1 or row > self.__size or col <1 or col > self.__size: 
+            # print(row, col)
+            return True 
+        else: 
+            # print(row,col)
+            return False 
 
     def __createActionCards(self, canvas):
         self.cardsController = DragAndDropController(self.playGameView.cardsCanvas)

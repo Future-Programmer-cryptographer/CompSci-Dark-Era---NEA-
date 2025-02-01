@@ -21,6 +21,7 @@ class PlayGameView:
         titleLabel = ttk.Label(self.selectBoardFrame, text='Select one of the three boards for single player vs Bot OR Multiplayer \n Boards are sorted by difficulty, easy-medium-hard (left to right) \n You can also make a custom board for multiplayer gameplay', font=('Arial',15))
         titleLabel.pack(pady=10)
 
+        # note to my future self, the token was included here becuase there were some bugs when closing the frame, so adding a token solved that bug 
         backBtn = ttk.Button(self.selectBoardFrame, 
                         text='Back to Main Menu',
                         command=lambda: self.playGameController.backToMain (1))
@@ -131,7 +132,7 @@ class PlayGameView:
         infoLabel.grid(row=0, column=0, pady=5, padx=5)
 
         self.summary = ttk.Label(infoFrame, 
-                            text="AIM: drag and drop UP TO 3 OUT OF 5 CARDS into the EMPTY WHITE CARD SLOTS to move your robot and get to all the checkpoints before other ROBOT \n The robot you will be controlling is the blue token on the board with the label 'P', if playing against a bot, it will be a red token with the label 'B'. \n GREEN TRIANGLES are CHECKPOINTS \n DARK GREY SQUARES are OBSTACLES- collision with an obstacle will result in a loss of health, AVOID them if you can. \n Up = 1 square up \n Down = 1 square down  \n Left = one square to the left \n Right = one square to the right \n MOVE HISTORY: you can view your past moves (and the bot if playing against bot) in the move history text box on the left hand side of this screen.\n GOOD LUCK AND HAVE FUN!", font=('Arial', 12))
+                            text="AIM: drag and drop UP TO 3 OUT OF 5 CARDS into the EMPTY WHITE CARD SLOTS to move your robot and get to all the checkpoints before other ROBOT \n The robot you will be controlling is the blue token on the board with the label 'P' and you will be playign AGAINST a bot (label 'B'). \n GREEN TRIANGLES are CHECKPOINT. You MUST LAND on the checkpoint at the end of your turn to get the checkpoint \n DARK GREY SQUARES are OBSTACLES- collision with an obstacle will result in a loss of health, AVOID them if you can. \n Up = 1 square up \n Down = 1 square down  \n Left = one square to the left \n Right = one square to the right \n MOVE HISTORY: you can view your past moves (and the bot if playing against bot) in the move history text box on the left hand side of this screen.\n GOOD LUCK AND HAVE FUN!", font=('Arial', 12))
         self.summary.grid(row=0, column=1, pady=5)
 
         self.multiplayerSummary = ttk.Label(infoFrame, 
@@ -232,7 +233,7 @@ class PlayGameView:
 
         time = ttk.Label(self.stopWatchFrame, text='Time elapsed:', font=('fixedsys 20 bold'))
         time.grid(row=0, column=0)
-        timeLabel = ttk.Label(self.stopWatchFrame, textvariable=self.timestr, font=('fixedsys 20 bold'), background='black', foreground='white')
+        timeLabel = ttk.Label(self.stopWatchFrame, textvariable=self.timestr, font=('fixedsys 20 '), background='black', foreground='white')
         self.setTime(self.elapsedTime) 
         timeLabel.grid(row=1, column=0, rowspan=3, columnspan=3)
         
