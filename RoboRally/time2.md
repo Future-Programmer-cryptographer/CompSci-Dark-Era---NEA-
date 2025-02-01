@@ -11,10 +11,8 @@
 - **Bot Checkpoints Reached:** 0
 
 ## Multiplayer
-- **Positions:** ('', '(2, 6)(5, 1)(6, 1)(8, 10)')
-- **Current Player Index:** 0
+- **Time Taken:** 24.64
 
-- **Time Taken:** 24.64 seconds
 ## Checkpoints
 - **Checkpoint Positions:** (8, 4), (1, 5), (4, 2), (5, 7), (9, 5), (6, 7), (8, 9), (3, 2), (1, 3), (7, 8)
 

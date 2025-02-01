@@ -3,6 +3,7 @@ from PIL import Image, ImageTk
 import tkinter as tk 
 from tkinter import ttk 
 import time 
+from tkinter import messagebox
 
 # need a board selection screen with different difficulty 
 # need to have three different boards - tkinter framing... 
@@ -83,6 +84,9 @@ class PlayGameView:
         self.optionWindowFrame = tk.Frame(self.root)
         self.optionWindowFrame.pack(fill=tk.BOTH)
 
+        msg = ttk.Label(self.optionWindowFrame, text='Select one of the game options below\nA short summary of each game mode can be found below the buttons', font=('Verdana',20), justify='center')
+        msg.pack(ipady=10, ipadx=10, pady=10)
+
 
         singlePlayerBtn = ttk.Button(self.optionWindowFrame, 
                                      text='Single Player vs Bot', 
@@ -97,6 +101,25 @@ class PlayGameView:
         multiplayerBtn.pack(ipady=10, ipadx=10, pady=10)
         
         style.configure('play.TButton', font=('fixedsys 20 bold'), foreground='red3')
+
+        self.rulesFrame = tk.Frame(self.optionWindowFrame)
+        self.rulesFrame.pack(fill=tk.BOTH)
+
+        rulesFrame = ttk.Frame(self.rulesFrame)
+        rulesFrame.pack(pady=10)
+
+        section1 = ttk.Label(rulesFrame, text='Single Player vs Bot', font=('fixedsys 20 bold'))
+        text1 = ttk.Label(rulesFrame, text='You will play against a *very intelligent* bot. Try and get to all the checkpoints before the bot does!', font=('Verdana',15), wraplength=450)
+
+        section2 = ttk.Label(rulesFrame, text='Multiplayer', font=('fixedsys 20 bold'))
+        text2 = ttk.Label(rulesFrame, text='Work as a team of 4 to get to all the checkpoints as quickly as you can!', font=('Verdana',15), wraplength=450)
+        
+        section1.grid(row=0, column=0, padx=20, pady=10)
+        text1.grid(row=1, column=0, padx=20, pady=10)
+        
+        section2.grid(row=0, column=1, padx=20, pady=10)
+        text2.grid(row=1, column=1, padx=20, pady=10)
+
     
     def onCustomBoard(self):
         self.selectBoardFrame.pack_forget() 
@@ -109,7 +132,11 @@ class PlayGameView:
     def onOptionWindowSelectMultiplayer(self):
         self.optionWindowFrame.pack_forget() 
         self.playGameController.onMultiplayerSelect()  
-        self.startTime() 
+        info = messagebox.askyesno('Welcome to multiplayer mode', 'Your goal is to work as a team to get to all the checkpoints as quickly as you can. As soon as this window closes, your stopwatch will start! Click Yes to continue. Good luck!')
+        if info: 
+            self.startTime() 
+        else: 
+            self.playGameController.backToMain()
     
     def showGameBoard(self, isSinglePlayer=True):
 
@@ -136,7 +163,7 @@ class PlayGameView:
         self.summary.grid(row=0, column=1, pady=5)
 
         self.multiplayerSummary = ttk.Label(infoFrame, 
-                                            text='AIM: Work as a team to get to all the checkpoints in the shortest time possible! \n Assign each player in your multiplayer team a number and drag and drop UP TO 3 OUT OF 5 CARDS in the EMPTY WHITE CARD SLOTS to move your numbered robot (numbered 1-4). \n GREEN TRIANGLES are CHECKPOINTS \n DARK GREY SQUARES are OBSTACLES- collision with an obstacle will result in a loss of health, AVOID them if you can. \n Up = 1 square up \n Down = 1 square down  \n Left = one square to the left \n Right = one square to the right. \n GOOD LUCK AND HAVE FUN!', font=('Arial', 12))
+                                            text='AIM: Work as a team to get to all the checkpoints in the shortest time possible! \n Assign each player in your multiplayer team a number and drag and drop UP TO 3 OUT OF 5 CARDS in the EMPTY WHITE CARD SLOTS to move your numbered robot (numbered 1-4). \n GREEN TRIANGLES are CHECKPOINTS. You MUST LAND on the checkpoint at the end of your turn to get the checkpoint. \n DARK GREY SQUARES are OBSTACLES- collision with an obstacle will result in a loss of health, AVOID them if you can. \n Up = 1 square up \n Down = 1 square down  \n Left = one square to the left \n Right = one square to the right. \n GOOD LUCK AND HAVE FUN!', font=('Arial', 12))
 
 
         # move history 

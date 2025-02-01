@@ -23,7 +23,7 @@ class MainMenuView:
         self.mainMenuFrame.pack(fill=tk.BOTH)
         
         label = ttk.Label(self.mainMenuFrame, text='Welcome to Robo Rally Pythonised!', font=('fixedsys 20 bold'))
-        label2 = ttk.Label(self.mainMenuFrame, text='This is the Main Menu. Please select one of the options below', font=('Arial 15 bold'))
+        label2 = ttk.Label(self.mainMenuFrame, text='This is the Main Menu. Please select one of the options below', font=('Verdana bold', 15))
         label.pack(pady=20)
         label2.pack(pady=5)
         

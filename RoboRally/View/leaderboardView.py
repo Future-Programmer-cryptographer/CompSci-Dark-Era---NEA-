@@ -48,6 +48,7 @@ class LeaderboardView:
         sortByDateBtn.pack(side=tk.LEFT, ipadx=5, ipady=10, padx=5)
         sortByScoreBtn.pack(side=tk.LEFT, ipadx=5, ipady=10, padx=5)
         sortByDiffBtn.pack(side=tk.LEFT, ipadx=5, ipady=10, padx=5)
+        sortByTimeBtn.pack(side=tk.LEFT, ipadx=5, ipady=10, padx=5)
 
         # Tabel for leaderboard 
         self.table = ttk.Treeview(self.leaderboardFrame, columns=('filename', 'date', 'difficulty', 'checkpoints', 'time'), show='headings')
@@ -55,7 +56,7 @@ class LeaderboardView:
         self.table.heading('date', text='Date Played')
         self.table.heading('difficulty', text='Difficulty')
         self.table.heading('checkpoints', text='Checkpoints Reached')
-        self.table.heading('time', text='Time Taken')
+        self.table.heading('time', text='Time Taken (seconds)')
         self.table.pack(pady=10, fill=tk.BOTH, expand=True)
     
 

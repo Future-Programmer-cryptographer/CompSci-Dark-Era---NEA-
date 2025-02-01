@@ -13,6 +13,7 @@
 ## Player
 - **Player Health:** 5
 - **Player Position:** (5, 3)
+- **Time Taken:** 0.0
 
 ## Bot
 - **Bot Health:** 0

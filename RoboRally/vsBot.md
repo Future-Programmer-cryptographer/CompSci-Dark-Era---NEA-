@@ -9,6 +9,7 @@
 - **Is Multiplayer:** False
 - **Player Checkpoints Reached:** 5
 - **Bot Checkpoints Reached:** 2
+- **Time Taken:** 12.72
 
 ## Player
 - **Player Health:** 5
@@ -17,7 +18,7 @@
 ## Bot
 - **Bot Health:** 5
 - **Bot Position:** (2, 4)
-
+- **Time Taken:** 24.6 
 ## Checkpoints
 - **Checkpoint Positions:** (3, 1), (3, 7), (5, 4), (4, 6), (2, 5), (1, 3), (6, 2), (6, 5), (4, 2), (4, 5), (5, 6), (4, 8), (5, 9), (2, 1), (7, 3), (4, 7), (8, 1), (8, 7), (1, 1), (1, 4), (1, 7), (7, 2), (6, 9)
 

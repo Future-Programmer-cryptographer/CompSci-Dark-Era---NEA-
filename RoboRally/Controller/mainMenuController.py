@@ -92,6 +92,7 @@ class MainMenuController:
             messagebox.showinfo('Game Loading...', f'Loaded game from {filename}')
 
         except Exception as e:
-            print(f'{e}')
+            messagebox.showerror('ERrrr', f'Game cannot be loaded from {filename}: Please select another game')
+            print(e)
 
                     

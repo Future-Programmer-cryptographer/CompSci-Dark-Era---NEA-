@@ -87,9 +87,6 @@ class PlayGameController:
             self._checkpoints = getMdPos(contents, 'Checkpoint Positions')
             self._obstacles = getMdPos(contents, "Obstacle Positions")
 
-            if self.isMultiplayer: 
-                self.timeToComplete = self.playGameView.elapsedTime = float(getMdValue(contents, 'Time Taken'))
-
             # # debug prints 
             # print(f'Checkpoitn parse debug- {self._checkpoints}')
             # print(f'Obstacle prase debug- {self._obstacles}')
@@ -97,7 +94,7 @@ class PlayGameController:
         except ValueError as e:
             messagebox.showerror("Errr", str(e))
         
-        self._redrawGameState() 
+        self._redrawGameState(1) 
 
     def initialiseView(self, root):
         self.playGameView.showSelectBoardWindow() 
@@ -156,18 +153,35 @@ class PlayGameController:
         state = self.__undoStack.pop()
 
         self.playerPos = state['playerPos']
-        self.playerLabel = state['playerLabel']
-        self.botPos = state['botPos']
-        self.botLabel = state['botLabel']
         self._playerHealth = state['_playerHealth']
-        self._botHealth = state['_botHealth']
         self.currentTurn = state['currentTurn']
         self.currentPlayerIdx = state['currentPlayerIdx']
-        self.moveHistory = state['moveHistory']
-        self.botMoveHistory = state['botMoveHistory']
         self.checkpointsReached = state['checkpointsReached']
 
+
+        if self.isMultiplayer:
+            self.multiplayerPos = state.get('multiplayerPos', self.multiplayerPos)
+
+        # Ensure move history updates correctly
+        if not self.isMultiplayer:
+            self.moveHistory.append({
+                'turn': self.currentTurn,
+                'player': 'Undo',
+                'direction': None,
+                'steps': None,
+                'start': None,
+                'end': None,
+                'collision': False,
+                'message': 'Move Undone'
+            })
+
         self._redrawGameState() 
+
+        self.playGameView.updateHealthLabel(self._playerHealth, isBot=False)
+        self.playGameView.updateTurnLabel(self.currentTurn)
+        self.playGameView.updateMoveHistory(self.moveHistory, isBot=False)
+
+        messagebox.showinfo('Undo', 'Last move undone!')
 
     def makeRegistersAndCards(self, canvas):
         self.__makeRegisters(canvas) 
@@ -236,18 +250,17 @@ class PlayGameController:
             if not self.isMultiplayer: 
                 f.write('## Player\n')
                 f.write(f'- **Player Health:** {self._playerHealth}\n')
-                f.write(f'- **Player Position:** ({self.playerPos[0]}, {self.playerPos[1]})\n\n')
-                
+                f.write(f'- **Player Position:** ({self.playerPos[0]}, {self.playerPos[1]})\n')
+                f.write(f'- **Time Taken:** 0.0 \n\n')
+
                 f.write('## Bot\n')
                 f.write(f'- **Bot Health:** {self._botHealth}\n')
                 f.write(f'- **Bot Position:** ({self.botPos[0]}, {self.botPos[1]})\n\n')
 
             else: 
                 f.write('## Multiplayer\n')
-                positions = '', ''.join([f'({p[0]}, {p[1]})' for p in self.multiplayerPos])
-                f.write(f'- **Positions:** {positions}\n')
-                f.write(f'- **Current Player Index:** {self.currentPlayerIdx}\n\n')
-                f.write(f'- **Time Taken:** {self.playGameView.elapsedTime:.2f} seconds\n')
+                f.write(f'- **Time Taken:** {self.playGameView.elapsedTime:.2f} \n\n')
+                        
 
             # need to initilaise isBot at some point 
             # Bot stuff
@@ -264,10 +277,13 @@ class PlayGameController:
 
         messagebox.showinfo('Game saved!!', f'Game saved to {file}')
 
-    def _redrawGameState(self):
-        self.playGameView.showGameBoard(isSinglePlayer=True)
+    def _redrawGameState(self, token=None):
+        if token:
+            self.playGameView.showGameBoard(isSinglePlayer=True)
+        
         self.canvas.delete('all')
         self.makeGrid()  
+        
         row, col = self.playerPos
         x1 = col * self.__cell + self.__cell / 4
         y1 = row * self.__cell + self.__cell / 4
@@ -297,8 +313,9 @@ class PlayGameController:
         self.playGameView.updateProgressBar(self.checkpointsReached)
         self.playGameView.updateBotProgress(self.botCheckpointsReached)
 
-        self.mainMenuController.hideMain() 
-        self.playGameView.moveHistoryFrame.pack_forget() 
+        if token: 
+            self.mainMenuController.hideMain() 
+            self.playGameView.moveHistoryFrame.grid_forget() 
 
     def _makeCustomBoard(self):
 
@@ -633,7 +650,6 @@ class PlayGameController:
                 # calling onComplete 
             if onComplete: 
                 onComplete() 
-
 
     def __gameOver(self, isBot):
         if isBot: 

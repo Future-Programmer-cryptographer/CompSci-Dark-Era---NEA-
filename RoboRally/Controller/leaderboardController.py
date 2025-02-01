@@ -37,15 +37,20 @@ class LeaderboardController:
                 difficulty = getMdValue(contents, 'Difficulty')
                 checkpoints = int(getMdValue(contents, 'Checkpoints Reached'))
 
+                # Parsing for time - need to debug 
+                time = getMdValue(contents, 'Time Taken')
+                time = float(time) 
+
                 self.leaderboardData.append({
                     'date' : datetime.strptime(date, '%d-%m-%Y %H:%M'), 
                     'difficulty' : difficulty, 
                     'checkpoints' : checkpoints, 
-                    'filename' : file
+                    'filename' : file, 
+                    'time' : time
                 })
             
             except (ValueError, KeyError) as e: 
-                messagebox.showerror('Error', f'Failed to load {file}: {str(e)}')
+                messagebox.showerror('ERrrr', f'Error from {file}: {str(e)}')
     
     def backToMain(self):
         self.leaderboardView.leaderboardFrame.pack_forget() 
