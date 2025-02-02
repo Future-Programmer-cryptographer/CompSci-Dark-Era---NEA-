@@ -132,11 +132,6 @@ class PlayGameView:
     def onOptionWindowSelectMultiplayer(self):
         self.optionWindowFrame.pack_forget() 
         self.playGameController.onMultiplayerSelect()  
-        info = messagebox.askyesno('Welcome to multiplayer mode', 'Your goal is to work as a team to get to all the checkpoints as quickly as you can. As soon as this window closes, your stopwatch will start! Click Yes to continue. Good luck!')
-        if info: 
-            self.startTime() 
-        else: 
-            self.playGameController.backToMain()
     
     def showGameBoard(self, isSinglePlayer=True):
 
@@ -294,6 +289,7 @@ class PlayGameView:
             self.botProgressBar.grid_forget() 
             self.botHealthLabel.grid_forget() 
             self.summary.grid_forget() 
+            undoBtn.grid_forget() 
             self.multiplayerSummary.grid(row=0, column=1, pady=5) 
             self.stopWatchFrame.grid(row=0, column=1, columnspan=3, rowspan=3)
         

@@ -128,6 +128,13 @@ class PlayGameController:
         self.playGameView.showGameBoard(isSinglePlayer=False)
         self.__createRobot(playerCount=self.totalPlayers)
         self.__placeCheckpointsAndObstacles() 
+
+        info = messagebox.askyesno('Welcome to multiplayer mode', 'Your goal is to work as a team to get to all the checkpoints as quickly as you can. As soon as this window closes, your stopwatch will start! Click Yes to continue. Good luck!')
+        if info: 
+            self.playGameView.startTime() 
+        else: 
+            self.backToMain()
+
     
     def submitCards(self):
         self.commands = [] 
@@ -344,10 +351,21 @@ class PlayGameController:
 
         self.totalPlayers = int(players)
         self._size = int(size) 
-        # NEED SOME MATHS TO FIX THE CELL SIZE BELOW... 
-        self.__cell = 25
+        
         self._obstacleCount = int(obstacles)
         self._checkpointCount = int(checkpoints)
+
+        # NEED SOME MATHS TO FIX THE CELL SIZE BELOW... 
+
+        # width and heigh infor from playgameview canvas 
+        width = 600  
+        height = 600  
+        # don't go beyond 500 
+        maxSize = min(width, height, 500)  
+        # min size is 25 
+        self.__cell = max(25, maxSize // self._size) 
+
+        # print(f"Size: {self._size}, cell = {self.__cell}")
 
         self.onMultiplayerSelect() 
 
@@ -497,40 +515,56 @@ class PlayGameController:
         # maybe... start with a flag for player and bot and then deal with multiplayer separately?
 
         # first chek for player checkpoint, then bot checkpoint 
-        if self.playerPos in self._checkpoints: 
-            self._checkpoints.remove(self.playerPos)
-            checkpointId = self.checkpointIds.pop(self.playerPos, None)
-            self.checkpointsReached += 1 
 
-            if checkpointId:
-                self.canvas.delete(checkpointId)
-            self.playGameView.updateProgressBar(self.checkpointsReached)
-            messagebox.showinfo('Checkpoint Reached!!', f'Player reached checkpoint at {convertToRankAndFile(*self.playerPos)}')
+        if self.isMultiplayer:
+            for i, position in enumerate(self.multiplayerPos):
+                if position in self._checkpoints:
+                    self.__handleCheckpoint(i, position)
+                
+        else:
+            if self.playerPos in self._checkpoints:
+                self.__handleCheckpoint('P', self.playerPos)
+            
+            if self.botPos in self._checkpoints:
+                self.__handleCheckpoint('B', self.botPos)
+
+    def __handleCheckpoint(self, turn, position):
+
+        # remove checkpoint first 
+        self._checkpoints.remove(position)
+
+        # delete cp from canvas 
+        checkpointId = self.checkpointIds.pop(position, None)
+        if checkpointId:
+            self.canvas.delete(checkpointId)
         
-        if self.botPos in self._checkpoints:
-            self._checkpoints.remove(self.botPos)
-            checkpointId = self.checkpointIds.pop(self.botPos, None)
+        # health +1 
+        if turn == 'P':
+            self._playerHealth = self._playerHealth +1
+            self.playGameView.updateHealthLabel(self._playerHealth, isBot=False)
+        
+        elif turn == 'B':
+            self._botHealth = self._botHealth +1 
+            self.playGameView.updateHealthLabel(self._botHealth, isBot=True)
+        
+        else: 
+            self._playerHealth = self._playerHealth +1 
+            self.playGameView.updateHealthLabel(self._playerHealth, isBot=False)
+        
+        # update cp progress 
+        if turn == 'B':
             self.botCheckpointsReached += 1 
-            messagebox.showinfo('Checkpoint Reached!!', f'Bot reached checkpoint at {convertToRankAndFile(*self.botPos)}')
-
-
-            if checkpointId: 
-                self.canvas.delete(checkpointId)
             self.playGameView.updateBotProgress(self.botCheckpointsReached)
-            # don't need to show info for bot right? 
         
-        # And NOW check for multiplayer! - need to check efor each player so use enumrate?
-        if self.isMultiplayer: 
-            for idx, pos in enumerate(self.multiplayerPos):
-                if pos in self._checkpoints: 
-                    self._checkpoints.remove(pos)
-                    checkpointId = self.checkpointIds.pop(pos, None)
-                    self.checkpointsReached += 1 
-                    if checkpointId: 
-                        self.canvas.delete(checkpointId)
-                    self.playGameView.updateProgressBar(self.checkpointsReached)
-                    messagebox.showinfo('Checkpoint Reached!!', f'Player {idx+1} reached checkpoint at {convertToRankAndFile(*pos)}')
-    
+        else: 
+            self.checkpointsReached +=1 
+            self.playGameView.updateProgressBar(self.checkpointsReached)
+        
+        # messagebox time!! 
+        messagebox.showinfo('Checkpoint Reached!!', f"{'Bot' if turn=='B' else 'Player'} reached checkpoint and gained 1 health at {convertToRankAndFile(*position)}!!")
+        if self.checkpointsReached + self.botCheckpointsReached >= self._checkpointCount:
+            self.__gameOver() 
+
     def __moveRobot(self, direction, steps, stepCount=0, onComplete=None, isBot=False):
 
         self.__saveToUndoStack() 
@@ -671,6 +705,21 @@ class PlayGameController:
                 onComplete() 
 
     def __gameOver(self, isBot):
+
+        # game can either finish if player/bot health dies or if all checkpoints have been reached!! 
+        if self.checkpointsReached + self.botCheckpointsReached >= self._checkpointCount:
+            if self.checkpointsReached > self.botCheckpointsReached: 
+                winner = 'Player'
+            elif self.botCheckpointsReached > self.checkpointsReached:
+                winner= 'Bot'
+            else: 
+                winner = 'Tie'
+            
+            if winner == 'Tie':
+                messagebox.showinfo('GAME OVER', f"It's a TIE! Player and Bot reached an equal number of checkpoints")
+            else: 
+                messagebox.showinfo('GAME OVER', f'{winner} won by reaching more checkpoints!')
+
         if isBot: 
             winner = 'Player'
             # Well, talk about sensible variable names... 
@@ -681,9 +730,8 @@ class PlayGameController:
         else:
             messagebox.showinfo('GAME OVER', f'Overall health is 0')
         
-        self.__clearRegisterAndCards()
-        self.cards = [] 
-        self.registers = [] 
+        # add a messagebox to save game/go back to main menu 
+
 
     def __checkForBounds(self,row, col):
         if row< 1 or row > self._size or col <1 or col > self._size: 
