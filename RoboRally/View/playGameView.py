@@ -348,8 +348,9 @@ class PlayGameView:
         textBox.configure(state='normal')
         textBox.delete(1.0, tk.END)
 
-        # populate the text box 
+        # fill textbox with useful info
         for move in history: 
+            undo = move.get('undo', False)
             turn = move['turn']
             direction = move['direction']
             steps = move['steps']
@@ -360,7 +361,9 @@ class PlayGameView:
             if collision: 
                 textBox.insert(tk.END, 
                                        f'Lost health at {end}!! \n')
-
+            if undo:
+                textBox.insert(tk.END, 
+                                       f'Move undone \n')
             else: 
                 textBox.insert(tk.END, 
                                        f'{turn}: {steps} steps {direction} from {start} to {end} \n')

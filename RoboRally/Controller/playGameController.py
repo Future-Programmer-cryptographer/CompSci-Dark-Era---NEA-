@@ -15,7 +15,7 @@ from cardsAndRegisters import view
 from cardsAndRegisters.controller import DragAndDropController
 
 from Controller.helperFunctions import generateRandomSquares, convertToRankAndFile, getMdPos, getMdValue
-from Controller.botLogic import generateBotMoves
+from Controller.botLogic import generateBotMoves, generateRandomBotMoves
 
 class PlayGameController:
     def __init__(self, root, canvas):
@@ -55,10 +55,10 @@ class PlayGameController:
         self._animationSpeed = 500
         self._obstacles = set()
         self._checkpoints = []
+        self._size = 10
 
         # private attributes 
         self.__cell = 50
-        self.__size = 10
         self.__undoStack = []
 
 
@@ -68,7 +68,7 @@ class PlayGameController:
     def parseGameState(self, contents):
         try:
             # General section
-            self.__size = int(getMdValue(contents, 'Grid Size'))
+            self._size = int(getMdValue(contents, 'Grid Size'))
             self.currentTurn = int(getMdValue(contents, 'Current Turn'))
             self.currentPlayerIdx = int(getMdValue(contents, 'Current Player Index'))
             self.isMultiplayer = getMdValue(contents, 'Is Multiplayer') == 'True'
@@ -150,13 +150,18 @@ class PlayGameController:
         if not self.__undoStack:
             messagebox.showinfo('Undo', "Can't undo anything!!") # Need to use double quotes for these!! 
             return
+
+        # only need player moves to be undone?  
         state = self.__undoStack.pop()
 
         self.playerPos = state['playerPos']
+        self.botPos = state['botPos']
         self._playerHealth = state['_playerHealth']
+        self._botHealth = state['_botHealth']
         self.currentTurn = state['currentTurn']
         self.currentPlayerIdx = state['currentPlayerIdx']
         self.checkpointsReached = state['checkpointsReached']
+        self.botCheckpointsReached = state.get('botCheckpointsReached', 0) 
 
 
         if self.isMultiplayer:
@@ -165,21 +170,32 @@ class PlayGameController:
         # Ensure move history updates correctly
         if not self.isMultiplayer:
             self.moveHistory.append({
+                'undo': True,
                 'turn': self.currentTurn,
-                'player': 'Undo',
                 'direction': None,
                 'steps': None,
                 'start': None,
                 'end': None,
-                'collision': False,
-                'message': 'Move Undone'
+                'collision': False
+            })
+            self.botMoveHistory.append({
+                'undo': True,
+                'turn': self.currentTurn,
+                'direction': None,
+                'steps': None,
+                'start': None,
+                'end': None,
+                'collision': False
             })
 
-        self._redrawGameState() 
+        self._redrawGameState()
 
+        # Update labels and stuff
         self.playGameView.updateHealthLabel(self._playerHealth, isBot=False)
+        self.playGameView.updateHealthLabel(self._botHealth, isBot=True)
         self.playGameView.updateTurnLabel(self.currentTurn)
         self.playGameView.updateMoveHistory(self.moveHistory, isBot=False)
+        self.playGameView.updateMoveHistory(self.botMoveHistory, isBot=True)
 
         messagebox.showinfo('Undo', 'Last move undone!')
 
@@ -196,8 +212,8 @@ class PlayGameController:
    
     def makeGrid(self):
         # draw the actual grid 
-        for i in range(self.__size):
-            for j in range(self.__size):
+        for i in range(self._size):
+            for j in range(self._size):
                 x1 = (j+1) * self.__cell 
                 y1 = (i+1)  * self.__cell 
                 x2 = x1 + self.__cell 
@@ -206,14 +222,14 @@ class PlayGameController:
                 self.canvas.create_rectangle(x1, y1, x2, y2, fill='pink', outline='black')
 
         # letters 
-        for col in range(self.__size):
+        for col in range(self._size):
             x = (col+1) * self.__cell + self.__cell / 2 
             y = self.__cell /2  
             file = chr(65+col) # convert 0-9 to letters 
             self.canvas.create_text(x,y,text=file) 
         
         # steps labels 
-        for row in range(self.__size):
+        for row in range(self._size):
             x = self.__cell / 2 
             y = (row+1) * self.__cell + self.__cell / 2 
             rank = str(row+1)
@@ -238,7 +254,7 @@ class PlayGameController:
 
             # Summary sec - use this for leaderboard parsing later on... 
             f.write('## Summary\n')
-            f.write(f'- **Grid Size:** {self.__size}\n')
+            f.write(f'- **Grid Size:** {self._size}\n')
             f.write(f'- **Current Turn:** {self.currentTurn}\n')
             f.write(f'- **Current Player Index:** {self.currentPlayerIdx}\n')
             f.write(f'- **Difficulty:** {self.difficulty}\n')
@@ -278,6 +294,7 @@ class PlayGameController:
         messagebox.showinfo('Game saved!!', f'Game saved to {file}')
 
     def _redrawGameState(self, token=None):
+        # note to future self, token is there if the redrawstate method is called by the loadgame state in mainmenucontroller!
         if token:
             self.playGameView.showGameBoard(isSinglePlayer=True)
         
@@ -292,14 +309,15 @@ class PlayGameController:
         self.playerId = self.canvas.create_oval(x1, y1, x2, y2, fill='light blue')
         self.playerLabel = self.canvas.create_text((x1 + x2) / 2, (y1 + y2) / 2, text='P')
 
-        # Redraw bot
-        row, col = self.botPos
-        x1 = col * self.__cell + self.__cell / 4
-        y1 = row * self.__cell + self.__cell / 4
-        x2 = x1 + self.__cell / 2
-        y2 = y1 + self.__cell / 2
-        self.botId = self.canvas.create_oval(x1, y1, x2, y2, fill='red')
-        self.botLabel = self.canvas.create_text((x1 + x2) / 2, (y1 + y2) / 2, text='B')
+        # Redraw bot if not is multi
+        if not self.isMultiplayer: 
+            row, col = self.botPos
+            x1 = col * self.__cell + self.__cell / 4
+            y1 = row * self.__cell + self.__cell / 4
+            x2 = x1 + self.__cell / 2
+            y2 = y1 + self.__cell / 2
+            self.botId = self.canvas.create_oval(x1, y1, x2, y2, fill='red')
+            self.botLabel = self.canvas.create_text((x1 + x2) / 2, (y1 + y2) / 2, text='B')
         
         self.__placeCheckpoints(self._checkpoints)
 
@@ -325,7 +343,7 @@ class PlayGameController:
         checkpoints = simpledialog.askstring('Input', 'Enter number of Checkpoints', parent=self.root)
 
         self.totalPlayers = int(players)
-        self.__size = int(size) 
+        self._size = int(size) 
         # NEED SOME MATHS TO FIX THE CELL SIZE BELOW... 
         self.__cell = 25
         self._obstacleCount = int(obstacles)
@@ -358,10 +376,10 @@ class PlayGameController:
         # Generate starting positions for player and bot
         exclude = set(self._checkpoints + list(self._obstacles))
 
-        self.playerPos = generateRandomSquares(1, exclude, self.__size)[0]
+        self.playerPos = generateRandomSquares(1, exclude, self._size)[0]
         exclude.add(self.playerPos)
 
-        self.botPos = generateRandomSquares(1, exclude, self.__size)[0]
+        self.botPos = generateRandomSquares(1, exclude, self._size)[0]
         exclude.add(self.botPos)
 
         row, col = self.playerPos
@@ -390,11 +408,11 @@ class PlayGameController:
         else:
             exclude = set([self.playerPos, self.botPos] + list(self._obstacles))  
 
-        obstacles = generateRandomSquares(self._obstacleCount, exclude, self.__size)
+        obstacles = generateRandomSquares(self._obstacleCount, exclude, self._size)
         self._obstacles.update(obstacles)
         exclude.update(obstacles)
 
-        checkpoints = generateRandomSquares(self._checkpointCount, exclude, self.__size)
+        checkpoints = generateRandomSquares(self._checkpointCount, exclude, self._size)
         self._checkpoints.extend(checkpoints)
 
         # NOW place obstacles and checkpoints on canvas
@@ -423,6 +441,7 @@ class PlayGameController:
             startPos = convertToRankAndFile(*robotPos)
             if not self.isMultiplayer: 
                 moveHistory.append({
+                    'undo' : False,
                     'turn': self.currentTurn,
                     'player' : 'Bot' if isBot else 'Player',
                     'direction': direction,
@@ -667,7 +686,7 @@ class PlayGameController:
         self.registers = [] 
 
     def __checkForBounds(self,row, col):
-        if row< 1 or row > self.__size or col <1 or col > self.__size: 
+        if row< 1 or row > self._size or col <1 or col > self._size: 
             # print(row, col)
             return True 
         else: 
@@ -714,7 +733,7 @@ class PlayGameController:
 
         for i in range(playerCount):
             # Generate a random position for the player, ensuring no overlap
-            startPos = generateRandomSquares(self.totalPlayers, exclude, self.__size)[0]
+            startPos = generateRandomSquares(self.totalPlayers, exclude, self._size)[0]
             self.multiplayerPos.append(startPos)
             exclude.add(startPos)  # Immediately add to exclude set
 
@@ -764,7 +783,8 @@ class PlayGameController:
     
     def __handleBotTurn(self):
         if not self.isMultiplayer:
-            botCommands = generateBotMoves() 
+            botCommands = generateBotMoves(self.botPos, self._checkpoints, self._obstacles, self._size) 
+            #botCommands = generateRandomBotMoves()
             self.__processCommands(botCommands, index=0, isBot=True, onComplete=self.__endTurn)
             # print('onto bot turn now!!')
         
