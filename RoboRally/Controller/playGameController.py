@@ -135,7 +135,6 @@ class PlayGameController:
         else: 
             self.backToMain()
 
-    
     def submitCards(self):
         self.commands = [] 
         for i, register, in enumerate(self.registers): 
@@ -344,10 +343,30 @@ class PlayGameController:
 
     def _makeCustomBoard(self):
 
-        players = simpledialog.askstring('Input', 'Enter number of players', parent=self.root)
-        size = simpledialog.askstring('Input', 'Enter a grid size. Max size of 20', parent=self.root)
-        obstacles = simpledialog.askstring('Input', 'Enter number of obstacles', parent=self.root)
-        checkpoints = simpledialog.askstring('Input', 'Enter number of Checkpoints', parent=self.root)
+        # add EXCEPTION HANDLING HERE for size (and sensible no. of obstacles and cps... i.e if grid size is 5 the obstale cannot be over 25 or something..)
+        # gotta treat user like an idiot 
+
+        players = simpledialog.askinteger('PLAYERS', 'Enter number of players', parent=self.root)
+
+        valid = False 
+        while not valid: 
+            try: 
+                size = simpledialog.askinteger('GRID SIZE', 'Enter a grid size. (Range is 5-20 inclusive)', parent=self.root)
+                obstacles = simpledialog.askinteger('OBSTACLES', 'Enter number of obstacles', parent=self.root)
+                checkpoints = simpledialog.askinteger('CHECKPOINTS', 'Enter number of Checkpoints', parent=self.root)
+            except ValueError:
+                print('nope!')
+            else: 
+                if size <5 or size > 20:
+                    messagebox.showerror('Error', 'Enter grid size between 5 and 20')
+                elif obstacles > int((size*size) - players ): 
+                    messagebox.showerror('Error', 'Enter sensible number of obstacles')
+                elif checkpoints > int((size*size) + obstacles): 
+                    messagebox.showerror('Error', 'Enter sensible number of checkpoints')
+                else: 
+                    valid = True 
+
+        self.difficulty = 'CUSTOM'
 
         self.totalPlayers = int(players)
         self._size = int(size) 
@@ -563,7 +582,7 @@ class PlayGameController:
         # messagebox time!! 
         messagebox.showinfo('Checkpoint Reached!!', f"{'Bot' if turn=='B' else 'Player'} reached checkpoint and gained 1 health at {convertToRankAndFile(*position)}!!")
         if self.checkpointsReached + self.botCheckpointsReached >= self._checkpointCount:
-            self.__gameOver() 
+            self.__gameOver(isBot=False) 
 
     def __moveRobot(self, direction, steps, stepCount=0, onComplete=None, isBot=False):
 
@@ -624,7 +643,7 @@ class PlayGameController:
 
             # Check for game over 
             if health <= 0: 
-                self.__gameOver(isBot)
+                self.__gameOver()
                 return 
 
             messagebox.showinfo(
@@ -652,7 +671,7 @@ class PlayGameController:
 
             # Check for game over 
             if health <= 0: 
-                self.__gameOver(isBot)
+                self.__gameOver()
                 return 
 
             messagebox.showinfo(
@@ -704,7 +723,7 @@ class PlayGameController:
             if onComplete: 
                 onComplete() 
 
-    def __gameOver(self, isBot):
+    def __gameOver(self):
 
         # game can either finish if player/bot health dies or if all checkpoints have been reached!! 
         if self.checkpointsReached + self.botCheckpointsReached >= self._checkpointCount:
@@ -716,19 +735,23 @@ class PlayGameController:
                 winner = 'Tie'
             
             if winner == 'Tie':
-                messagebox.showinfo('GAME OVER', f"It's a TIE! Player and Bot reached an equal number of checkpoints")
+                messagebox.showinfo('GAME OVER', f"It's a TIE! Player and Bot reached an equal number of checkpoints. Save Game or Return to Main Menu")
+                self.backToMain() 
             else: 
-                messagebox.showinfo('GAME OVER', f'{winner} won by reaching more checkpoints!')
+                messagebox.showinfo('GAME OVER', f'{winner} won! Save Game or Return to Main Menu')
+                self.backToMain()
 
-        if isBot: 
+        if self._playerHealth > self._botHealth: 
             winner = 'Player'
             # Well, talk about sensible variable names... 
             notWinner  = 'Bot'
         
-            messagebox.showinfo('GAME OVER', f'{notWinner} health is 0. {winner} wins!')
+            messagebox.showinfo('GAME OVER', f'{notWinner} health is 0. {winner} wins! Save Game or Return to Main Menu')
+            self.backToMain() 
 
         else:
-            messagebox.showinfo('GAME OVER', f'Overall health is 0')
+            messagebox.showinfo('GAME OVER', f'Overall health is 0! Save Game or Return to Main Menu')
+            self.backToMain() 
         
         # add a messagebox to save game/go back to main menu 
 

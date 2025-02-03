@@ -4,6 +4,7 @@ import tkinter as tk
 from tkinter import ttk 
 import time 
 from tkinter import messagebox
+import emoji
 
 # need a board selection screen with different difficulty 
 # need to have three different boards - tkinter framing... 
@@ -19,18 +20,20 @@ class PlayGameView:
         # creating another frame 
         self.selectBoardFrame = tk.Frame(self.root)
 
-        titleLabel = ttk.Label(self.selectBoardFrame, text='Select one of the three boards for single player vs Bot OR Multiplayer \n Boards are sorted by difficulty, easy-medium-hard (left to right) \n You can also make a custom board for multiplayer gameplay', font=('Arial',15))
+        titleLabel = ttk.Label(self.selectBoardFrame, text='Select one of the three boards for single player vs Bot OR Multiplayer \n Boards are sorted by difficulty, easy-medium-hard (left to right) \n You can also create a custom board for multiplayer gameplay \n (You can customise no. of players, grid size, no. of obstacles and checkpoints)', font=('Verdana',15))
         titleLabel.pack(pady=10)
 
         # note to my future self, the token was included here becuase there were some bugs when closing the frame, so adding a token solved that bug 
         backBtn = ttk.Button(self.selectBoardFrame, 
                         text='Back to Main Menu',
+                        style='play.TButton',
                         command=lambda: self.playGameController.backToMain (1))
         backBtn.pack(side=BOTTOM, ipadx=25, ipady=25, expand=True)
 
         
         customBtn = ttk.Button(self.selectBoardFrame, 
-                               text='Make Custom Board',
+                               text='Create Custom Board',
+                               style='play.TButton',
                                command = self.onCustomBoard)
         customBtn.pack(side=BOTTOM, ipadx=25, ipady=25, expand=True)
 
@@ -289,7 +292,7 @@ class PlayGameView:
             self.botProgressBar.grid_forget() 
             self.botHealthLabel.grid_forget() 
             self.summary.grid_forget() 
-            undoBtn.grid_forget() 
+            # undoBtn.grid_forget() 
             self.multiplayerSummary.grid(row=0, column=1, pady=5) 
             self.stopWatchFrame.grid(row=0, column=1, columnspan=3, rowspan=3)
         
@@ -356,10 +359,10 @@ class PlayGameView:
 
             if collision: 
                 textBox.insert(tk.END, 
-                                       f'Lost health at {end}!! \n')
+                                       f'{emoji.emojize(":collision:")}Lost health!!\n')
             if undo:
                 textBox.insert(tk.END, 
-                                       f'Move undone \n')
+                                       f'{emoji.emojize(":right_arrow_curving_left:")}Move undone\n')
             else: 
                 textBox.insert(tk.END, 
                                        f'{turn}: {steps} steps {direction} from {start} to {end} \n')

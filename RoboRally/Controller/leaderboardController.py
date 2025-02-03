@@ -84,7 +84,7 @@ class LeaderboardController:
         elif key == 'date':
             return i1['date'] > i2['date']
         elif key == 'difficulty':
-            order = {'HARD':3, 'MEDIUM' :2, 'EASY':1}
+            order = {'HARD':3, 'MEDIUM' :2, 'EASY':1, 'CUSTOM':0}
             return order[i1['difficulty']] > order[i2['difficulty']] 
         elif key == 'time':
             return i1['time'] > i2['time']
