@@ -17,7 +17,7 @@ class PlayGameView:
         self.canvas = canvas 
         self.playGameController = playGameController 
 
-        # creating another frame 
+        # Creating a select board frame when the user wants to select a board 
         self.selectBoardFrame = tk.Frame(self.root)
 
         titleLabel = ttk.Label(self.selectBoardFrame, text='Select one of the three boards for single player vs Bot OR 4-Player Multiplayer \n Boards are sorted by difficulty, easy-medium-hard (left to right) \n You can also create a custom board for multiplayer gameplay \n (You can customise no. of players, grid size, no. of obstacles and checkpoints)', font=('Verdana',15))
@@ -105,6 +105,7 @@ class PlayGameView:
         
         style.configure('play.TButton', font=('fixedsys 20 bold'), foreground='red3')
 
+        # rules frame implementation to one in Rules class (View rules from Main Menu) - provides a short useful summary of the game modes for user 
         self.rulesFrame = tk.Frame(self.optionWindowFrame)
         self.rulesFrame.pack(fill=tk.BOTH)
 
@@ -123,7 +124,7 @@ class PlayGameView:
         section2.grid(row=0, column=1, padx=20, pady=10)
         text2.grid(row=1, column=1, padx=20, pady=10)
 
-    
+    # if the user selects a custom board, then call the _makeCustomBoard method in the playGameController, else in all cases, hide the frame 
     def onCustomBoard(self):
         self.selectBoardFrame.pack_forget() 
         self.playGameController._makeCustomBoard() 
@@ -143,7 +144,6 @@ class PlayGameView:
         self.gameBoardFrame.pack(fill=tk.BOTH, expand=True)
         self.root.title('Single player' if isSinglePlayer else 'Multiplayer')
 
-        
         # config grid layout 
         self.gameBoardFrame.columnconfigure(0, weight=1)
         self.gameBoardFrame.columnconfigure(1, weight=2)
@@ -157,14 +157,13 @@ class PlayGameView:
         infoLabel.grid(row=0, column=0, pady=5, padx=5)
 
         self.summary = ttk.Label(infoFrame, 
-                            text=" AIM: drag and drop UP TO 1, 2 OR 3 OUT OF 5 CARD into the EMPTY CARD SLOTS to move your robot and get to all the checkpoints before the BOT \n The robot you will be controlling is the blue token on the board with the label 'P' and you will be playing AGAINST a bot (label 'B'). \n GREEN TRIANGLES are CHECKPOINT. You MUST LAND on the checkpoint at the end of your turn to get the checkpoint \n DARK GREY SQUARES are OBSTACLES- collision with an obstacle will result in a loss of health, AVOID them if you can. \n HEALTH: you will start with 5 health points. You will lose a health for every obstacle collision AND if you go off the grid at any point during the game. You will regain 1 health for every checkpoint you reach. \n MOVE HISTORY: you can view your past moves (and the bot if playing against bot) in the move history text box on the left hand side of this screen.\n GOOD LUCK AND HAVE FUN!", font=('Verdana', 10), wraplength=1000)
+                            text=" AIM: drag and drop UP TO 1, 2 OR 3 OUT OF 5 CARD into the EMPTY CARD SLOTS to move your robot and get to all the checkpoints before the BOT \n The robot you will be controlling is the blue token on the board with the label 'P' and you will be playing AGAINST a bot (label 'B'). \n RESET Cards: if you have accidently dragged a card into a wrong slot, then click 'Reset Cards' to start again. \n GREEN TRIANGLES are CHECKPOINT. You MUST LAND on the checkpoint at the end of your turn to get the checkpoint \n DARK GREY SQUARES are OBSTACLES- collision with an obstacle will result in a loss of health, AVOID them if you can. \n HEALTH: you will start with 5 health points. You will lose a health for every obstacle collision AND if you go off the grid at any point during the game. You will regain 1 health for every checkpoint you reach. \n MOVE HISTORY: you can view your past moves (and the bot if playing against bot) in the move history text box on the left hand side of this screen.\n GOOD LUCK AND HAVE FUN!", font=('Verdana', 11), wraplength=1000)
         self.summary.grid(row=0, column=1, pady=5)
 
         self.multiplayerSummary = ttk.Label(infoFrame, 
-                                            text=' AIM: Work as a team to get to all the checkpoints in the shortest time possible! \n Assign each player in your multiplayer team a number and drag and drop UP TO 3 OUT OF 5 CARDS in the EMPTY WHITE CARD SLOTS to move your numbered robot (numbered 1-4). \n GREEN TRIANGLES are CHECKPOINTS. You MUST LAND on the checkpoint at the end of your turn to get the checkpoint. \n DARK GREY SQUARES are OBSTACLES- collision with an obstacle will result in a loss of health, AVOID them if you can. \n HEALTH: you will start with 5 health points. You will lose a health for every obstacle collision AND if you go off the grid at any point during the game. You will regain 1 health for every checkpoint you reach. \n GOOD LUCK AND HAVE FUN!', font=('Verdana', 10), wraplength=1000)
+                                            text=" AIM: Work as a team to get to all the checkpoints in the shortest time possible! \n Assign each player in your multiplayer team a number anddrag and drop UP TO 1, 2 OR 3 OUT OF 5 CARD into the EMPTY CARD SLOTS to move your numbered robot. \n RESET Cards: if you have accidently dragged a card into a wrong slot, then click 'Reset Cards' to start again. \n GREEN TRIANGLES are CHECKPOINTS. You MUST LAND on the checkpoint at the end of your turn to get the checkpoint. \n DARK GREY SQUARES are OBSTACLES- collision with an obstacle will result in a loss of health, AVOID them if you can. \n HEALTH: you will start with 10 health points. You will lose a health for every obstacle collision AND if you go off the grid at any point during the game. You will regain 1 health for every checkpoint you reach. \n GOOD LUCK AND HAVE FUN!", font=('Verdana', 11), wraplength=1000)
 
-
-        # move history 
+        # Creating a move history with labels and text boxes to be populated later for single player vs bot game mode 
         self.moveHistoryFrame = tk.Frame(self.gameBoardFrame, highlightbackground="black",highlightthickness=1)
         self.moveHistoryFrame.grid(
             row=0,
@@ -173,17 +172,17 @@ class PlayGameView:
             padx=5, 
             pady=5
         )
-        moveHistoryLabel = ttk.Label(self.moveHistoryFrame, text='Player Move History', font=('fixedsys 20 bold'))
+        moveHistoryLabel = ttk.Label(self.moveHistoryFrame, text='Player Move History', font=('fixedsys 20 bold'), foreground='blue2')
         moveHistoryLabel.grid(row=0, column=0, pady=5)
         self.moveHistoryTxt = tk.Text(self.moveHistoryFrame, width=40, height=15, state='disabled')
         self.moveHistoryTxt.grid(row=1, column=0, padx=5, pady=5)
 
-        moveHistoryLabel2 = ttk.Label(self.moveHistoryFrame, text='Bot Move History', font=('fixedsys 20 bold'))
+        moveHistoryLabel2 = ttk.Label(self.moveHistoryFrame, text='Bot Move History', font=('fixedsys 20 bold'), foreground='red3')
         moveHistoryLabel2.grid(row=2, column=0, pady=2)
         self.botMoveHistoryTxt = tk.Text(self.moveHistoryFrame, width=40, height=15, state='disabled')
         self.botMoveHistoryTxt.grid(row=3, column=0, padx=5, pady=5)
 
-        # Game board canvas and frame
+        # Game board canvas frame - this is where the grid will be created 
         canvasFrame = tk.Frame(self.gameBoardFrame, highlightbackground="black", highlightthickness=3)
         canvasFrame.grid(
             row=0, column=1, sticky="nsew", padx=5, pady=5
@@ -203,7 +202,7 @@ class PlayGameView:
         )
         controlsFrame.columnconfigure(0, weight=2)
         
-        # Register and Cards Frame
+        # Register and Cards Frame - the registers and cards canvas will be created in here 
         cardsAndRegistersFrame = tk.Frame(controlsFrame, highlightbackground="black", highlightthickness=2)
         cardsAndRegistersFrame.grid(
             row=5, column=0, sticky="nsew", padx=5, pady=5
@@ -217,26 +216,26 @@ class PlayGameView:
         # Call makeRegistersAndCards
         self.playGameController.makeRegistersAndCards(self.cardsCanvas)
 
-        # frame to grid labels/turn coutners/etc. 
+        # Frid to grid labels/turn counters/etc (things above the card and register slot canvas)
         stateFrame = tk.Frame(controlsFrame)
         stateFrame.grid(row=1, column=0)
 
-        # turn counter - top right 
+        # turn labels for player and bot - top right hand side 
         self.turnLabel = ttk.Label(stateFrame, text=f'Turn: {self.playGameController.currentTurn}', font=('fixedsys 20 bold'))
         if isSinglePlayer: 
             self.turnLabel.grid(row=0, column=1, pady=5)
         else: 
             self.turnLabel.grid(row=0, column=0, pady=5)
 
-        # health counter - middle right
-        self.healthLabel = ttk.Label(stateFrame, text=f'Player Health: {self.playGameController._playerHealth}', font=('fixedsys'), foreground='green')
+        # health labels for player and bot - these will be updated by methods later 
+        self.healthLabel = ttk.Label(stateFrame, text=f'Player Health: {self.playGameController._playerHealth}', font=('fixedsys', 15), foreground='blue2')
         self.healthLabel.grid(row=1, column=0, pady=5)
 
-        self.botHealthLabel = ttk.Label(stateFrame, text=f'Bot Health: {self.playGameController._botHealth}', font=('fixedsys'), foreground='red2')
+        self.botHealthLabel = ttk.Label(stateFrame, text=f'Bot Health: {self.playGameController._botHealth}', font=('fixedsys', 15), foreground='red2')
         self.botHealthLabel.grid(row=1, column=2, pady=5)
 
-        # progress bar - middle right 
-        progressLabel = ttk.Label(stateFrame, text='Player Checkpoint Progress',font=('fixedsys'), foreground='green')
+        # progress label and bar - the max value of progress bar is the total checkpoint count. 
+        progressLabel = ttk.Label(stateFrame, text='Player Checkpoint Progress',font=('fixedsys'), foreground='blue2')
         progressLabel.grid(row=3, column=0, pady=5)
 
         self.progressBar = ttk.Progressbar(stateFrame, orient='horizontal', length=150, mode='determinate')
@@ -244,7 +243,7 @@ class PlayGameView:
         self.progressBar['maximum'] = self.playGameController._checkpointCount 
         self.progressBar['value'] = 0 
 
-        # Creating a bot progress bar 
+        # separate progress label and bar for bot 
         self.botProgressLabel = ttk.Label(stateFrame, text='Bot Checkpoint Progress', font=('fixedsys'), foreground='red2')
         self.botProgressLabel.grid(row=3, column=2, pady=5)
 
@@ -253,7 +252,7 @@ class PlayGameView:
         self.botProgressBar['maximum'] = self.playGameController._checkpointCount 
         self.botProgressBar['value'] = 0 
 
-        # stopwatch for multiplayer! 
+        # stopwatch frame for multiplayer game mode  
         self.stopWatchFrame = tk.Frame(stateFrame)
 
         time = ttk.Label(self.stopWatchFrame, text='Time elapsed:', font=('fixedsys 20 bold'))
@@ -262,10 +261,10 @@ class PlayGameView:
         self.setTime(self.elapsedTime) 
         timeLabel.grid(row=2, column=1, rowspan=3, columnspan=3)
         
-        # make the game grid + stuff 
+        # make the game grid
         self.playGameController.makeGrid()
 
-        # frame to grid subtmit, reset, undo, save, quit
+        # frame to grid subtmit, reset, undo, save, quit buttons 
         buttonsFrame = tk.Frame(controlsFrame)
         buttonsFrame.grid(row=7, column=0)
 
@@ -300,27 +299,30 @@ class PlayGameView:
             self.botProgressBar.grid_forget() 
             self.botHealthLabel.grid_forget() 
             self.summary.grid_forget() 
-            # undoBtn.grid_forget() 
             self.multiplayerSummary.grid(row=0, column=1, pady=5) 
             self.stopWatchFrame.grid(row=1, column=1, columnspan=3, rowspan=3)
-        
+    
+    # method to update time on the canvas 
     def updateTime(self):
         self.elapsedTime = time.time() - self.start
         self.setTime(self.elapsedTime)
         self.timer = self.canvas.after(50, self.updateTime)
     
+    # setting the time 
     def setTime(self, elapsed):
         mins = int(elapsed / 60)
         hrs = int(mins / 60)
         secs = int(elapsed - mins * 60.0)
         self.timestr.set('%02d:%02d:%02d' % (hrs, mins, secs))
     
+    # starting the time - this method is called by the playGameController as soon as the user closes the info messagebox in multiplayer game mode
     def startTime(self):
         if not self.running: 
             self.start = time.time() - self.elapsedTime
             self.updateTime() 
             self.running = 1 
-        
+    
+    # stop the time when the user clicks on save gmae 
     def stopTime(self):
         if self.running: 
             self.canvas.after_cancel(self.timer)
@@ -332,9 +334,11 @@ class PlayGameView:
             self.elapsedTime = 0.0 
             self.setTime(self.elapsedTime)
 
+    # method to update turn between player/s and bot  
     def updateTurnLabel(self, turn):
         self.turnLabel.config(text=f'Turn: {turn}')
     
+    # method to update health label for player/bot 
     def updateHealthLabel(self, health, isBot=False):
         if isBot:
             self.botHealthLabel.config(
@@ -343,19 +347,21 @@ class PlayGameView:
             self.healthLabel.config(
                 text=f"Player Health: {health}")
 
-    
+    # updating player progress bar 
     def updateProgressBar(self, checkpointsReached):
         self.progressBar['value'] = checkpointsReached
-    
+
+    # updating bot progrses bar 
     def updateBotProgress(self, botCheckpointsReached):
         self.botProgressBar['value'] = botCheckpointsReached 
 
+    # updating player/bot move history for single player vs bot game mode 
     def updateMoveHistory(self, history, isBot=False):
         textBox = self.botMoveHistoryTxt if isBot else self.moveHistoryTxt
         textBox.configure(state='normal')
         textBox.delete(1.0, tk.END)
 
-        # fill textbox with useful info
+        # populating the move history textbox with either a collision, undo move, or in most cases, the move played by the user 
         for move in history: 
             undo = move.get('undo', False)
             turn = move['turn']

@@ -19,7 +19,7 @@ class LeaderboardView:
         label = ttk.Label(self.leaderboardFrame, text='Leaderboard', font=('fixedsys 20 bold'))
         label.pack(pady=5)
 
-        # Sorting optoins 
+        # Creating an options frame for sorting buttons  
         self.sortOptionsFrame = tk.Frame(self.leaderboardFrame)
         self.sortOptionsFrame.pack(pady=5)
 
@@ -71,7 +71,7 @@ class LeaderboardView:
 
         style2 = ttk.Style() 
         style2.configure('Treeview.Heading', font=('fixedsys', 12))
-    
+        style2.configure('Treeview', rowheight=30)
 
         # make a back button 
         quitBtn = ttk.Button(
@@ -86,6 +86,7 @@ class LeaderboardView:
         self.leaderboardFrame.pack(fill=tk.BOTH)
         self.updateLeaderboard(data)
     
+    # update the leaderboard with new entries 
     def updateLeaderboard(self, data):
         for row in self.table.get_children():
             self.table.delete(row)

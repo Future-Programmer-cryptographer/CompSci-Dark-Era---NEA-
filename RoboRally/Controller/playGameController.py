@@ -105,7 +105,9 @@ class PlayGameController:
     
     # generic button to take user back to main menu 
     def backToMain(self,token=None):
+        # token is there so that if this method is called BEFORE the game starts, we just need to hide the selectBoardFrame window 
 
+        # message asking user to confirm exit 
         confirm = messagebox.askyesno('Quit To Main Menu', 'Are you SURE you want to quit? Unsaved game will be LOST')
 
         if confirm: 
@@ -130,7 +132,7 @@ class PlayGameController:
         self.__createRobot(playerCount=self.totalPlayers)
         self.__placeCheckpointsAndObstacles() 
 
-        info = messagebox.askyesno('Welcome to multiplayer mode', 'Your goal is to work as a team to get to all the checkpoints as quickly as you can. As soon as this window closes, your stopwatch will start! Click Yes to continue. Good luck!')
+        info = messagebox.askyesno('Welcome to MULTIPLAYER mode', 'Your goal is to work as a team to get to all the checkpoints as quickly as you can. As soon as this window closes, your stopwatch will start! Click Yes to continue. Good luck!')
         if info: 
             self.playGameView.startTime() 
         else: 

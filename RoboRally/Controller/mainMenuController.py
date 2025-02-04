@@ -15,7 +15,7 @@ class MainMenuController:
     def hideMain(self):
         self.mainMenuView.mainMenuFrame.pack_forget() 
 
-    # so when the clicks, open a new window for each of these 
+    # so when the user clicks on a button, run these commands and adjust the frames accordingly
     def handleClick(self,action):
         
         self.mainMenuView.mainMenuFrame.pack_forget() 
