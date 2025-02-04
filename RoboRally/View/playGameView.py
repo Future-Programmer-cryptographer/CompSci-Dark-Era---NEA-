@@ -20,7 +20,7 @@ class PlayGameView:
         # creating another frame 
         self.selectBoardFrame = tk.Frame(self.root)
 
-        titleLabel = ttk.Label(self.selectBoardFrame, text='Select one of the three boards for single player vs Bot OR Multiplayer \n Boards are sorted by difficulty, easy-medium-hard (left to right) \n You can also create a custom board for multiplayer gameplay \n (You can customise no. of players, grid size, no. of obstacles and checkpoints)', font=('Verdana',15))
+        titleLabel = ttk.Label(self.selectBoardFrame, text='Select one of the three boards for single player vs Bot OR 4-Player Multiplayer \n Boards are sorted by difficulty, easy-medium-hard (left to right) \n You can also create a custom board for multiplayer gameplay \n (You can customise no. of players, grid size, no. of obstacles and checkpoints)', font=('Verdana',15))
         titleLabel.pack(pady=10)
 
         # note to my future self, the token was included here becuase there were some bugs when closing the frame, so adding a token solved that bug 
@@ -114,7 +114,7 @@ class PlayGameView:
         section1 = ttk.Label(rulesFrame, text='Single Player vs Bot', font=('fixedsys 20 bold'))
         text1 = ttk.Label(rulesFrame, text='You will play against a *very intelligent* bot. Try and get to all the checkpoints before the bot does!', font=('Verdana',15), wraplength=450)
 
-        section2 = ttk.Label(rulesFrame, text='Multiplayer', font=('fixedsys 20 bold'))
+        section2 = ttk.Label(rulesFrame, text='4-player Multiplayer', font=('fixedsys 20 bold'))
         text2 = ttk.Label(rulesFrame, text='Work as a team of 4 to get to all the checkpoints as quickly as you can!', font=('Verdana',15), wraplength=450)
         
         section1.grid(row=0, column=0, padx=20, pady=10)
@@ -222,7 +222,7 @@ class PlayGameView:
         stateFrame.grid(row=1, column=0)
 
         # turn counter - top right 
-        self.turnLabel = ttk.Label(stateFrame, text=f'Turn: {self.playGameController.currentTurn}')
+        self.turnLabel = ttk.Label(stateFrame, text=f'Turn: {self.playGameController.currentTurn}', font=('fixedsys 20 bold'))
         if isSinglePlayer: 
             self.turnLabel.grid(row=0, column=1, pady=5)
         else: 
@@ -257,10 +257,10 @@ class PlayGameView:
         self.stopWatchFrame = tk.Frame(stateFrame)
 
         time = ttk.Label(self.stopWatchFrame, text='Time elapsed:', font=('fixedsys 20 bold'))
-        time.grid(row=0, column=0)
+        time.grid(row=1, column=1)
         timeLabel = ttk.Label(self.stopWatchFrame, textvariable=self.timestr, font=('fixedsys 20 '), background='black', foreground='white')
         self.setTime(self.elapsedTime) 
-        timeLabel.grid(row=1, column=0, rowspan=3, columnspan=3)
+        timeLabel.grid(row=2, column=1, rowspan=3, columnspan=3)
         
         # make the game grid + stuff 
         self.playGameController.makeGrid()
@@ -294,7 +294,7 @@ class PlayGameView:
             self.summary.grid_forget() 
             # undoBtn.grid_forget() 
             self.multiplayerSummary.grid(row=0, column=1, pady=5) 
-            self.stopWatchFrame.grid(row=0, column=1, columnspan=3, rowspan=3)
+            self.stopWatchFrame.grid(row=1, column=1, columnspan=3, rowspan=3)
         
     def updateTime(self):
         self.elapsedTime = time.time() - self.start

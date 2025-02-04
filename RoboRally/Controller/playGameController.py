@@ -346,17 +346,18 @@ class PlayGameController:
         # add EXCEPTION HANDLING HERE for size (and sensible no. of obstacles and cps... i.e if grid size is 5 the obstale cannot be over 25 or something..)
         # gotta treat user like an idiot 
 
-        players = simpledialog.askinteger('PLAYERS', 'Enter number of players', parent=self.root)
-
         valid = False 
         while not valid: 
             try: 
+                players = simpledialog.askinteger('PLAYERS', 'Enter number of players', parent=self.root)
                 size = simpledialog.askinteger('GRID SIZE', 'Enter a grid size. (Range is 5-20 inclusive)', parent=self.root)
                 obstacles = simpledialog.askinteger('OBSTACLES', 'Enter number of obstacles', parent=self.root)
                 checkpoints = simpledialog.askinteger('CHECKPOINTS', 'Enter number of Checkpoints', parent=self.root)
             except ValueError:
                 print('nope!')
             else: 
+                # if players or size or obstacles or checkpoints is None: 
+                #     messagebox.showerror('Error', 'Please check that all details are entered')
                 if size <5 or size > 20:
                     messagebox.showerror('Error', 'Enter grid size between 5 and 20')
                 elif obstacles > int((size*size) - players ): 
@@ -582,7 +583,7 @@ class PlayGameController:
         # messagebox time!! 
         messagebox.showinfo('Checkpoint Reached!!', f"{'Bot' if turn=='B' else 'Player'} reached checkpoint and gained 1 health at {convertToRankAndFile(*position)}!!")
         if self.checkpointsReached + self.botCheckpointsReached >= self._checkpointCount:
-            self.__gameOver(isBot=False) 
+            self.__gameOver() 
 
     def __moveRobot(self, direction, steps, stepCount=0, onComplete=None, isBot=False):
 
@@ -754,7 +755,6 @@ class PlayGameController:
             self.backToMain() 
         
         # add a messagebox to save game/go back to main menu 
-
 
     def __checkForBounds(self,row, col):
         if row< 1 or row > self._size or col <1 or col > self._size: 

@@ -9,6 +9,9 @@ class LeaderboardView:
         self.root = root 
         self.leaderboardController = leaderboardController
 
+        # button styling 
+        style = ttk.Style() 
+
         # creating the leaderboard frame - idk why I need self in this this... but it works and I'm not gonna question it... - problems with garbage collection or something... 
         self.leaderboardFrame = tk.Frame(self.root)
         
@@ -23,32 +26,39 @@ class LeaderboardView:
         sortByDateBtn = ttk.Button(
             self.sortOptionsFrame, 
             text='Sort by Date', 
+            style='smallplay.TButton',
             command = lambda: self.leaderboardController.sortLeaderboard('date')
         )
 
         sortByDiffBtn = ttk.Button(
             self.sortOptionsFrame, 
-            text='Sort by Difficulty', 
+            text='Sort by Difficulty',
+            style='smallplay.TButton', 
             command = lambda: self.leaderboardController.sortLeaderboard('difficulty')
         )
 
         sortByScoreBtn = ttk.Button(
             self.sortOptionsFrame, 
-            text='Sort by Checkpoints Reached', 
+            text='Sort by Checkpoints Reached',
+            style='smallplay.TButton',
             command = lambda: self.leaderboardController.sortLeaderboard('checkpoints')
         )
 
         sortByTimeBtn = ttk.Button(
             self.sortOptionsFrame, 
             text='Sort by Time Taken (for multiplayer only)', 
+            style='smallplay.TButton',
             command = lambda: self.leaderboardController.sortLeaderboard('time')
         )
-
 
         sortByDateBtn.pack(side=tk.LEFT, ipadx=5, ipady=10, padx=5)
         sortByScoreBtn.pack(side=tk.LEFT, ipadx=5, ipady=10, padx=5)
         sortByDiffBtn.pack(side=tk.LEFT, ipadx=5, ipady=10, padx=5)
         sortByTimeBtn.pack(side=tk.LEFT, ipadx=5, ipady=10, padx=5)
+
+        # button styling (same as one from playGameView)
+        style.configure('smallplay.TButton',font=('fixedsys', 17), foreground='red3')
+        style.configure('play.TButton', font=('fixedsys 20 bold'), foreground='red3')
 
         # Tabel for leaderboard 
         self.table = ttk.Treeview(self.leaderboardFrame, columns=('filename', 'date', 'difficulty', 'checkpoints', 'time'), show='headings')
@@ -58,11 +68,18 @@ class LeaderboardView:
         self.table.heading('checkpoints', text='Checkpoints Reached')
         self.table.heading('time', text='Time Taken (seconds)')
         self.table.pack(pady=10, fill=tk.BOTH, expand=True)
+
+        style2 = ttk.Style() 
+        style2.configure('Treeview.Heading', font=('fixedsys', 12))
     
 
         # make a back button 
-        quitBtn = ttk.Button(self.leaderboardFrame, text='Back to Main Menu', command=self.leaderboardController.backToMain)
-        quitBtn.pack(pady=5)
+        quitBtn = ttk.Button(
+            self.leaderboardFrame, 
+            text='Back to Main Menu', 
+            style='play.TButton',
+            command=self.leaderboardController.backToMain)
+        quitBtn.pack(pady=10)
     
     def showLeaderboard(self, data):
         self.root.title('Leaderboard')
