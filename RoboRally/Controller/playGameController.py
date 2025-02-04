@@ -58,7 +58,7 @@ class PlayGameController:
         self._size = 10
 
         # private attributes 
-        self.__cell = 50
+        self.__cell = 45
         self.__undoStack = []
 
 
@@ -125,6 +125,7 @@ class PlayGameController:
     
     def onMultiplayerSelect(self):
         self.isMultiplayer = True
+        self._playerHealth = 10 
         self.playGameView.showGameBoard(isSinglePlayer=False)
         self.__createRobot(playerCount=self.totalPlayers)
         self.__placeCheckpointsAndObstacles() 
@@ -137,6 +138,8 @@ class PlayGameController:
 
     def submitCards(self):
         self.commands = [] 
+        emptySlots = 0 
+
         for i, register, in enumerate(self.registers): 
             card = register['model'].card
             if card: 
@@ -144,13 +147,19 @@ class PlayGameController:
                     'direction' : card.direction, 
                     'steps': card.steps
                 })
+            else: 
+                emptySlots += 1 
         
-        if self.isMultiplayer:
-            # Process only the active player's commands
-            self.__processCommands(self.commands, isBot=False, onComplete=self.__endTurn)
+        # if all the slots are empty, gotta turn this into a try-except situation
+        if emptySlots == 3: 
+            messagebox.showerror('No cards found', 'Please drag and drop at least one card into the empty register slot')
         else:
-            # Single-player: handle bot after player
-            self.__processCommands(self.commands, isBot=False, onComplete=self.__handleBotTurn)  
+            if self.isMultiplayer:
+                # Process only the active player's commands
+                self.__processCommands(self.commands, isBot=False, onComplete=self.__endTurn)
+            else:
+                # Single-player: handle bot after player
+                self.__processCommands(self.commands, isBot=False, onComplete=self.__handleBotTurn)   
     
     def undoLastAction(self):
         if not self.__undoStack:

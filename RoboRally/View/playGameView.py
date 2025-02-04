@@ -87,7 +87,7 @@ class PlayGameView:
         self.optionWindowFrame = tk.Frame(self.root)
         self.optionWindowFrame.pack(fill=tk.BOTH)
 
-        msg = ttk.Label(self.optionWindowFrame, text='Select one of the game options below\nA short summary of each game mode can be found below the buttons', font=('Verdana',20), justify='center')
+        msg = ttk.Label(self.optionWindowFrame, text='Select one of the game options below\n A short summary of each game mode can be found below the buttons', font=('Verdana',20), justify='center')
         msg.pack(ipady=10, ipadx=10, pady=10)
 
 
@@ -157,11 +157,11 @@ class PlayGameView:
         infoLabel.grid(row=0, column=0, pady=5, padx=5)
 
         self.summary = ttk.Label(infoFrame, 
-                            text="AIM: drag and drop UP TO 3 OUT OF 5 CARDS into the EMPTY WHITE CARD SLOTS to move your robot and get to all the checkpoints before other ROBOT \n The robot you will be controlling is the blue token on the board with the label 'P' and you will be playign AGAINST a bot (label 'B'). \n GREEN TRIANGLES are CHECKPOINT. You MUST LAND on the checkpoint at the end of your turn to get the checkpoint \n DARK GREY SQUARES are OBSTACLES- collision with an obstacle will result in a loss of health, AVOID them if you can. \n Up = 1 square up \n Down = 1 square down  \n Left = one square to the left \n Right = one square to the right \n MOVE HISTORY: you can view your past moves (and the bot if playing against bot) in the move history text box on the left hand side of this screen.\n GOOD LUCK AND HAVE FUN!", font=('Arial', 12))
+                            text=" AIM: drag and drop UP TO 1, 2 OR 3 OUT OF 5 CARD into the EMPTY CARD SLOTS to move your robot and get to all the checkpoints before the BOT \n The robot you will be controlling is the blue token on the board with the label 'P' and you will be playing AGAINST a bot (label 'B'). \n GREEN TRIANGLES are CHECKPOINT. You MUST LAND on the checkpoint at the end of your turn to get the checkpoint \n DARK GREY SQUARES are OBSTACLES- collision with an obstacle will result in a loss of health, AVOID them if you can. \n HEALTH: you will start with 5 health points. You will lose a health for every obstacle collision AND if you go off the grid at any point during the game. You will regain 1 health for every checkpoint you reach. \n MOVE HISTORY: you can view your past moves (and the bot if playing against bot) in the move history text box on the left hand side of this screen.\n GOOD LUCK AND HAVE FUN!", font=('Verdana', 10), wraplength=1000)
         self.summary.grid(row=0, column=1, pady=5)
 
         self.multiplayerSummary = ttk.Label(infoFrame, 
-                                            text='AIM: Work as a team to get to all the checkpoints in the shortest time possible! \n Assign each player in your multiplayer team a number and drag and drop UP TO 3 OUT OF 5 CARDS in the EMPTY WHITE CARD SLOTS to move your numbered robot (numbered 1-4). \n GREEN TRIANGLES are CHECKPOINTS. You MUST LAND on the checkpoint at the end of your turn to get the checkpoint. \n DARK GREY SQUARES are OBSTACLES- collision with an obstacle will result in a loss of health, AVOID them if you can. \n Up = 1 square up \n Down = 1 square down  \n Left = one square to the left \n Right = one square to the right. \n GOOD LUCK AND HAVE FUN!', font=('Arial', 12))
+                                            text=' AIM: Work as a team to get to all the checkpoints in the shortest time possible! \n Assign each player in your multiplayer team a number and drag and drop UP TO 3 OUT OF 5 CARDS in the EMPTY WHITE CARD SLOTS to move your numbered robot (numbered 1-4). \n GREEN TRIANGLES are CHECKPOINTS. You MUST LAND on the checkpoint at the end of your turn to get the checkpoint. \n DARK GREY SQUARES are OBSTACLES- collision with an obstacle will result in a loss of health, AVOID them if you can. \n HEALTH: you will start with 5 health points. You will lose a health for every obstacle collision AND if you go off the grid at any point during the game. You will regain 1 health for every checkpoint you reach. \n GOOD LUCK AND HAVE FUN!', font=('Verdana', 10), wraplength=1000)
 
 
         # move history 
@@ -229,14 +229,14 @@ class PlayGameView:
             self.turnLabel.grid(row=0, column=0, pady=5)
 
         # health counter - middle right
-        self.healthLabel = ttk.Label(stateFrame, text=f'Player Health: {self.playGameController._playerHealth}')
+        self.healthLabel = ttk.Label(stateFrame, text=f'Player Health: {self.playGameController._playerHealth}', font=('fixedsys'), foreground='green')
         self.healthLabel.grid(row=1, column=0, pady=5)
 
-        self.botHealthLabel = ttk.Label(stateFrame, text=f'Bot Health: {self.playGameController._botHealth}')
+        self.botHealthLabel = ttk.Label(stateFrame, text=f'Bot Health: {self.playGameController._botHealth}', font=('fixedsys'), foreground='red2')
         self.botHealthLabel.grid(row=1, column=2, pady=5)
 
         # progress bar - middle right 
-        progressLabel = ttk.Label(stateFrame, text='Player Checkpoint Progress')
+        progressLabel = ttk.Label(stateFrame, text='Player Checkpoint Progress',font=('fixedsys'), foreground='green')
         progressLabel.grid(row=3, column=0, pady=5)
 
         self.progressBar = ttk.Progressbar(stateFrame, orient='horizontal', length=150, mode='determinate')
@@ -245,7 +245,7 @@ class PlayGameView:
         self.progressBar['value'] = 0 
 
         # Creating a bot progress bar 
-        self.botProgressLabel = ttk.Label(stateFrame, text='Bot Checkpoint Progress')
+        self.botProgressLabel = ttk.Label(stateFrame, text='Bot Checkpoint Progress', font=('fixedsys'), foreground='red2')
         self.botProgressLabel.grid(row=3, column=2, pady=5)
 
         self.botProgressBar = ttk.Progressbar(stateFrame, orient='horizontal', length=150, mode='determinate')
@@ -265,25 +265,33 @@ class PlayGameView:
         # make the game grid + stuff 
         self.playGameController.makeGrid()
 
+        # frame to grid subtmit, reset, undo, save, quit
+        buttonsFrame = tk.Frame(controlsFrame)
+        buttonsFrame.grid(row=7, column=0)
+
+        btnStyle = ttk.Style()
+
         # submit button 
-        submitBtn = ttk.Button(controlsFrame, text='submit', command=self.playGameController.submitCards)
-        submitBtn.grid(row=6, column=0, pady=5)
+        submitBtn = ttk.Button(buttonsFrame, text='SUBMIT', style='btn.TButton', command=self.playGameController.submitCards)
+        submitBtn.grid(row=1, column=0, pady=5)
     
         # Reset button 
-        resetBtn = ttk.Button(controlsFrame, text='Reset Cards', command=self.playGameController.resetCards)
-        resetBtn.grid(row=7, column=0, pady=5)
+        resetBtn = ttk.Button(buttonsFrame, text='RESET Cards', style='btn.TButton', command=self.playGameController.resetCards)
+        resetBtn.grid(row=1, column=2, pady=5)
 
         # Undo button 
-        undoBtn = ttk.Button(controlsFrame, text='Undo', command=self.playGameController.undoLastAction)
-        undoBtn.grid(row=8, column=0, pady=5)
+        undoBtn = ttk.Button(buttonsFrame, text='UNDO', style='btn.TButton', command=self.playGameController.undoLastAction)
+        undoBtn.grid(row=2, column=0, pady=5)
 
         # Save button 
-        saveBtn = ttk.Button(controlsFrame, text='Save', command=self.playGameController._saveGameState)
-        saveBtn.grid(row=9, column=0, pady=5)
+        saveBtn = ttk.Button(buttonsFrame, text='SAVE', style='btn.TButton', command=self.playGameController._saveGameState)
+        saveBtn.grid(row=2, column=2, pady=5)
 
         # Quit to main menu button 
-        quitBtn = ttk.Button(controlsFrame, text='Quit to Main Menu', command=self.playGameController.backToMain)
-        quitBtn.grid(row=10, column=0, pady=5)
+        quitBtn = ttk.Button(buttonsFrame, text='QUIT to Main Menu', style='btn.TButton', command=self.playGameController.backToMain)
+        quitBtn.grid(row=3, column=0, pady=5)
+
+        btnStyle.configure('btn.TButton', font='fixedsys 20 bold')
 
         # hiding unnecessary features in multiplayer 
         if not isSinglePlayer: 

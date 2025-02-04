@@ -1,7 +1,6 @@
 from tkinter import * 
 from tkinter import ttk 
 from tkinter.ttk import *  
-from Controller.leaderboard import displayLeaderboard
 from View.rules import RulesWindow
 
 from tkinter import messagebox
@@ -58,7 +57,7 @@ class MainMenuController:
         selectionWindow.title('Load Saved Game')
         selectionWindow.geometry('500x500')
 
-        ttk.Label(selectionWindow, text='Select a saved game').pack(pady=10)
+        ttk.Label(selectionWindow, text='Select a saved game', font='fixedsys 20 bold').pack(pady=10)
 
         for file in savedFiles: 
             with open(file, 'r') as f: 
