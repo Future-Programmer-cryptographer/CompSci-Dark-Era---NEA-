@@ -48,7 +48,7 @@ class PlayGameView:
         hardBoardImage = Image.open('Images/hard.png').resize((400,400))
         self.hardBoard = ImageTk.PhotoImage(hardBoardImage)
 
-        # button widget 
+        # Creating difficulty option buttons 
         easyBtn = ttk.Button(self.selectBoardFrame, 
                             text='EASY',
                             image = self.easyBoard,

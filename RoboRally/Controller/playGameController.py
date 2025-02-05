@@ -32,6 +32,7 @@ class PlayGameController:
         self.botCheckpointsReached = 0 
         self.currentPlayerIdx = 0 
 
+        # This is updated by the '__updateDifficulty' method when the users selects a board 
         self.difficulty = '' 
 
         self.cards = []
@@ -111,7 +112,7 @@ class PlayGameController:
         confirm = messagebox.askyesno('Quit To Main Menu', 'Are you SURE you want to quit? Unsaved game will be LOST')
 
         if confirm: 
-
+            self.__resetState() 
             if token: 
                 self.playGameView.selectBoardFrame.pack_forget() 
             else: 
@@ -228,7 +229,7 @@ class PlayGameController:
             cardView.resetPosition(canvas)
    
     def makeGrid(self):
-        # draw the actual grid 
+        # drawing a square grid, based on size and cell 
         for i in range(self._size):
             for j in range(self._size):
                 x1 = (j+1) * self.__cell 
@@ -238,14 +239,13 @@ class PlayGameController:
 
                 self.canvas.create_rectangle(x1, y1, x2, y2, fill='pink', outline='black')
 
-        # letters 
+        # Rank and file style labelling system. So vertical columns on left hand side are numbers and bottom row will be letters  
         for col in range(self._size):
             x = (col+1) * self.__cell + self.__cell / 2 
             y = self.__cell /2  
             file = chr(65+col) # convert 0-9 to letters 
             self.canvas.create_text(x,y,text=file) 
         
-        # steps labels 
         for row in range(self._size):
             x = self.__cell / 2 
             y = (row+1) * self.__cell + self.__cell / 2 
@@ -403,23 +403,61 @@ class PlayGameController:
   
     # Private Methods 
 
+    def __resetState(self):
+        # this method is called whenever user going back to main, this resets the player count, move history, etc. so that if the player chooses a different option, game doesn't crash
+
+        self.currentTurn = 1
+        self.isMultiplayer = False
+        self.totalPlayers = 4
+        self.checkpointsReached = 0 
+        self.botCheckpointsReached = 0 
+        self.currentPlayerIdx = 0 
+
+        self.difficulty = '' 
+
+        self.cards = []
+        self.registers = [] 
+
+        self.moveHistory = []
+        self.botMoveHistory = []
+
+        self.playerPos = None
+        self.botPos = None
+        self.playerId = None
+        self.playerLabel = None
+        self.botId = None
+        self.botLabel = None
+
+        # protected attributes 
+        self._playerHealth = 5
+        self._botHealth = 5
+        self._obstacleCount = 5
+        self._checkpointCount = 10
+        self._animationSpeed = 500
+        self._obstacles = set()
+        self._checkpoints = []
+        self._size = 10
+
+        # private attributes 
+        self.__cell = 45
+        self.__undoStack = [] 
     
     def __updateDifficulty(self, difficulty):
         if difficulty == 'EASY':
             self.difficulty = 'EASY'
             self._obstacleCount = 5 
-            self._checkpointCount = 20
+            self._checkpointCount = 10
         elif difficulty == 'MEDIUM':
             self.difficulty = 'MEDIUM'
             self._checkpointCount = 10 
             self._obstacleCount = 10
         elif difficulty == 'HARD':
             self.difficulty = 'HARD'
-            self._checkpointCount = 5 
-            self._obstacleCount = 20  
+            self._checkpointCount = 10 
+            self._obstacleCount = 25  
         else: 
-            self._checkpointCount = 20
-            self._obstacleCount = 5
+            self._checkpointCount = 10
+            self._obstacleCount = 10
 
     def __singlePlayerAndBot(self):
         # Generate starting positions for player and bot
@@ -801,16 +839,14 @@ class PlayGameController:
             canvas.tag_bind(cardView.cardId, '<B1-Motion>', lambda e, card=cardView: self.cardsController.continueDrag(e, card))
             canvas.tag_bind(cardView.cardId, '<ButtonRelease-1>', lambda e, card=cardView: self.cardsController.endDrag(e, card, self.cards, self.registers))
 
-            # # storing starting coords in case of a reset 
-            # cardView.start_x = 100+i*150
-            # cardView.start_y= 400 
-
     def __createRobot(self, playerCount):
+        # This method create robot for multiplayer/custom no.of players 
+
         self.multiplayerPos = [] 
         self.playerLabels = [] 
         self.playerIds = [] 
 
-        colours = ['SpringGreen2', 'yellow', 'firebrick1', 'DarkOrchid1', 'deep pink', 'cyan2', 'goldenrod1']
+        colours = ['SpringGreen2', 'yellow', 'firebrick1', 'cyan2', 'deep pink', 'DarkOrchid1', 'goldenrod1']
         exclude = set(self._checkpoints + list(self._obstacles))  # Combine checkpoints and obstacles
 
         for i in range(playerCount):
