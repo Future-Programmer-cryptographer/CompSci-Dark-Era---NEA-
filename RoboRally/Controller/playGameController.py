@@ -67,6 +67,8 @@ class PlayGameController:
     # Public methods 
 
     def parseGameState(self, contents):
+        # parsing the contents from the md file to redraw game state 
+
         try:
             # General section
             self._size = int(getMdValue(contents, 'Grid Size'))
@@ -85,8 +87,9 @@ class PlayGameController:
             self.botPos = tuple(map(int, getMdValue(contents, 'Bot Position').strip("()").split(", ")))
 
             # Checkpoints and obs-ta-cles info 
-            self._checkpoints = getMdPos(contents, 'Checkpoint Positions')
             self._obstacles = getMdPos(contents, "Obstacle Positions")
+            self._checkpoints = getMdPos(contents, 'Checkpoint Positions')
+            
 
             # # debug prints 
             # print(f'Checkpoitn parse debug- {self._checkpoints}')
@@ -95,6 +98,7 @@ class PlayGameController:
         except ValueError as e:
             messagebox.showerror("Errr", str(e))
         
+        # parameter is there to so that _redrawGameState knows it needs to recreate the entire game state instead of a move undo
         self._redrawGameState(1) 
 
     def initialiseView(self, root):
@@ -104,7 +108,6 @@ class PlayGameController:
         self.__updateDifficulty(difficulty)
         self.playGameView.showOptionWindow() 
     
-    # generic button to take user back to main menu 
     def backToMain(self,token=None):
         # token is there so that if this method is called BEFORE the game starts, we just need to hide the selectBoardFrame window 
 
@@ -133,6 +136,7 @@ class PlayGameController:
         self.__createRobot(playerCount=self.totalPlayers)
         self.__placeCheckpointsAndObstacles() 
 
+        # info screen before start of multiplaer game, as soon as player clicks on Ok, the multiplayer stopwatch starts counting 
         info = messagebox.askyesno('Welcome to MULTIPLAYER mode', 'Your goal is to work as a team to get to all the checkpoints as quickly as you can. As soon as this window closes, your stopwatch will start! Click Yes to continue. Good luck!')
         if info: 
             self.playGameView.startTime() 
@@ -141,6 +145,8 @@ class PlayGameController:
 
     def submitCards(self):
         self.commands = [] 
+
+        # creating an empty slot counter to keep track of how many cards the player has dragged n dropped into register slots 
         emptySlots = 0 
 
         for i, register, in enumerate(self.registers): 
@@ -152,16 +158,14 @@ class PlayGameController:
                 })
             else: 
                 emptySlots += 1 
-        
-        # if all the slots are empty, gotta turn this into a try-except situation
+
+        # if the user has no selected any cards, inform user 
         if emptySlots == 3: 
             messagebox.showerror('No cards found', 'Please drag and drop at least one card into the empty register slot')
         else:
             if self.isMultiplayer:
-                # Process only the active player's commands
                 self.__processCommands(self.commands, isBot=False, onComplete=self.__endTurn)
             else:
-                # Single-player: handle bot after player
                 self.__processCommands(self.commands, isBot=False, onComplete=self.__handleBotTurn)   
     
     def undoLastAction(self):
@@ -255,21 +259,31 @@ class PlayGameController:
     # Protected Methods 
 
     def _saveGameState(self):
-        filename = askstring('Save Game', 'Name your file (without extension!): ')
-        if not filename: 
-            messagebox.showinfo('Enter a file name you dummy')
-            return 
-        
-        file = f'{filename}.md'
 
-        # save it with current date n time- will could be useful to show on leaderboard later 
+        # ask the user to enter a filename to save their game state 
+        valid = False 
+
+        while not valid: 
+            try: 
+                filename = askstring('Save Game', 'Name your file (without extension!): ')
+                if not filename: 
+                    raise ValueError('Enter a filename to save game state')
+                else: 
+                    valid = True 
+            except ValueError as e: 
+                messagebox.showerror('File not named', str(e))
+        
+        # save to a markdown file format 
+        file = f'{filename}.md'
+    
+        # saving file with date and time - will be useful later to sort by date on the leaderboard  
         now = datetime.now().strftime('%d-%m-%Y %H:%M')
 
         with open(file, 'w') as f: 
             f.write('# Robo Rally File\n')
             f.write(f"**Date Played:** {now}\n\n")
 
-            # Summary sec - use this for leaderboard parsing later on... 
+            # Summary section - will be used for parsing game state and leaderboard standings 
             f.write('## Summary\n')
             f.write(f'- **Grid Size:** {self._size}\n')
             f.write(f'- **Current Turn:** {self.currentTurn}\n')
@@ -279,7 +293,7 @@ class PlayGameController:
             f.write(f'- **Player Checkpoints Reached:** {self.checkpointsReached}\n')
             f.write(f'- **Bot Checkpoints Reached:** {self.botCheckpointsReached}\n\n')
 
-            # Player and multiplayer stuff 
+            # Storing information if it's not single player vs bot 
             if not self.isMultiplayer: 
                 f.write('## Player\n')
                 f.write(f'- **Player Health:** {self._playerHealth}\n')
@@ -295,9 +309,6 @@ class PlayGameController:
                 f.write(f'- **Time Taken:** {self.playGameView.elapsedTime:.2f} \n\n')
                         
 
-            # need to initilaise isBot at some point 
-            # Bot stuff
-
             # Checkpoints Section
             checkpoints = ', '.join([f'({p[0]}, {p[1]})' for p in self._checkpoints])
             f.write('## Checkpoints\n')
@@ -311,13 +322,15 @@ class PlayGameController:
         messagebox.showinfo('Game saved!!', f'Game saved to {file}')
 
     def _redrawGameState(self, token=None):
-        # note to future self, token is there if the redrawstate method is called by the loadgame state in mainmenucontroller!
+        #  token is there if this method is called by the parseGameState instead of the Undo, we want to redraw the entire board from scratch 
         if token:
             self.playGameView.showGameBoard(isSinglePlayer=True)
         
+        # first delete everything on the canvas then recreate the grid 
         self.canvas.delete('all')
         self.makeGrid()  
         
+        # redraw player and bot positions on the grid 
         row, col = self.playerPos
         x1 = col * self.__cell + self.__cell / 4
         y1 = row * self.__cell + self.__cell / 4
@@ -326,7 +339,6 @@ class PlayGameController:
         self.playerId = self.canvas.create_oval(x1, y1, x2, y2, fill='light blue')
         self.playerLabel = self.canvas.create_text((x1 + x2) / 2, (y1 + y2) / 2, text='P')
 
-        # Redraw bot if not is multi
         if not self.isMultiplayer: 
             row, col = self.botPos
             x1 = col * self.__cell + self.__cell / 4
@@ -335,27 +347,27 @@ class PlayGameController:
             y2 = y1 + self.__cell / 2
             self.botId = self.canvas.create_oval(x1, y1, x2, y2, fill='red')
             self.botLabel = self.canvas.create_text((x1 + x2) / 2, (y1 + y2) / 2, text='B')
-        
-        self.__placeCheckpoints(self._checkpoints)
 
-        # Redraw obstacles
+        # redraw cp's and obstacles   
+        self.__placeCheckpoints(self._checkpoints)
         self.__placeObstacles(self._obstacles)
         
-        # Update labels and progress - remem to add bot checkpints later!!
+        # Update labels and progress bars in playGameView 
         self.playGameView.updateTurnLabel(self.currentTurn)
         self.playGameView.updateHealthLabel(self._playerHealth, isBot=False)
         self.playGameView.updateHealthLabel(self._botHealth, isBot=True)
         self.playGameView.updateProgressBar(self.checkpointsReached)
         self.playGameView.updateBotProgress(self.botCheckpointsReached)
 
+        # if we are loading from a saved file, then hide the main menu and move history 
         if token: 
             self.mainMenuController.hideMain() 
             self.playGameView.moveHistoryFrame.grid_forget() 
 
     def _makeCustomBoard(self):
 
-        # add EXCEPTION HANDLING HERE for size (and sensible no. of obstacles and cps... i.e if grid size is 5 the obstale cannot be over 25 or something..)
-        # gotta treat user like an idiot 
+        # using exception handling to ensure user enters a sensible numbers for grid size and obstacles. 
+        # eg - if the grid size is 10, the obstacles cannot be more than 100 
 
         valid = False 
         while not valid: 
@@ -367,8 +379,6 @@ class PlayGameController:
             except ValueError:
                 print('nope!')
             else: 
-                # if players or size or obstacles or checkpoints is None: 
-                #     messagebox.showerror('Error', 'Please check that all details are entered')
                 if size <5 or size > 20:
                     messagebox.showerror('Error', 'Enter grid size between 5 and 20')
                 elif obstacles > int((size*size) - players ): 
@@ -404,7 +414,7 @@ class PlayGameController:
     # Private Methods 
 
     def __resetState(self):
-        # this method is called whenever user going back to main, this resets the player count, move history, etc. so that if the player chooses a different option, game doesn't crash
+        # this method is called whenever user going back to main, this resets the player count, move history, etc. so that if the player chooses a different option, the game renders properly 
 
         self.currentTurn = 1
         self.isMultiplayer = False
@@ -443,10 +453,11 @@ class PlayGameController:
         self.__undoStack = [] 
     
     def __updateDifficulty(self, difficulty):
+        # updates obstacles and checkpoints to reflect change in difficulty 
         if difficulty == 'EASY':
             self.difficulty = 'EASY'
             self._obstacleCount = 5 
-            self._checkpointCount = 10
+            self._checkpointCount = 15
         elif difficulty == 'MEDIUM':
             self.difficulty = 'MEDIUM'
             self._checkpointCount = 10 
@@ -460,7 +471,8 @@ class PlayGameController:
             self._obstacleCount = 10
 
     def __singlePlayerAndBot(self):
-        # Generate starting positions for player and bot
+        # Generate random starting positions for player and bot - making usre they don't overlap with obstacles or checkpoints 
+
         exclude = set(self._checkpoints + list(self._obstacles))
 
         self.playerPos = generateRandomSquares(1, exclude, self._size)[0]
@@ -477,7 +489,6 @@ class PlayGameController:
         self.playerId = self.canvas.create_oval(x1, y1, x2, y2, fill='light blue')
         self.playerLabel = self.canvas.create_text((x1 + x2) / 2, (y1 + y2) / 2, text='P')
 
-        # Drawing bot - I know this is so inefficinet but hey ho... 
         row, col = self.botPos
         x1 = col * self.__cell + self.__cell / 4
         y1 = row * self.__cell + self.__cell / 4
@@ -495,6 +506,7 @@ class PlayGameController:
         else:
             exclude = set([self.playerPos, self.botPos] + list(self._obstacles))  
 
+        # generate random obstacles and checkpoints - again adding to exclude set so that they don't overlap 
         obstacles = generateRandomSquares(self._obstacleCount, exclude, self._size)
         self._obstacles.update(obstacles)
         exclude.update(obstacles)
@@ -513,7 +525,7 @@ class PlayGameController:
             direction = command['direction']
             steps = command['steps']
 
-            # check current robot status 
+            # checking robot type status 
             if isBot:
                 robotPos = self.botPos
                 moveHistory = self.botMoveHistory
@@ -524,7 +536,7 @@ class PlayGameController:
                 robotPos = self.playerPos
                 moveHistory = self.moveHistory
 
-            # Add to move history start point
+            # Update move history in playGameView at the start of robot turn 
             startPos = convertToRankAndFile(*robotPos)
             if not self.isMultiplayer: 
                 moveHistory.append({
@@ -534,8 +546,8 @@ class PlayGameController:
                     'direction': direction,
                     'steps': steps,
                     'start': startPos,
-                    'end': None,  # Will be updated later
-                    'collision': False  # Will be updated if a collision happens
+                    'end': None,  
+                    'collision': False  
                 })
 
             self.__moveRobot(
@@ -549,15 +561,14 @@ class PlayGameController:
                 onComplete() 
 
     def __placeObstacles(self, obstaclePos):
+        # get the obstacle position and draw the obstacle 
         for row, col in obstaclePos:
             x1 = col*self.__cell 
             y1 = row*self.__cell  
             x2 = x1 + self.__cell  
             y2 = y1 + self.__cell 
 
-            # Draw/render the obstacle 
             self.canvas.create_rectangle(x1,y1,x2,y2,fill='gray', outline='black')
-            #self._obstacles.add((row, col))
     
     def __placeCheckpoints(self, checkpointPos):
         self.checkpointIds = {} 
@@ -580,10 +591,7 @@ class PlayGameController:
 
     def __checkForCheckpoint(self):
 
-        # okay, this needs some debuggin... 
-        # maybe... start with a flag for player and bot and then deal with multiplayer separately?
-
-        # first chek for player checkpoint, then bot checkpoint 
+        # function to check if/when the user LANDS on the checkpoint (cp) only
 
         if self.isMultiplayer:
             for i, position in enumerate(self.multiplayerPos):
@@ -599,10 +607,10 @@ class PlayGameController:
 
     def __handleCheckpoint(self, turn, position):
 
-        # remove checkpoint first 
+        # remove cp first 
         self._checkpoints.remove(position)
 
-        # delete cp from canvas 
+        # delete cp from canvas by matching with its id 
         checkpointId = self.checkpointIds.pop(position, None)
         if checkpointId:
             self.canvas.delete(checkpointId)
@@ -616,6 +624,7 @@ class PlayGameController:
             self._botHealth = self._botHealth +1 
             self.playGameView.updateHealthLabel(self._botHealth, isBot=True)
         
+        # in case of multiplaer as self._playerHealth is used as player label for both single player vs bot and multiplaer 
         else: 
             self._playerHealth = self._playerHealth +1 
             self.playGameView.updateHealthLabel(self._playerHealth, isBot=False)
@@ -636,6 +645,7 @@ class PlayGameController:
 
     def __moveRobot(self, direction, steps, stepCount=0, onComplete=None, isBot=False):
 
+        # save the game state to a stack at the start in case of an undo
         self.__saveToUndoStack() 
 
         # First need to check which bot is moving 
@@ -663,7 +673,6 @@ class PlayGameController:
         # Current pos
         row, col = robotPos
 
-        # Calculate next up... 
         if direction == 'UP':
             row -= 1
         elif direction == 'DOWN':
@@ -673,10 +682,8 @@ class PlayGameController:
         elif direction == 'RIGHT':
             col += 1
 
-        # check for obstacles and going off grid... 
-
+        # now check for obstacles and going off grid and update -1 to health and update move history 
         if (row, col) in self._obstacles:
-            # Update health and move history for collision
             if isBot: 
                 self._botHealth -=1  
                 health = self._botHealth
@@ -697,13 +704,14 @@ class PlayGameController:
                 return 
 
             messagebox.showinfo(
-                'Collision!',
+                'Collision!!',
                 f"{'Bot' if isBot else 'Player'} has a collision!"
             )
             if onComplete:
                 onComplete()
             return
 
+        # checking for going off grid 
         if self.__checkForBounds(row, col): 
             if isBot: 
                 self._botHealth -=1  
@@ -774,8 +782,8 @@ class PlayGameController:
                 onComplete() 
 
     def __gameOver(self):
-
         # game can either finish if player/bot health dies or if all checkpoints have been reached!! 
+
         if self.checkpointsReached + self.botCheckpointsReached >= self._checkpointCount:
             if self.checkpointsReached > self.botCheckpointsReached: 
                 winner = 'Player'
@@ -786,26 +794,42 @@ class PlayGameController:
             
             if winner == 'Tie':
                 messagebox.showinfo('GAME OVER', f"It's a TIE! Player and Bot reached an equal number of checkpoints. Save Game or Return to Main Menu")
-                self.backToMain() 
+                save = messagebox.askyesno('SAVE GAME?', 'Would you like to save your Game?')
+                if save: 
+                    self._saveGameState()
+                else: 
+                    self.backToMain() 
+                
             else: 
                 messagebox.showinfo('GAME OVER', f'{winner} won! Save Game or Return to Main Menu')
-                self.backToMain()
+                save = messagebox.askyesno('SAVE GAME?', 'Would you like to save your Game?')
+                if save: 
+                    self._saveGameState()
+                else: 
+                    self.backToMain() 
 
         if self._playerHealth > self._botHealth: 
             winner = 'Player'
-            # Well, talk about sensible variable names... 
+            # Of course, very sensible variable names 
             notWinner  = 'Bot'
         
             messagebox.showinfo('GAME OVER', f'{notWinner} health is 0. {winner} wins! Save Game or Return to Main Menu')
-            self.backToMain() 
+            save = messagebox.askyesno('SAVE GAME?', 'Would you like to save your Game?')
+            if save: 
+                self._saveGameState()
+            else: 
+                self.backToMain() 
 
         else:
             messagebox.showinfo('GAME OVER', f'Overall health is 0! Save Game or Return to Main Menu')
-            self.backToMain() 
-        
-        # add a messagebox to save game/go back to main menu 
+            save = messagebox.askyesno('SAVE GAME?', 'Would you like to save your Game?')
+            if save: 
+                self._saveGameState()
+            else: 
+                self.backToMain() 
 
     def __checkForBounds(self,row, col):
+        # method to see if the robot has gone off grid 
         if row< 1 or row > self._size or col <1 or col > self._size: 
             # print(row, col)
             return True 
@@ -814,18 +838,21 @@ class PlayGameController:
             return False 
 
     def __createActionCards(self, canvas):
+        # initialising the controller to handle drag and drop for cards into register slots 
         self.cardsController = DragAndDropController(self.playGameView.cardsCanvas)
 
+        # create 5 random cards for user- choose 1 random directions and 1,2, or 3 steps for each direction
         directions = ['UP', 'DOWN', 'LEFT', 'RIGHT']
         for i in range(5):
             direction = random.choice(directions)
             steps = random.randint(1, 3)
 
+            # initialising card model and view 
             cardModel = model.CardModel(direction, steps)
             cardView = view.CardView(
                 canvas,
                 x=5 + i * 80,
-                y=150,  # Adjust as needed
+                y=150,  
                 width=75,
                 height=50,
                 text=f"{direction} {steps}"
@@ -834,7 +861,7 @@ class PlayGameController:
             # storing model and view in controller (as a dictionary)
             self.cards.append({'model':cardModel, 'view':cardView})
 
-            # binding drag n drop stuff 
+            # binding drag n drop to cards so that user can drag and drop cards on the canvas  
             canvas.tag_bind(cardView.cardId, '<ButtonPress-1>', lambda e, card=cardView: self.cardsController.startDrag(e, card))
             canvas.tag_bind(cardView.cardId, '<B1-Motion>', lambda e, card=cardView: self.cardsController.continueDrag(e, card))
             canvas.tag_bind(cardView.cardId, '<ButtonRelease-1>', lambda e, card=cardView: self.cardsController.endDrag(e, card, self.cards, self.registers))
@@ -847,7 +874,7 @@ class PlayGameController:
         self.playerIds = [] 
 
         colours = ['SpringGreen2', 'yellow', 'firebrick1', 'cyan2', 'deep pink', 'DarkOrchid1', 'goldenrod1']
-        exclude = set(self._checkpoints + list(self._obstacles))  # Combine checkpoints and obstacles
+        exclude = set(self._checkpoints + list(self._obstacles)) 
 
         for i in range(playerCount):
             # Generate a random position for the player, ensuring no overlap
@@ -862,7 +889,7 @@ class PlayGameController:
             x2 = x1 + self.__cell / 2
             y2 = y1 + self.__cell / 2
 
-            # Draw player robot
+            # Draw player bot 
             playerId = self.canvas.create_oval(x1, y1, x2, y2, fill=colours[i])
             self.playerIds.append(playerId)
 
@@ -871,6 +898,7 @@ class PlayGameController:
             self.playerLabels.append(label)
     
     def __makeRegisters(self, canvas):
+        # initilise register model and view to store state and store them in the controller (similar to cards - as a dict)
         for i in range(3):
             registerModel = model.RegisterModel()
             registerView = view.RegisterView(
@@ -884,6 +912,8 @@ class PlayGameController:
             self.registers.append({'model': registerModel, 'view': registerView})
     
     def __clearRegisterAndCards(self):
+        # clear the cards and registers from the canvas at the start of new turn 
+
         canvas = self.playGameView.cardsCanvas
 
         for cardPair in self.cards: 
@@ -900,6 +930,7 @@ class PlayGameController:
         self.__makeRegisters(canvas)   
     
     def __handleBotTurn(self):
+        # handles the bot turn, can be either random or using the A* pathfinding 
         if not self.isMultiplayer:
             botCommands = generateBotMoves(self.botPos, self._checkpoints, self._obstacles, self._size) 
             #botCommands = generateRandomBotMoves()
@@ -907,8 +938,11 @@ class PlayGameController:
             # print('onto bot turn now!!')
         
     def __endTurn(self):
+        # end of turn logic, if multiplayer, go onto next player and wrap around to player 1 at the end. 
+        # for single player, just increment the turn counter 
+        # clear registers and cards and check for checkpoint 
+
         if self.isMultiplayer:
-            # Rotate to the next player
             self.currentPlayerIdx = (self.currentPlayerIdx + 1) % self.totalPlayers
             if self.currentPlayerIdx == 0:
                 self.currentTurn += 1
@@ -922,6 +956,7 @@ class PlayGameController:
         self.__checkForCheckpoint()
 
     def __saveToUndoStack(self):
+        # saving relevant info to a stack for undo 
         state = {
         'playerPos': self.playerPos,
         'playerLabel':self.playerLabel,
@@ -931,7 +966,7 @@ class PlayGameController:
         '_botHealth': self._botHealth,
         'currentTurn': self.currentTurn,
         'currentPlayerIdx': self.currentPlayerIdx,
-        'moveHistory': list(self.moveHistory),  # Create a copy for them! 
+        'moveHistory': list(self.moveHistory),  
         'botMoveHistory': list(self.botMoveHistory),  
         'checkpointsReached': self.checkpointsReached,
     }
