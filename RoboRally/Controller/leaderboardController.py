@@ -108,7 +108,7 @@ class LeaderboardController:
         
         elif key == 'time':
             # ascending order - fastest times at the top 
-            return i1['time'] > i2['time']
+            return i1['time'] < i2['time']
 
     # method to merge sort and update leaderboard after sorting in the view
     def sortLeaderboard(self, key):

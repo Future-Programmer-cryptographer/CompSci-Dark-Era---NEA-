@@ -3,7 +3,6 @@ from tkinter import ttk
 from tkinter import messagebox
 import random 
 from datetime import datetime
-import re 
 from tkinter import simpledialog
 from tkinter.simpledialog import askstring
 
