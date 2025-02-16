@@ -1,18 +1,18 @@
 import tkinter as tk 
 from tkinter import ttk 
-from datetime import datetime
-import os 
-
 
 class LeaderboardView: 
     def __init__(self, root, leaderboardController):
+
+        # View class to display leaderboard 
+
         self.root = root 
         self.leaderboardController = leaderboardController
 
         # button styling 
         style = ttk.Style() 
 
-        # creating the leaderboard frame - idk why I need self in this this... but it works and I'm not gonna question it... - problems with garbage collection or something... 
+        # creating the leaderboard frame to pack different buttons and labels 
         self.leaderboardFrame = tk.Frame(self.root)
         
         # creating the buttons and options 
@@ -81,12 +81,13 @@ class LeaderboardView:
             command=self.leaderboardController.backToMain)
         quitBtn.pack(pady=10)
     
+    # method called by the leaderboardController to display the leaderboard to the user 
     def showLeaderboard(self, data):
         self.root.title('Leaderboard')
         self.leaderboardFrame.pack(fill=tk.BOTH)
         self.updateLeaderboard(data)
     
-    # update the leaderboard with new entries 
+    # method to update the leaderboard with new entries 
     def updateLeaderboard(self, data):
         for row in self.table.get_children():
             self.table.delete(row)
