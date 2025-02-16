@@ -1,31 +1,66 @@
-FUNCTION aStar(start, goal)
-    openSet = priorityQueue()
+FUNCTION aStar(start, goal, grid, obstacles)
+    // priority queue for nodes to explore 
+    openSet = priorityQueue() 
 
-    gScore ={all nodes mapped with default value of inf}
+
+    // for each node, initialise the costs 
+    FOR node in grid: 
+        gScore[node] = {infinity}
+        fScore[node] = {infinity}
+    ENDFOR 
+
     gScore[start] = 0 
+    fSCore[start] = heuristic(start, goal)
 
-    fScore = {all nodes mapped with default value of inf}
-    fScore[start] = heuristic(start, goal)
+    // add the start node to the open set 
+    openSet.add(start, fScore[start])
 
-    openSet.add(fScore(start), h(start), start)
+    // loop until there are no nodes left to explore 
+    WHILE openSet is NOT empty 
+        currentNode = openSet.pop() 
 
-    WHILE openSet is NOT empty or checkpoint reached:  
-        currentNode = openSet.getScore 
-        FOR each move(U,D,L,R):
-            neighbour = current + move 
-            tempGScore = gScore(currentNode) + 1 
-            tempFScore = tempGScore + heuristic(neighbour)
+        IF currentNode == goal THEN 
+            RETURN reconstructPath(currentNode)
+        ENDIF 
 
-            IF tempFScore < fScore(neighbour) THEN 
-                gScore(neighbour) = tempGScore
-                fScore(neighbour) = tempFScore
-                openSet.add(fScore(neighbour), heuristic(neighbour, checkpoint), neighbour)
+        FOR each neighbour WITH direction in getNeighbours(currentNode, grid, obstacles)
+
+            // cost to move from currentNode to neighbour
+            tentative_gScore = gScore[currentNode] + 1 
+
+            // if path is better the previous, add to open est 
+            IF tentative_gScore < gScore[neighbour] THEN 
+                gScore[neighbour] = tentative_gScore
+                fScore[neighbour] = tentative_gScore + heuristic(neighbour, goal)
+                neighbour.parent = currentNode
+
+                IF neighbour NOT in openSet THEN 
+                    openSet.ADD(neighbour, fSCore[neighbour])
+                ENDIF 
+            ENDIF 
+        ENDFOR 
+    ENDWHILE 
+
+    // if no path found, return empty list 
+    RETURN [] 
+ENDFUNCTION 
+
+FUNCTION heuristic(node, goal)
+    // using Manhattan distance 
+    RETURN ABS(node.x - goal.x) + ABS(node.y - goal.y)
 ENDFUNCTION
 
-FUNCTION heuristic(node, checkpoint)
-    RETURN abs(node.x - goal.x) + abs(node.y - goal.y)
+FUNCTION reconstructPath(currentNode)
+    path = [] 
+    // follow parent from goal back to start 
+    WHILE currentNode.parent 
+        path.APPEND(direction from currentNode.parent)
+        currentNode = currentNode.parent
+    ENDWHILE 
+
+    // return a list of (direction, cost) tuples
+    RETURN path 
 ENDFUNCTION
 
-    
-            
+
 
