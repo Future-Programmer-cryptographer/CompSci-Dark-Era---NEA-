@@ -3,7 +3,6 @@ from Controller.mainMenuController import MainMenuController
 from View.mainMenuView import MainMenuView
 from Controller.playGameController import PlayGameController
 from Controller.leaderboardController import LeaderboardController
-from View.leaderboardView import LeaderboardView
 
 def main():
     # Initialize root window
@@ -25,7 +24,6 @@ def main():
     leaderboardController.mainMenuController = mainMenuController
     mainMenuController.leaderboardController = leaderboardController
     
-
     # treating main.py as the 'master view' 
     root.mainloop()
 

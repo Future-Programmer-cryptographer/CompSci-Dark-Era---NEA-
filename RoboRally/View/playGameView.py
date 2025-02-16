@@ -3,7 +3,6 @@ from PIL import Image, ImageTk
 import tkinter as tk 
 from tkinter import ttk 
 import time 
-from tkinter import messagebox
 import emoji
 
 # need a board selection screen with different difficulty 
@@ -82,6 +81,7 @@ class PlayGameView:
         self.selectBoardFrame.pack_forget() 
 
         style = ttk.Style() 
+        style.configure('play.TButton', font=('fixedsys 20 bold'), foreground='red3')
 
         # creating an options window frame
         self.optionWindowFrame = tk.Frame(self.root)
@@ -103,8 +103,6 @@ class PlayGameView:
                                      command=self.onOptionWindowSelectMultiplayer)
         multiplayerBtn.pack(ipady=10, ipadx=10, pady=10)
         
-        style.configure('play.TButton', font=('fixedsys 20 bold'), foreground='red3')
-
         # rules frame implementation to one in Rules class (View rules from Main Menu) - provides a short useful summary of the game modes for user 
         self.rulesFrame = tk.Frame(self.optionWindowFrame)
         self.rulesFrame.pack(fill=tk.BOTH)

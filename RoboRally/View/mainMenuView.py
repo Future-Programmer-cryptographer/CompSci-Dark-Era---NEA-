@@ -3,22 +3,30 @@ from tkinter import ttk
 
 
 class MainMenuView: 
+
+    # View class for creating and displaying the main menu  
+
     def __init__(self, root, controller):
+
+        # initialise the main menu 
+        # the controller passed in here is the 'MainMenuController' 
+        
         self.controller = controller  
         self.root = root 
         self.root.title('Main Menu')
         
-        # setting width and height paramaters here 
+        # setting starting width and height paramaters here - but window is resizable 
         width = 1000 
         height = 750 
 
         self.root.geometry(f'{width}x{height}')
         self.root.minsize(width,height)
 
-        # styling buttons 
+        # styling the buttons 
         style = ttk.Style() 
+        style.configure('play.TButton', font=('fixedsys 20 bold'), foreground='red3')
 
-        # creating a main menu frame 
+        # creating the main menu frame that will contain the buttons and widgets 
         self.mainMenuFrame = tk.Frame(self.root)
         self.mainMenuFrame.pack(fill=tk.BOTH)
         
@@ -27,6 +35,7 @@ class MainMenuView:
         label.pack(pady=20)
         label2.pack(pady=5)
         
+        # creating an empty buttons list to then pack all the buttons on the main menu frame 
         self.buttons = []
         
         self.playGameBtn = ttk.Button(self.mainMenuFrame, 
@@ -51,12 +60,10 @@ class MainMenuView:
 
         self.buttons=[self.playGameBtn, self.LeaderboardBtn, self.LdSavedBtn, self.rulesBtn]
 
-        style.configure('play.TButton', font=('fixedsys 20 bold'), foreground='red3')
-
         for button in self.buttons: 
             button.pack(ipadx=20, ipady=10, pady=10)
         
-        
+    # start the main event here 
     def mainloop(self):
         self.root.mainloop() 
  
