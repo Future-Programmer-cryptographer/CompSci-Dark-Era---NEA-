@@ -2,7 +2,6 @@ import tkinter as tk
 from Controller.mainMenuController import MainMenuController
 from View.mainMenuView import MainMenuView
 from Controller.playGameController import PlayGameController
-from Model.playGameModel import PlayGameModel
 from Controller.leaderboardController import LeaderboardController
 from View.leaderboardView import LeaderboardView
 
@@ -18,13 +17,11 @@ def main():
     playGameController = PlayGameController(root, canvas)
     leaderboardController = LeaderboardController(root, canvas)
     mainMenuView = MainMenuView(root, mainMenuController)
-    playGameModel = PlayGameModel()
 
     # Subscribe 
     mainMenuController.mainMenuView = mainMenuView
     mainMenuController.playGameController = playGameController  
     playGameController.mainMenuController = mainMenuController
-    playGameController.playGameModel = playGameModel
     leaderboardController.mainMenuController = mainMenuController
     mainMenuController.leaderboardController = leaderboardController
     
