@@ -5,11 +5,9 @@ from tkinter import ttk
 import time 
 import emoji
 
-# need a board selection screen with different difficulty 
-# need to have three different boards - tkinter framing... 
-# after they have selected the boards, we want them to select single player vs bot or multiplayer 
-
 class PlayGameView: 
+
+    # View class that displays board options and the main game  
 
     def __init__(self, root, canvas, playGameController):
         self.root = root 
@@ -22,14 +20,14 @@ class PlayGameView:
         titleLabel = ttk.Label(self.selectBoardFrame, text='Select one of the three boards for single player vs Bot OR 4-Player Multiplayer \n Boards are sorted by difficulty, easy-medium-hard (left to right) \n You can also create a custom board for multiplayer gameplay \n (You can customise no. of players, grid size, no. of obstacles and checkpoints)', font=('Verdana',15))
         titleLabel.pack(pady=10)
 
-        # note to my future self, the token was included here becuase there were some bugs when closing the frame, so adding a token solved that bug 
+        # back to main button 
         backBtn = ttk.Button(self.selectBoardFrame, 
                         text='Back to Main Menu',
                         style='play.TButton',
                         command=lambda: self.playGameController.backToMain (1))
         backBtn.pack(side=BOTTOM, ipadx=25, ipady=25, expand=True)
 
-        
+        # button to create a custom board 
         customBtn = ttk.Button(self.selectBoardFrame, 
                                text='Create Custom Board',
                                style='play.TButton',
@@ -66,17 +64,20 @@ class PlayGameView:
                             command= lambda: self.playGameController.onBoardSelect('HARD'))
         hardBtn.pack(side=LEFT,expand=True)
 
+        # stopwatch attributes for multiplayer game mode 
         self.start = 0.0 
         self.elapsedTime = 0.0
         self.running = 0 
         self.timestr = StringVar()
 
-    
+    # function called by the playGameController when the user clicks on 'Play Game' 
     def showSelectBoardWindow(self):
         self.root.title('Choose Game Option')
         self.selectBoardFrame.pack(fill=tk.BOTH)
     
     def showOptionWindow(self): 
+
+        # single or multiplayer option window 
 
         self.selectBoardFrame.pack_forget() 
 
@@ -90,7 +91,7 @@ class PlayGameView:
         msg = ttk.Label(self.optionWindowFrame, text='Select one of the game options below\n A short summary of each game mode can be found below the buttons', font=('Verdana',20), justify='center')
         msg.pack(ipady=10, ipadx=10, pady=10)
 
-
+        # creating game mode buttons 
         singlePlayerBtn = ttk.Button(self.optionWindowFrame, 
                                      text='Single Player vs Bot', 
                                      style='play.TButton',
@@ -103,7 +104,7 @@ class PlayGameView:
                                      command=self.onOptionWindowSelectMultiplayer)
         multiplayerBtn.pack(ipady=10, ipadx=10, pady=10)
         
-        # rules frame implementation to one in Rules class (View rules from Main Menu) - provides a short useful summary of the game modes for user 
+        # rules frame is similar to View rules from Main Menu - provides a short useful summary of the game modes for user 
         self.rulesFrame = tk.Frame(self.optionWindowFrame)
         self.rulesFrame.pack(fill=tk.BOTH)
 
@@ -147,7 +148,7 @@ class PlayGameView:
         self.gameBoardFrame.columnconfigure(1, weight=2)
         self.gameBoardFrame.columnconfigure(2, weight=2)
 
-        # helpful info frame 
+        # helpful info frame - includes summary for single and multiplayer game modes 
         infoFrame = tk.Frame(self.gameBoardFrame, highlightbackground="black",highlightthickness=2)
         infoFrame.grid(row=1, columnspan=3, sticky='news')
 
