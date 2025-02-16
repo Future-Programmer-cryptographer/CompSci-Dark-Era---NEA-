@@ -35,7 +35,7 @@ class LeaderboardController:
                 
                 date= getMdValue(contents, 'Date Played')
                 difficulty = getMdValue(contents, 'Difficulty')
-                checkpoints = int(getMdValue(contents, 'Checkpoints Reached'))
+                checkpoints = int(getMdValue(contents, 'Player Checkpoints Reached'))
 
                 # Parsing for time - need to debug 
                 time = getMdValue(contents, 'Time Taken')

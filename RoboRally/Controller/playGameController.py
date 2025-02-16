@@ -578,6 +578,7 @@ class PlayGameController:
             x2 = x1+self.__cell  
             y2 = y1+self.__cell  
 
+            # this is making green triangle 
             checkpointId = self.canvas.create_polygon(
                 x1+self.__cell /2, y1+self.__cell /4, 
                 x1+self.__cell /4, y1+3*self.__cell /4, 

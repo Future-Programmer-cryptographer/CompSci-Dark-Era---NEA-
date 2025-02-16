@@ -25,8 +25,6 @@ def main():
     mainMenuController.playGameController = playGameController  
     playGameController.mainMenuController = mainMenuController
     playGameController.playGameModel = playGameModel
-
-    # I don't know why these lines below work, but they do... 
     leaderboardController.mainMenuController = mainMenuController
     mainMenuController.leaderboardController = leaderboardController
     
