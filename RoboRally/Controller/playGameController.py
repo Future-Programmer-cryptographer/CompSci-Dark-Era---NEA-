@@ -217,6 +217,7 @@ class PlayGameController:
         messagebox.showinfo('Undo', 'Last move undone!')
 
     def makeRegistersAndCards(self, canvas):
+        # this method is called by the playGameView when the cardsCanvas frame is created 
         self.__makeRegisters(canvas) 
         self.__createActionCards(canvas) 
 
@@ -389,9 +390,7 @@ class PlayGameController:
         self._size = int(size) 
         
         self._obstacleCount = int(obstacles)
-        self._checkpointCount = int(checkpoints)
-
-        # NEED SOME MATHS TO FIX THE CELL SIZE BELOW... 
+        self._checkpointCount = int(checkpoints) 
 
         # width and heigh infor from playgameview canvas 
         width = 600  
@@ -645,6 +644,8 @@ class PlayGameController:
         self.__saveToUndoStack() 
 
         # First need to check which bot is moving 
+        # if isBot is True, then move bot, else- move player 
+        # for multiplayer - use the current player index 
         if isBot:
             robotPos = self.botPos
             health = self._botHealth
@@ -679,6 +680,7 @@ class PlayGameController:
             col += 1
 
         # now check for obstacles and going off grid and update -1 to health and update move history 
+        # then call onComplete callback and return early 
         if (row, col) in self._obstacles:
             if isBot: 
                 self._botHealth -=1  
@@ -757,6 +759,7 @@ class PlayGameController:
 
 
         # Continue animating steps if more remain
+        # recursively call the metohd to animate next step 
         if stepCount + 1 < steps:
             self.canvas.after(
                 self._animationSpeed, 
@@ -768,12 +771,13 @@ class PlayGameController:
                 isBot)
 
         else: 
+            # movement for this command is complete 
             if not self.isMultiplayer:
                 # update move history 
                 history[-1]['end'] = convertToRankAndFile(row,col)
                 self.playGameView.updateMoveHistory(history, isBot)
 
-                # calling onComplete 
+                # calling onComplete after the robot finishes the current movement 
             if onComplete: 
                 onComplete() 
 
