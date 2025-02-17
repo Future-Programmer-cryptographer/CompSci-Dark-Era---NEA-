@@ -6,6 +6,7 @@ from datetime import datetime
 from tkinter import simpledialog
 from tkinter.simpledialog import askstring
 
+# importing the views and controllers from other files 
 from View.playGameView import PlayGameView
 from Controller.mainMenuController import MainMenuController
 from View.mainMenuView import MainMenuView
@@ -85,14 +86,9 @@ class PlayGameController:
             self._botHealth = int(getMdValue(contents, 'Bot Health'))
             self.botPos = tuple(map(int, getMdValue(contents, 'Bot Position').strip("()").split(", ")))
 
-            # Checkpoints and obs-ta-cles info 
+            # Checkpoints and obstacles info 
             self._obstacles = getMdPos(contents, "Obstacle Positions")
             self._checkpoints = getMdPos(contents, 'Checkpoint Positions')
-            
-
-            # # debug prints 
-            # print(f'Checkpoitn parse debug- {self._checkpoints}')
-            # print(f'Obstacle prase debug- {self._obstacles}')
 
         except ValueError as e:
             messagebox.showerror("Errr", str(e))

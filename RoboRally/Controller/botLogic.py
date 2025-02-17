@@ -1,7 +1,5 @@
 import random 
 
-# https://github.com/AaronHe7/pathfinder/blob/master/a_star.py
-
 # this is the function called by playGameController 
 def generateBotMoves(botPos, checkpoints, obstacles, gridSize):
 

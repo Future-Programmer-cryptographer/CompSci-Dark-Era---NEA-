@@ -28,6 +28,8 @@ class LeaderboardController:
     def loadLeaderboardData(self):
         savedFiles = [f for f in os.listdir('.') if f.endswith('.md')]
 
+        # exception handling for getting data from the md file 
+
         for file in savedFiles: 
             try: 
                 with open(file, 'r') as f: 
@@ -37,7 +39,7 @@ class LeaderboardController:
                 difficulty = getMdValue(contents, 'Difficulty')
                 checkpoints = int(getMdValue(contents, 'Player Checkpoints Reached'))
 
-                # Parsing for time - need to debug 
+                # Parsing for time 
                 time = getMdValue(contents, 'Time Taken')
                 time = float(time) 
 
