@@ -408,7 +408,8 @@ class PlayGameController:
     # Private Methods 
 
     def __resetState(self):
-        # this method is called whenever user going back to main, this resets the player count, move history, etc. so that if the player chooses a different option, the game renders properly 
+        # this method is called whenever user going back to main, 
+        # this resets the player count, move history, etc. 
 
         self.currentTurn = 1
         self.isMultiplayer = False
