@@ -12,14 +12,19 @@ class MainMenuController:
         self.playGameController = None
         self.leaderboardController = None
     
+    # functions to hide and display the main menu frame - called mostly by the playGameController 
     def hideMain(self):
         self.mainMenuView.mainMenuFrame.pack_forget() 
 
-    # so when the user clicks on a button, run these commands and adjust the frames accordingly
+    def displayMain(self):
+        self.mainMenuView.mainMenuFrame.pack() 
+
+    # main event handler for buttons clicks on the main menu 
     def handleClick(self,action):
         
         self.mainMenuView.mainMenuFrame.pack_forget() 
 
+        # based on button clicked by user - most of the logic from here handled by playGameController 
         if action == 'PlayGame':
             self.playGame() 
         elif action == 'Leaderboard':
@@ -37,39 +42,41 @@ class MainMenuController:
         self.leaderboardController.initialiseLeaderboard(self.mainMenuView.root)
     
     def rulesWindow(self):
-        # I have no idea why I created another class for this... like it's pretty pointless, a frame would do but I can't be asked to refactor... 
         RulesWindow(self.mainMenuView.root)
-    
-    def displayMain(self):
-        self.mainMenuView.mainMenuFrame.pack() 
 
     def ldSavedWindow(self):
         savedFiles = [f for f in os.listdir('.') if f.endswith('.md')]
 
+        # inform user if no game files are found 
         if not savedFiles: 
-            messagebox.showinfo('No Saved Games')
+            messagebox.showinfo('No Saved Games', "You haven't saved any games. Try again after saving games")
             return 
         
+        # sort the saved files with most recent at the top 
         savedFiles.sort(key=os.path.getmtime, reverse=True)
         
-        # Open a top level window 
+        # Open a top level window for game selection 
         selectionWindow = Toplevel(self.mainMenuView.root)
         selectionWindow.title('Load Saved Game')
         selectionWindow.geometry('500x500')
 
         ttk.Label(selectionWindow, text='Select a saved game', font='fixedsys 20 bold').pack(pady=10)
 
+        # create a button for each saved file 
+        # display file name and date 
         for file in savedFiles: 
             with open(file, 'r') as f: 
                 lines = f.readlines() 
-                # dateLine 
                 dateLine = next((line for line in lines if '**Date Played:**' in line), '').strip()
+
+                # try and extract the date from the line 
                 try:
                     date = dateLine.split('**Date Played:**', 1)[1].strip()
                 except IndexError:
                     date = 'No games found :('
             
-            # add a button for each file so that user can click that 
+            # add a button for each file 
+            # need to use lambda here as we need to pass each filename to the load game function 
             ttk.Button(selectionWindow, 
                        text=f'{file} (Played: {date})', 
                        command=lambda filename=file: self.__loadGameState(filename, selectionWindow)).pack(pady=5)
@@ -81,13 +88,12 @@ class MainMenuController:
                 contents = f.readlines()
                 # print(contents)
 
-            # File stuff needs read by the controller 
+            # game state in the md file needs to parsed by playGameController 
             self.playGameController.parseGameState(contents)
 
-            # close this window... 
+            # close the window once game is loaded (easier to do with topLevel) 
+            # inform user that game has been loaded 
             selectionWindow.destroy()
-
-            # Tell user (messagebox is useful so why not...)
             messagebox.showinfo('Game Loading...', f'Loaded game from {filename}')
 
         except Exception as e:
