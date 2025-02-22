@@ -26,25 +26,25 @@ class MainMenuController:
 
         # based on button clicked by user - most of the logic from here handled by playGameController 
         if action == 'PlayGame':
-            self.playGame() 
+            self.__playGame() 
         elif action == 'Leaderboard':
-            self.leaderboardWindow() 
+            self.__leaderboardWindow() 
         elif action == 'LdSaved':
-            self.ldSavedWindow()
+            self.__ldSavedWindow()
             self.mainMenuView.mainMenuFrame.pack() 
         elif action == 'Rules':
-            self.rulesWindow() 
+            self.__rulesWindow() 
     
-    def playGame(self):
+    def __playGame(self):
         self.playGameController.initialiseView(self.mainMenuView.root)
 
-    def leaderboardWindow(self):
+    def __leaderboardWindow(self):
         self.leaderboardController.initialiseLeaderboard(self.mainMenuView.root)
     
-    def rulesWindow(self):
+    def __rulesWindow(self):
         RulesWindow(self.mainMenuView.root)
 
-    def ldSavedWindow(self):
+    def __ldSavedWindow(self):
         savedFiles = [f for f in os.listdir('.') if f.endswith('.md')]
 
         # inform user if no game files are found 
