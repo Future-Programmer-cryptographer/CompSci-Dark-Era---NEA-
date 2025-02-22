@@ -1,6 +1,8 @@
 import random 
 
 def generateRandomSquares(count, exclude, size):
+    # function to generate random squares for a given grid size 
+    # useful for randomising start positions and obstacles/checkpoints 
     exclude = set(exclude)
     positions = set()
     while len(positions) < count:
@@ -41,4 +43,4 @@ def getMdValue(contents, key):
             try:
                 return line.split("**")[2].strip()
             except IndexError:
-                raise ValueError(f"Key '{key}' not found in the file or is malformed.")
+                raise ValueError(f"key '{key}' not found in the file")
