@@ -53,11 +53,6 @@ class LeaderboardController:
             
             except (ValueError, KeyError) as e: 
                 messagebox.showerror('ERrrr', f'Error from {file}: {str(e)}')
-    
-    def backToMain(self):
-        self.leaderboardView.leaderboardFrame.pack_forget() 
-        self.mainMenuController.displayMain() 
-    
 
     # Merge Sort algorithm to sort leaderboard 
     def mergeSort(self, data, key):
@@ -117,6 +112,12 @@ class LeaderboardController:
         self.leaderboardData = self.mergeSort(self.leaderboardData, key)
         self.leaderboardView.updateLeaderboard(self.leaderboardData)
 
-
-
+    def backToMain(self):
+        self.leaderboardView.leaderboardFrame.pack_forget() 
+        self.mainMenuController.displayMain() 
+        self.__clearLeaderboard()
     
+    def __clearLeaderboard(self):
+        self.leaderboardData = [] 
+
+        

@@ -385,10 +385,8 @@ class PlayGameController:
                     valid = True 
 
         self.difficulty = 'CUSTOM'
-
         self.totalPlayers = int(players)
         self._size = int(size) 
-        
         self._obstacleCount = int(obstacles)
         self._checkpointCount = int(checkpoints) 
 
@@ -399,8 +397,6 @@ class PlayGameController:
         maxSize = min(width, height, 500)  
         # min size is 25 
         self.__cell = max(25, maxSize // self._size) 
-
-        # print(f"Size: {self._size}, cell = {self.__cell}")
 
         self.onMultiplayerSelect() 
 
